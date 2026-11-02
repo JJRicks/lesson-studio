@@ -1,0 +1,91 @@
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#part1">Part 1 · Topic name</a>
+      <ol>
+        <li><a href="#topic1">First topic</a></li>
+        <li class="prob"><a href="#ex1">Example 1</a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<!-- HERO: name the page, say what it covers, and open on the single most striking live interactive. -->
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Course · Week · Lessons</div>
+  <h1>Lesson <span>Title</span></h1>
+  <p class="lede">One or two plain sentences saying what this lesson teaches and why it's useful.</p>
+  <div class="chips"><span class="chip">First topic</span><span class="chip">Second topic</span></div>
+</section>
+
+<!-- PART: one per lesson or homework section, in the document's order. -->
+<section class="part" id="part1" data-title="Part 1">
+  <div class="part-head">
+    <div class="part-letter">1</div>
+    <div class="eyebrow">Part 1 · what it covers</div>
+    <h2>Part title</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>The whole part in two sentences, before any detail.</p></div>
+
+  <!-- TOPIC: overview, then first principles, then analogy, then the formal statement, then an interactive. -->
+  <div class="topic" id="topic1" data-title="First topic">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>Topic title</h3>
+    <p>Build the idea from nothing, using short sentences. Inline maths looks like \(z = x + y\).</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a short name</span><p>A concrete everyday picture of the idea.</p></div>
+    <div class="thm"><span class="eyebrow">Definition or theorem</span><p>The formal statement from the source.</p>\[\iint_R f(x,y)\,dA\]</div>
+    <p class="key">The one sentence to remember.</p>
+    <div class="warn"><b>Watch out.</b> The mistake people actually make here.</div>
+    <details class="deeper"><summary>Go deeper: an optional detail</summary><div><p>Extra detail that would interrupt the main path.</p></div></details>
+    <details class="quick"><summary>Quick check: a one-line question?</summary><div><p>The one-line answer.</p></div></details>
+  </div>
+
+  <!-- WORKED EXAMPLE: the article id is the key used by scenes/*.js and spoilers.json. Stop one line before the final answer. -->
+  <div class="problems">
+    <article class="prob" id="ex1" data-title="Example 1">
+      <div class="prob-head"><span class="pnum">Example 1</span><span class="eyebrow">Type of problem</span><span class="pts">notes p. 1</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the volume</b> under \(z = x + y\) over the square \([0,1]\times[0,1]\).</p>
+        <ol class="steps">
+          <li><h5>Set it up</h5><div class="mbox">\[\int_0^1\!\!\int_0^1 (x + y)\,dy\,dx\]</div></li>
+          <li><h5>Integrate inside-out</h5><p>The inner integral gives \(x + \tfrac12\). Integrate that from 0 to 1.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(V = 1\)<small>\(\tfrac12 + \tfrac12 = 1\).</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- CHEAT SHEET, common mistakes, answer key. -->
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">Formula name</span><div class="eqs">\(\iint_R f\,dA\)</div><p>When to use it.</p></div>
+  </div>
+  <div class="topic" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul><li>A mistake students really make.</li></ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal every answer on this page</summary>
+      <div class="ans"><div class="tbl"><table>
+        <thead><tr><th>Problem</th><th>Answer</th></tr></thead>
+        <tbody><tr><td>Example 1</td><td>\(1\)</td></tr></tbody>
+      </table></div></div></details>
+  </div>
+  <footer><p>Where the numbers came from and how they were checked.</p></footer>
+</section>
+
+</main>

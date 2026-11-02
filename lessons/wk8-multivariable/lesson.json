@@ -1,0 +1,12 @@
+{
+  "title": "Lagrange & Double Integrals",
+  "brand": "Lagrange & Double Integrals",
+  "kind": "guided-notes",
+  "course": "Math 215, Lessons 22-24",
+  "libs": [
+    "katex",
+    "plot3d",
+    "stepper3d"
+  ],
+  "output": "/Users/joelr/Documents/BYUI Assignments/Semester 7/Wk8_multivariable/lagrange-double-integrals-lesson.html"
+}

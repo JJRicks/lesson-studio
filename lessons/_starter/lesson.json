@@ -1,0 +1,7 @@
+{
+  "title": "New Lesson",
+  "brand": "New Lesson",
+  "kind": "guided-notes",
+  "course": "",
+  "libs": ["katex", "stepper3d"]
+}

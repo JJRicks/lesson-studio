@@ -1,0 +1,1393 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>6V6 Beam Tetrode</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a lab-notebook reading column beside a sticky probe index; every interactive is framed like an instrument panel, traces use LTspice's step colours */
+:root{
+  --bg:#F2F4F8; --surface:#FFFFFF; --surface-2:#E8ECF4; --ink:#111A30; --muted:#55617C; --line:#D5DBE7;
+  --accent:#2A43D4; --accent-ink:#FFFFFF; --accent-soft:#E1E6FF;
+  --cursor:#B36A00; --cursor-soft:#FFF0D6;
+  --good:#16804A; --good-soft:#DCF2E5; --bad:#B4302A; --bad-soft:#FBE2E0;
+  --t1:#1C9638; --t2:#2E52DE; --t3:#CF3A2E; --t4:#0B8F9C;
+  --plot:#FFFFFF; --grid:#D2D8E4; --nreg:#DCE4FF; --preg:#FFE6BF; --sat:#FCE3E1; --act:#DDF2E5;
+  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --r:10px; --shadow:0 1px 2px rgba(17,26,48,.06),0 8px 24px -12px rgba(17,26,48,.18);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1120; --surface:#151B2E; --surface-2:#1C2339; --ink:#E5E9F5; --muted:#9BA5BF; --line:#2A3250;
+  --accent:#8FA2FF; --accent-ink:#0D1120; --accent-soft:#1E2752;
+  --cursor:#F4B64E; --cursor-soft:#3A2C12;
+  --good:#5BD38E; --good-soft:#123323; --bad:#FF7F75; --bad-soft:#3B1715;
+  --t1:#4FD86B; --t2:#7E9CFF; --t3:#FF6F63; --t4:#3BD0DC;
+  --plot:#0F1424; --grid:#283049; --nreg:#1C2752; --preg:#3A2A10; --sat:#3A1A1A; --act:#12301F;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0D1120; --surface:#151B2E; --surface-2:#1C2339; --ink:#E5E9F5; --muted:#9BA5BF; --line:#2A3250;
+  --accent:#8FA2FF; --accent-ink:#0D1120; --accent-soft:#1E2752;
+  --cursor:#F4B64E; --cursor-soft:#3A2C12;
+  --good:#5BD38E; --good-soft:#123323; --bad:#FF7F75; --bad-soft:#3B1715;
+  --t1:#4FD86B; --t2:#7E9CFF; --t3:#FF6F63; --t4:#3BD0DC;
+  --plot:#0F1424; --grid:#283049; --nreg:#1C2752; --preg:#3A2A10; --sat:#3A1A1A; --act:#12301F;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1.0625rem;line-height:1.65}
+img,svg,canvas{max-width:100%}
+a{color:var(--accent)}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.12;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h2{font-size:clamp(1.9rem,4.4vw,2.6rem);font-weight:800}
+h3{font-size:1.5rem;font-weight:700;margin-top:.2rem}
+h4{font-size:1.12rem;font-weight:700}
+p{margin:0}
+sub,sup{font-size:.7em;line-height:0}
+h1 sub,h2 sub,h3 sub,h4 sub,.grp sub{font-family:var(--f-body);letter-spacing:0}
+.mono{font-family:var(--f-mono);font-size:.92em}
+kbd{font-family:var(--f-mono);font-size:.8em;padding:.08em .4em;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;background:var(--surface);white-space:nowrap}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--surface-2);padding:.08em .35em;border-radius:4px}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- top bar ---------- */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar-in{display:flex;align-items:center;gap:12px;height:56px;max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{font-family:var(--f-display);font-weight:800;font-size:1.05rem;display:flex;align-items:center;gap:10px;min-width:0;white-space:nowrap}
+.brand svg{flex:none}
+.here{color:var(--muted);font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+.iconbtn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;height:36px;padding:0 12px;font:inherit;font-size:.9rem;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.iconbtn:hover{border-color:var(--accent)}
+.progress{position:absolute;left:0;bottom:-1px;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--accent)}
+#navbtn{display:none}
+#themebtn{margin-left:auto}
+@media (max-width:640px){.here{display:none}}
+@media (max-width:420px){.brand span{display:none}}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);gap:56px;max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 96px}
+.toc{position:sticky;top:76px;align-self:start;max-height:calc(100vh - 92px);overflow:auto;padding-block:28px 24px;font-size:.9rem}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc>ol>li{margin-bottom:14px}
+.toc .grp{display:block;font-family:var(--f-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;text-decoration:none}
+.toc a{color:var(--ink);text-decoration:none}
+.toc li li a{display:block;padding:3px 0 3px 12px;border-left:2px solid var(--line);color:var(--muted);line-height:1.35}
+.toc li li a:hover{color:var(--ink)}
+.toc li li a.on{border-left-color:var(--accent);color:var(--ink);font-weight:700}
+.toc .prob a{color:var(--cursor)}
+main{min-width:0;max-width:780px}
+
+@media (max-width:1000px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  #navbtn{display:inline-flex}
+  .toc{position:fixed;z-index:70;top:0;left:0;bottom:0;width:min(320px,86vw);max-height:none;background:var(--surface);border-right:1px solid var(--line);padding:calc(20px + env(safe-area-inset-top,0px)) 20px 24px max(20px,env(safe-area-inset-left,0px));transform:translateX(-102%);transition:transform .25s ease;box-shadow:var(--shadow)}
+  .toc.open{transform:none}
+  .scrim{position:fixed;inset:0;z-index:65;background:rgba(5,8,20,.45)}
+  main{margin:0 auto}
+}
+
+/* ---------- hero ---------- */
+.hero{padding-block:44px 8px;display:grid;gap:22px}
+.hero h1{font-size:clamp(2.6rem,8vw,4.6rem);font-weight:800;letter-spacing:-.03em;line-height:.98}
+.hero h1 span{color:var(--accent)}
+.lede{font-size:1.2rem;color:var(--muted);max-width:62ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--f-mono);font-size:.78rem;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted)}
+.load>*{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.load>*:nth-child(2){animation-delay:.08s}.load>*:nth-child(3){animation-delay:.16s}.load>*:nth-child(4){animation-delay:.24s}.load>*:nth-child(5){animation-delay:.32s}
+@keyframes rise{from{transform:translateY(14px)}to{transform:none}}
+
+/* ---------- instrument panel ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.panel-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.panel-head .t{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;font-weight:600;flex:1;min-width:12ch}
+.panel-body{padding:14px}
+.btn{appearance:none;font:inherit;font-size:.88rem;font-weight:700;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:6px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:hover{filter:brightness(1.08)}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{appearance:none;border:0;background:var(--surface);color:var(--muted);font:inherit;font-size:.82rem;padding:5px 10px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink);font-weight:700}
+.status{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);min-height:1.4em}
+input[type=range]{width:100%;accent-color:var(--accent)}
+select{font:inherit;font-size:.9rem;padding:4px 8px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+
+/* hero flow */
+#flow{display:block;width:100%;height:240px}
+.flow-ctl{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px 4px}
+.flow-ctl label{font-family:var(--f-mono);font-weight:600}
+.flow-ctl output{font-family:var(--f-mono);font-variant-numeric:tabular-nums;min-width:7ch;text-align:right;font-weight:600}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line);margin-top:10px}
+.read{background:var(--surface);padding:10px 14px}
+.read .k{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.read .v{font-family:var(--f-mono);font-size:1.15rem;font-weight:600;font-variant-numeric:tabular-nums}
+.note{font-size:.86rem;color:var(--muted);padding:10px 14px 12px}
+
+/* ---------- sections ---------- */
+.hero,.part,.topic,.problems,.prob-body,.ans,.big,.analogy,.card,details.deeper>div{grid-template-columns:minmax(0,1fr)}
+.hero>*,.part>*,.topic>*,.problems>*,.prob-body>*,.ans>*{min-width:0}
+.part{padding-top:72px;display:grid;gap:22px}
+.part-head{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;align-items:end;padding-bottom:18px;border-bottom:2px solid var(--ink)}
+.part-letter{grid-row:span 2;font-family:var(--f-display);font-weight:800;font-size:clamp(4rem,12vw,6.5rem);line-height:.8;color:var(--accent);letter-spacing:-.04em}
+.topic{display:grid;gap:16px;padding-top:30px}
+.topic>p,.topic>ul,.topic>ol{max-width:68ch}
+.topic ul,.topic ol{margin:0;padding-left:1.25em;display:grid;gap:6px}
+.big{background:var(--accent-soft);border-radius:var(--r);padding:16px 18px;display:grid;gap:6px}
+.big .eyebrow{color:var(--accent)}
+.big p{font-size:1.12rem;font-weight:700;line-height:1.5}
+.analogy{border:1px dashed var(--muted);border-radius:var(--r);padding:14px 16px;display:grid;gap:6px;background:var(--surface)}
+.analogy .eyebrow{color:var(--cursor)}
+.key{border-left:4px solid var(--accent);padding:4px 0 4px 14px;font-weight:700}
+.warn{background:var(--cursor-soft);border-radius:var(--r);padding:12px 16px}
+.warn b{color:var(--cursor)}
+details.deeper{border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+details.deeper>summary{cursor:pointer;padding:12px 16px;font-weight:700;list-style:none;display:flex;gap:10px;align-items:center}
+details.deeper>summary::-webkit-details-marker{display:none}
+details.deeper>summary::before{content:"+";font-family:var(--f-mono);color:var(--accent);width:1ch}
+details.deeper[open]>summary::before{content:"–"}
+details.deeper>div{padding:0 16px 14px;display:grid;gap:10px}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:6px;align-content:start}
+.card h4{display:flex;gap:8px;align-items:baseline}
+
+/* math */
+.eq{font-family:var(--f-mono);font-size:1.12rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;overflow-x:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.eq .cap{font-family:var(--f-body);font-size:.85rem;color:var(--muted);flex-basis:100%}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 4px}
+.fr>span:last-child{padding:0 4px}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* unit ladder */
+.ladder{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rung{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:12px;display:grid;gap:2px;text-align:center}
+.rung b{font-family:var(--f-display);font-size:1.6rem}
+.rung span{font-size:.82rem;color:var(--muted)}
+@media (max-width:480px){.ladder{grid-template-columns:1fr}}
+
+/* plots */
+.plot{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.plot svg{display:block;width:100%;cursor:ew-resize}
+.plot svg:focus-visible{outline:2.5px solid var(--accent);outline-offset:-3px}
+.plot .gr{stroke:var(--grid);stroke-width:1;stroke-dasharray:3 4}
+.plot .ax{stroke:var(--muted);stroke-width:1;fill:none}
+.plot .tk{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.plot .ttl{fill:var(--ink);font-family:var(--f-mono);font-size:11.5px;font-weight:600}
+.plot .tr{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.plot .cv{stroke:var(--ink);stroke-width:1.3;stroke-dasharray:2 3}
+.plot .ch{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:2 3;opacity:.7}
+.plot .mk{stroke:var(--plot);stroke-width:2}
+.plot .band-sat{fill:var(--sat)}.plot .band-act{fill:var(--act)}
+.plot .bl{font-family:var(--f-mono);font-size:10.5px;fill:var(--muted);letter-spacing:.06em}
+.plot .bg{fill:var(--plot)}
+.cursorbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line)}
+.cursorbox>div{background:var(--surface);padding:9px 14px}
+.cursorbox .k{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cursorbox .v{font-family:var(--f-mono);font-size:1.05rem;font-weight:600;font-variant-numeric:tabular-nums;font-style:normal}
+.cursorbox .hl{background:var(--cursor-soft)}
+.fam-table td.n{font-size:.92rem}
+.fam-table tr.sel td{background:var(--cursor-soft)}
+.sw{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.hintok{color:var(--good);font-weight:700}
+
+/* schematic */
+.schem{background:var(--plot)}
+.schem svg{display:block;width:100%;max-width:440px;margin:0 auto;height:auto}
+.schem .w{stroke:var(--accent);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.schem .thick{stroke-width:4}
+.schem .gnd{fill:none;stroke:var(--accent);stroke-width:2}
+.schem .src{fill:var(--plot);stroke:var(--accent);stroke-width:2}
+.schem .arrow{fill:var(--accent)}
+.schem .lbl{fill:var(--ink);font-family:var(--f-mono);font-size:14px;font-weight:600}
+.schem .lbl.sm{font-size:12px;font-weight:400;fill:var(--muted)}
+.schem .pin{fill:var(--cursor);font-family:var(--f-mono);font-size:11px;font-weight:600}
+.schem .loop{fill:none;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .3s}
+.schem .loop.in{stroke:var(--t1)}.schem .loop.out{stroke:var(--t3)}
+.schem .flowd{fill:none;stroke-width:2.5;stroke-dasharray:4 10;stroke-linecap:round;opacity:0;transition:opacity .3s;animation:dash 0.9s linear infinite}
+.schem .flowd.in{stroke:var(--t1)}.schem .flowd.out{stroke:var(--t3)}
+.schem[data-show~="in"] .in,.schem[data-show~="out"] .out{opacity:.32}
+.schem[data-show~="in"] .flowd.in,.schem[data-show~="out"] .flowd.out{opacity:1}
+@keyframes dash{to{stroke-dashoffset:-14}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.86rem;color:var(--muted);padding:0 14px 12px}
+
+/* token decoder */
+.tokens{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--f-mono);font-size:1.05rem}
+.tok{appearance:none;font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;padding:4px 10px;cursor:pointer;transition:transform .15s,background .15s}
+.tok:hover{transform:translateY(-2px)}
+.tok[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tok.g2{border-style:dashed}
+.tokexp{min-height:3.2em;margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--surface-2);font-size:.95rem}
+pre.code{font-family:var(--f-mono);font-size:.86rem;background:var(--surface-2);border-radius:8px;padding:12px 14px;margin:0;overflow-x:auto;line-height:1.6}
+pre.code .on{background:var(--cursor-soft);color:var(--ink);border-radius:3px;box-shadow:0 0 0 3px var(--cursor-soft)}
+.cmt{color:var(--muted)}
+
+/* morph */
+.morph{display:grid;place-items:center;height:200px;position:relative;background:var(--plot)}
+.morph svg{position:absolute;width:min(260px,80%);height:180px;transition:opacity .45s,transform .45s}
+.morph .w{stroke:var(--ink);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.morph .af{fill:var(--ink)}
+.morph text{fill:var(--ink);font-family:var(--f-mono);font-size:14px}
+.morph .hot{stroke:var(--accent)}
+.morph .hotf{fill:var(--accent)}
+.morph[data-m="bjt"] .m-src{opacity:0;transform:scale(.9)}
+.morph[data-m="src"] .m-bjt{opacity:0;transform:scale(.9)}
+
+/* mini iv graphs */
+.mini svg{display:block;width:100%;height:auto}
+.mini .ax{stroke:var(--muted);stroke-width:1.5;fill:none}
+.mini .ln{stroke:var(--accent);stroke-width:3;fill:none;stroke-linecap:round}
+.mini text{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+
+/* problems */
+.problems{display:grid;gap:22px;padding-top:34px}
+.problems-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.problems-head h3{font-size:1.75rem}
+.prob{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.prob-head{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line)}
+.pnum{font-family:var(--f-display);font-weight:800;font-size:1.25rem}
+.pts{margin-left:auto;font-family:var(--f-mono);font-size:.75rem;padding:3px 9px;border-radius:999px;background:var(--cursor-soft);color:var(--cursor);font-weight:600;white-space:nowrap}
+.prob-body{padding:16px 18px 18px;display:grid;gap:16px}
+.ask{border-left:3px solid var(--line);padding-left:14px;color:var(--muted);font-size:.98rem}
+.ask b{color:var(--ink)}
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:14px}
+ol.steps>li{counter-increment:s;display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px 12px}
+ol.steps>li::before{content:counter(s);grid-row:span 3;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);font-family:var(--f-mono);font-size:.82rem;font-weight:600;display:grid;place-items:center;margin-top:1px}
+ol.steps>li>*{grid-column:2;min-width:0}
+ol.steps h5{font-family:var(--f-body);font-size:1rem;margin:0;font-weight:700}
+ol.steps p{color:var(--ink)}
+.check{list-style:none;padding:0;margin:4px 0 0;display:grid;gap:6px}
+.check label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{margin-top:.35em;accent-color:var(--good);width:16px;height:16px;flex:none}
+.check input:checked+span{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--good)}
+
+details.reveal{border-radius:10px;border:2px dashed var(--cursor);background:var(--cursor-soft)}
+details.reveal>summary{list-style:none;cursor:pointer;padding:12px 16px;font-weight:700;color:var(--cursor);display:flex;align-items:center;gap:10px}
+details.reveal>summary::-webkit-details-marker{display:none}
+details.reveal>summary::before{content:"";width:18px;height:18px;flex:none;border-radius:4px;background:var(--cursor);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5C5 5 1 12 1 12s4 7 11 7 11-7 11-7-4-7-11-7zm0 11a4 4 0 110-8 4 4 0 010 8z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5C5 5 1 12 1 12s4 7 11 7 11-7 11-7-4-7-11-7zm0 11a4 4 0 110-8 4 4 0 010 8z'/%3E%3C/svg%3E") center/contain no-repeat}
+details.reveal[open]{border-style:solid;background:var(--surface)}
+details.reveal[open]>summary{border-bottom:1px solid var(--line)}
+details.reveal .ans{padding:14px 16px;display:grid;gap:10px;animation:pop .45s cubic-bezier(.2,.8,.2,1)}
+.ans .final{font-family:var(--f-display);font-weight:800;font-size:clamp(1.6rem,5vw,2.2rem);line-height:1.1}
+.ans .final small{font-family:var(--f-body);font-weight:400;font-size:.95rem;color:var(--muted);display:block;margin-top:4px}
+@keyframes pop{from{opacity:.0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+
+.mcq{display:grid;gap:8px}
+.mcq button{appearance:none;text-align:left;font:inherit;font-size:.98rem;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:9px;padding:10px 14px;cursor:pointer;display:grid;grid-template-columns:22px 1fr;gap:10px;transition:border-color .2s,background .2s}
+.mcq button:hover{border-color:var(--accent)}
+.mcq button b{font-family:var(--f-mono)}
+.mcq button.right{border-color:var(--good);background:var(--good-soft)}
+.mcq button.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.mcq-fb{font-size:.95rem;min-height:1.4em}
+.mcq-fb.right{color:var(--good)}.mcq-fb.wrong{color:var(--bad)}
+
+.cheat{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
+.cheat .card .eqs{font-family:var(--f-mono);font-size:1rem}
+footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem;display:grid;gap:6px}
+
+@media (max-width:560px){
+  body{font-size:1rem}
+  .hero{padding-top:28px}
+  .prob-body,.prob-head{padding-left:14px;padding-right:14px}
+  .part{padding-top:56px}
+  #flow{height:210px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  html{scroll-behavior:auto}
+}
+
+/* ---------- tube lesson additions: heater-glow tokens on top of the shared system ---------- */
+:root{--glow:#D9661A;--glow-soft:#FCE5D2;--platec:#8A92A6;--glass:#EEF2F9}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--glow:#FF9A3D;--glow-soft:#3B2513;--platec:#5D6780;--glass:#1A2135}}
+:root[data-theme="dark"]{--glow:#FF9A3D;--glow-soft:#3B2513;--platec:#5D6780;--glass:#1A2135}
+
+.hero h1 span{color:var(--glow);text-shadow:0 0 36px color-mix(in srgb,var(--glow) 45%,transparent)}
+.hero h1 small{display:block;font-size:.3em;letter-spacing:0;color:var(--muted);font-weight:700;margin-top:.4em}
+canvas.sim{display:block;width:100%;height:300px;background:var(--plot)}
+canvas.scope{display:block;width:100%;height:130px;background:var(--plot);border-top:1px solid var(--line)}
+canvas.scope.tall{height:220px}
+@media (max-width:560px){canvas.sim{height:250px}}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.facts .read .v{font-size:1.05rem}
+.decode{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:10px}
+.decode .card b.glyph{font-family:var(--f-display);font-size:2.6rem;line-height:1;color:var(--glow)}
+.stepnav{display:flex;flex-wrap:wrap;gap:6px;padding:12px 14px 0}
+.stepnav button{appearance:none;font:inherit;font-size:.86rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.stepnav button b{font-family:var(--f-mono);color:var(--muted)}
+.stepnav button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stepnav button[aria-pressed="true"] b{color:var(--accent-ink)}
+.stepcopy{padding:14px 16px 16px;display:grid;gap:8px;border-top:1px solid var(--line)}
+.stepcopy h4{font-size:1.2rem}
+.stepcopy .eyebrow{color:var(--glow)}
+.flow-ctl input:disabled{opacity:.35}
+.ctl-off{opacity:.45}
+.pinwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:0}
+.pinwrap>*+*{border-left:1px solid var(--line)}
+@media (max-width:640px){.pinwrap{grid-template-columns:minmax(0,1fr)}.pinwrap>*+*{border-left:0;border-top:1px solid var(--line)}}
+.pinsvg{padding:12px;background:var(--plot)}
+.pinsvg svg{display:block;width:100%;max-width:300px;margin:0 auto}
+.pinsvg .base{fill:var(--surface-2);stroke:var(--line);stroke-width:2}
+.pinsvg .post{fill:var(--surface);stroke:var(--line);stroke-width:2}
+.pinsvg .keyr{fill:var(--muted)}
+.pinsvg .pin{cursor:pointer}
+.pinsvg .pin circle{fill:var(--surface);stroke-width:3;transition:stroke-width .2s}
+.pinsvg .pin text{fill:var(--ink);font-family:var(--f-mono);font-size:13px;font-weight:600;pointer-events:none}
+.pinsvg .pin.on circle{stroke-width:6}
+.pinsvg .cap{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.pinlist{list-style:none;margin:0;padding:8px;display:grid;gap:2px}
+.pinlist button{appearance:none;width:100%;text-align:left;font:inherit;font-size:.92rem;color:var(--ink);background:transparent;border:0;border-radius:7px;padding:6px 8px;display:grid;grid-template-columns:26px 12px 1fr;gap:8px;align-items:center;cursor:pointer}
+.pinlist button:hover{background:var(--surface-2)}
+.pinlist button.on{background:var(--accent-soft)}
+.pinlist .num{font-family:var(--f-mono);font-weight:600;color:var(--muted)}
+.pinlist .sw{width:12px;height:12px;border-radius:50%;margin:0}
+.pindesc{padding:10px 16px 14px;border-top:1px solid var(--line);font-size:.95rem;min-height:3.4em}
+.schem-scroll{overflow-x:auto;background:var(--plot);-webkit-overflow-scrolling:touch}
+.amp svg{display:block;width:100%;min-width:560px;height:auto}
+.amp .w{stroke:var(--accent);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.amp .ink{stroke:var(--ink);stroke-width:2;fill:none;stroke-linecap:round}
+.amp .grid{stroke:var(--ink);stroke-width:2;stroke-dasharray:4 4;fill:none}
+.amp .env{fill:var(--glass);stroke:var(--ink);stroke-width:2}
+.amp .heat{stroke:var(--glow);stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.amp .gnd{fill:none;stroke:var(--accent);stroke-width:2}
+.amp .src{fill:var(--plot);stroke:var(--accent);stroke-width:2}
+.amp .dot{fill:var(--accent)}
+.amp .lbl{fill:var(--ink);font-family:var(--f-mono);font-size:12.5px;font-weight:600}
+.amp .val{fill:var(--muted);font-family:var(--f-mono);font-size:12px}
+.amp .say{fill:var(--glow);font-family:var(--f-body);font-size:13px;font-weight:700}
+.amp .mk circle{fill:var(--cursor)}.amp .mk text{fill:var(--plot);font-family:var(--f-mono);font-size:11px;font-weight:700}
+.amp .mk path{stroke:var(--cursor);stroke-width:1.5}
+.amp .flow{fill:none;stroke:var(--t3);stroke-width:3;stroke-linecap:round;stroke-dasharray:3 11}
+.amp .el{fill:var(--t2)}
+.amp .pill{fill:var(--glow-soft);stroke:var(--glow);stroke-width:1.5}
+.amp .cone{fill:var(--surface);stroke:var(--ink);stroke-width:2}
+.amp .mag{fill:var(--ink)}
+.ctlgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px 22px;padding:14px;border-top:1px solid var(--line)}
+.sl{display:grid;gap:2px}
+.sl label{display:flex;justify-content:space-between;gap:8px;font-size:.9rem}
+.sl label b{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.heatcard{display:grid;grid-template-columns:56px 1fr;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.glass svg{display:block;width:56px;height:96px}
+.glass .env{fill:var(--glass);stroke:var(--muted);stroke-width:2}
+.glass .basep{fill:var(--ink)}
+.glass .pl{fill:var(--platec);transition:fill .4s}
+.glass .hg{fill:var(--glow);animation:flick 2.6s ease-in-out infinite}
+.glass.red .pl{fill:var(--bad);animation:redpl 1.1s ease-in-out infinite}
+@keyframes flick{0%,100%{opacity:.75}50%{opacity:1}}
+@keyframes redpl{0%,100%{opacity:.7}50%{opacity:1}}
+.heatcard .warnline{color:var(--bad);font-weight:700}
+.listen{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;padding:12px 14px;border-top:1px solid var(--line);background:var(--glow-soft)}
+.listen .sl{flex:1;min-width:160px}
+.btn.glowbtn{background:var(--glow);border-color:var(--glow);color:#1A0E04}
+.lc svg,.bc svg{display:block;width:100%}
+.lc .gr,.bc .gr{stroke:var(--grid);stroke-dasharray:3 4}
+.lc .ax,.bc .ax{stroke:var(--muted);fill:none}
+.lc .tk,.bc .tk{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.lc .fam{fill:none;stroke:var(--muted);stroke-width:1.4;opacity:.8}
+.lc .load{stroke:var(--accent);stroke-width:2.5}
+.lc .pd{fill:none;stroke:var(--bad);stroke-width:1.6;stroke-dasharray:6 5}
+.lc .swing{fill:none;stroke:var(--glow);stroke-width:7;stroke-linecap:round;stroke-linejoin:round;opacity:.35}
+.lc .q{fill:var(--accent);stroke:var(--plot);stroke-width:2}
+.lc .now,.bc .now{fill:var(--glow);stroke:var(--plot);stroke-width:2.5}
+.lc .bg,.bc .bg{fill:var(--plot)}
+.lc .lab{font-family:var(--f-mono);font-size:11px;font-weight:600}
+.bc .beam{fill:none;stroke:var(--accent);stroke-width:2.5}
+.bc .plain{fill:none;stroke:var(--bad);stroke-width:2.5;stroke-dasharray:7 5}
+.bc .zero{stroke:var(--muted);stroke-width:1}
+.bc .vg2{stroke:var(--t1);stroke-width:1.5;stroke-dasharray:3 4}
+.harm{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:end;height:150px;padding:14px 14px 0}
+.harm .hb{display:grid;grid-template-rows:1fr auto auto;height:100%;gap:4px;text-align:center}
+.harm .col{align-self:end;background:var(--glow);border-radius:5px 5px 0 0;min-height:2px;transition:height .25s}
+.harm .pc{font-family:var(--f-mono);font-size:.78rem;font-variant-numeric:tabular-nums}
+.harm .hn{font-family:var(--f-mono);font-size:.72rem;color:var(--muted);padding-bottom:10px}
+.vs td:first-child{font-weight:700;white-space:nowrap}
+.kicker{font-family:var(--f-display);font-weight:800;font-size:1.25rem}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <button class="iconbtn" id="navbtn" aria-controls="toc" aria-expanded="false">Contents</button>
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V9a5 5 0 0110 0v11z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 17l2.5-3 2.5 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 11h6" stroke="currentColor" stroke-width="1.6" stroke-dasharray="1.6 1.4"/><path d="M6 20h12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      <span>6V6 Beam Tetrode</span>
+    </div>
+    <div class="here" id="here"></div>
+    <button class="iconbtn" id="themebtn" aria-label="Switch colour theme">Theme</button>
+  </div>
+  <div class="progress" id="progress"></div>
+</header>
+
+<div class="shell">
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#tube">The tube</a>
+      <ol>
+        <li><a href="#quick">The 6V6 in one minute</a></li>
+        <li><a href="#build">Build one, part by part</a></li>
+        <li><a href="#pins">The pinout</a></li>
+      </ol></li>
+    <li><a class="grp" href="#amp">The amplifier</a>
+      <ol>
+        <li><a href="#amp">Weak sine in, big sine out</a></li>
+        <li><a href="#walk">Step by step</a></li>
+        <li><a href="#loadline">The load line</a></li>
+        <li><a href="#push">Push it: clipping</a></li>
+      </ol></li>
+    <li><a class="grp" href="#beam">Going deeper</a>
+      <ol>
+        <li><a href="#beam">Why "beam"?</a></li>
+        <li><a href="#vs">Tube vs transistor</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<!-- ================= HERO ================= -->
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">A mini lesson · just for fun</div>
+  <h1><span>6V6</span><small>the beam power tetrode</small></h1>
+  <p class="lede">A glowing wire, two grids, a pair of beam plates and an almost perfect vacuum. Put a weak AC sine wave on the control grid and the 6V6 hands back a copy about 19 times bigger, strong enough to drive a speaker. Guitar amps, jukeboxes and radios have relied on it since the late 1930s.</p>
+  <div class="chips"><span class="chip">6.3 V heater</span><span class="chip">250 V plate</span><span class="chip">≈ 4.5 W out</span><span class="chip">8-pin octal</span></div>
+  <div class="panel">
+    <div class="panel-head"><span class="t">Inside the tube · live</span><button class="btn ghost" id="pauseHero" type="button" aria-pressed="false">Pause</button></div>
+    <canvas id="simHero" class="sim" aria-label="Animation: electrons boil off the hot cathode, pass the control grid and screen grid, and are focused into a beam that lands on the plate. The flow pulses with the input sine wave."></canvas>
+    <canvas id="scopeHero" class="scope" aria-label="Scrolling scope: the small input sine at the grid and the large output sine at the plate, drawn on the same scale"></canvas>
+    <div class="flow-ctl">
+      <label for="ampHero">Input sine</label>
+      <input type="range" id="ampHero" min="0" max="15" step="0.1" value="2">
+      <output id="ampHeroOut" for="ampHero">2.0 V peak</output>
+    </div>
+    <div class="reads">
+      <div class="read"><div class="k">Grid voltage</div><div class="v" id="hVg">–</div></div>
+      <div class="read"><div class="k">Plate current</div><div class="v" id="hIp">–</div></div>
+      <div class="read"><div class="k">Plate voltage</div><div class="v" id="hVp">–</div></div>
+      <div class="read"><div class="k">Voltage gain</div><div class="v" id="hGain">–</div></div>
+    </div>
+    <p class="note">Blue dots are electrons boiling off the hot cathode (left). The control grid's voltage swings gently with the input sine and decides how many get through to the plate (right). The scope draws input and output on the <b>same scale</b>, so you can see how much bigger the output is. The motion is slowed down about a billion times: a real electron makes this trip in roughly a nanosecond.</p>
+  </div>
+</section>
+
+<!-- ================= THE TUBE ================= -->
+<section class="part" id="tube" data-title="The tube">
+  <div class="part-head">
+    <div class="part-letter">1</div>
+    <div class="eyebrow">The tube</div>
+    <h2>A valve for electrons</h2>
+  </div>
+
+  <div class="topic" id="quick" data-title="The 6V6 in one minute">
+    <span class="eyebrow">In one minute</span>
+    <h3>The 6V6 in one minute</h3>
+    <div class="big"><span class="eyebrow">The big idea</span><p>The 6V6 is a voltage-controlled valve for electrons. A small voltage on its control grid sets a large current from cathode to plate. Run that current through a load and a small signal becomes a large one.</p></div>
+    <div class="facts">
+      <div class="read"><div class="k">Heater</div><div class="v">6.3 V · 0.45 A</div></div>
+      <div class="read"><div class="k">Plate &amp; screen</div><div class="v">250 V</div></div>
+      <div class="read"><div class="k">Grid bias</div><div class="v">−12.5 V</div></div>
+      <div class="read"><div class="k">Idle plate current</div><div class="v">45 mA</div></div>
+      <div class="read"><div class="k">Transconductance</div><div class="v">4.1 mA per V</div></div>
+      <div class="read"><div class="k">Power out (class A)</div><div class="v">≈ 4.5 W</div></div>
+    </div>
+    <p class="note" style="padding:0">Typical single-tube class A figures from the RCA 6V6GT datasheet.</p>
+    <h4>Reading the name</h4>
+    <div class="decode">
+      <div class="card"><b class="glyph">6</b><p>A <b>6.3 V</b> heater.</p></div>
+      <div class="card"><b class="glyph">V</b><p>Just an identifying letter. It doesn't stand for anything.</p></div>
+      <div class="card"><b class="glyph">6</b><p>The count of useful elements brought out to pins (the original metal 6V6 counted its shell).</p></div>
+      <div class="card"><b class="glyph">GT</b><p>On a 6V6GT: <b>G</b>lass envelope, <b>T</b>ubular shape.</p></div>
+    </div>
+    <p>Where you'll find one: a single 6V6 drives the speaker in a Fender Champ, two of them power a Fender Deluxe, and countless 1940s and '50s radios, jukeboxes and record players used them. Several factories still make them today, mostly for guitar amps.</p>
+  </div>
+
+  <div class="topic" id="build" data-title="Build one, part by part">
+    <span class="eyebrow">From first principles</span>
+    <h3>Build a 6V6, one part at a time</h3>
+    <p>Every part of the tube was added to fix a problem with the one before. Step through the history and watch what each part does to the electrons.</p>
+    <div class="panel" id="buildPanel">
+      <div class="panel-head"><span class="t">Workbench</span><span class="status" id="buildStatus"></span></div>
+      <div class="stepnav" role="group" aria-label="Build step">
+        <button type="button" data-s="0" aria-pressed="false"><b>1</b>Hot cathode</button>
+        <button type="button" data-s="1" aria-pressed="false"><b>2</b>+ Plate</button>
+        <button type="button" data-s="2" aria-pressed="false"><b>3</b>+ Control grid</button>
+        <button type="button" data-s="3" aria-pressed="false"><b>4</b>+ Screen grid</button>
+        <button type="button" data-s="4" aria-pressed="true"><b>5</b>+ Beam plates</button>
+      </div>
+      <canvas id="simBuild" class="sim" style="margin-top:12px" aria-label="Animation of the tube at the selected build step"></canvas>
+      <div class="flow-ctl" id="buildCtl">
+        <label for="gridBuild">Control grid</label>
+        <input type="range" id="gridBuild" min="-30" max="0" step="0.5" value="-12.5">
+        <output id="gridBuildOut" for="gridBuild">−12.5 V</output>
+      </div>
+      <div class="reads" id="buildReads"></div>
+      <div class="stepcopy" id="buildCopy" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="topic" id="pins" data-title="The pinout">
+    <span class="eyebrow">Plugging it in</span>
+    <h3>The pinout</h3>
+    <p>The 6V6 plugs into an 8-pin <b>octal</b> socket. A plastic key in the middle of the base only fits one way. Looking at the bottom of the tube, the pins are numbered clockwise starting from the key. Tap a pin.</p>
+    <div class="panel">
+      <div class="pinwrap">
+        <div class="pinsvg" id="pinSvg"></div>
+        <ul class="pinlist" id="pinList"></ul>
+      </div>
+      <p class="pindesc" id="pinDesc"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= THE AMPLIFIER ================= -->
+<section class="part" id="amp" data-title="The amplifier">
+  <div class="part-head">
+    <div class="part-letter">2</div>
+    <div class="eyebrow">The amplifier</div>
+    <h2>A weak AC sine wave in, a big one out</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Bias the grid at −12.5 V so the tube idles half open. Add a weak sine wave on top: each volt of grid swing changes the plate current by about 4 mA, and the output transformer turns that current swing into a voltage swing about 19 times bigger at the plate.</p></div>
+
+  <div class="panel" id="ampPanel">
+    <div class="panel-head"><span class="t">Single-ended class A output stage</span><span class="status">like the one in a Fender Champ</span></div>
+    <div class="schem-scroll amp">
+      <svg viewBox="0 0 640 285" role="img" aria-label="Schematic: a weak AC sine input source feeds a coupling capacitor into the 6V6 control grid, which is biased at minus 12.5 volts through a 100 kilohm resistor. The plate drives an output transformer whose primary returns to the 250 volt B plus supply; the secondary drives an 8 ohm speaker. The screen grid connects to B plus and the cathode to ground.">
+        <!-- input source -->
+        <circle class="src" cx="70" cy="206" r="24"/>
+        <path class="w" d="M57 206q6.5-13 13 0t13 0"/>
+        <path class="w" d="M70 182V164H150M158 164H230"/>
+        <path class="w" d="M150 151V177M158 151V177" style="stroke-width:2.5"/>
+        <path class="w" d="M70 230V244"/><path class="gnd" d="M58 244H82L70 255Z"/>
+        <text class="say" x="16" y="128">weak AC sine input</text>
+        <text class="val" x="16" y="146" id="schIn">1.0 V peak</text>
+        <text class="lbl" x="154" y="143" text-anchor="middle">C</text>
+        <circle class="dot" cx="230" cy="164" r="3.5"/>
+        <g class="mk"><path d="M190 158V164"/><circle cx="190" cy="148" r="9"/><text x="190" y="152" text-anchor="middle">1</text></g>
+        <!-- grid resistor + bias battery -->
+        <path class="w" d="M230 164V182L238 185.2L222 191.5L238 197.8L222 204.2L238 210.5L222 216.8L230 220V236"/>
+        <path class="w" d="M223 236H237" style="stroke-width:4"/><path class="w" d="M216 244H244"/>
+        <path class="w" d="M230 244V248"/><path class="gnd" d="M218 262H242L230 273Z"/><path class="w" d="M230 248V262"/>
+        <text class="lbl" x="244" y="198">Rg</text><text class="val" x="244" y="214">100 kΩ</text>
+        <text class="val" x="210" y="243" text-anchor="end">bias −12.5 V</text>
+        <path class="w" d="M230 164H322"/>
+        <text class="val" x="262" y="157" text-anchor="middle">grid</text>
+        <!-- tube -->
+        <circle class="env" cx="350" cy="160" r="64"/>
+        <path class="ink" d="M322 112H378" style="stroke-width:3.5"/>
+        <path class="grid" d="M316 114V134M384 114V134"/>
+        <path class="grid" d="M322 142H378"/>
+        <path class="grid" d="M322 164H378"/>
+        <path class="ink" d="M326 188H374" style="stroke-width:3"/>
+        <path class="heat" d="M334 212L350 200L366 212"/>
+        <path class="heat" d="M334 212V238M366 212V238" style="stroke-width:2"/>
+        <g id="schEl"></g>
+        <text class="lbl" x="282" y="104" text-anchor="end">6V6GT</text>
+        <text class="val" x="282" y="128" text-anchor="end">beam plates</text><path class="ink" d="M285 125L313 124" style="stroke-width:1;stroke-dasharray:2 2"/>
+        <text class="val" x="392" y="108">plate</text>
+        <text class="val" x="350" y="256" text-anchor="middle">heater 6.3 V</text>
+        <!-- cathode to ground -->
+        <path class="w" d="M374 188H420V250"/><path class="gnd" d="M408 264H432L420 275Z"/><path class="w" d="M420 250V264"/>
+        <path class="flow" id="flowK" d="M374 188H420V262"/>
+        <text class="val" x="426" y="214">cathode</text>
+        <!-- screen to B+ -->
+        <path class="w" d="M378 142H548V24"/><circle class="dot" cx="548" cy="24" r="3.5"/>
+        <text class="val" x="470" y="134" text-anchor="middle">screen grid</text>
+        <!-- plate, transformer, speaker -->
+        <path class="w" d="M350 112V86"/>
+        <path class="w" d="M350 24V34a6.5 6.5 0 0 1 0 13a6.5 6.5 0 0 1 0 13a6.5 6.5 0 0 1 0 13a6.5 6.5 0 0 1 0 13"/>
+        <path class="ink" d="M363 32V88M368 32V88"/>
+        <path class="w" d="M381 34a6.5 6.5 0 0 0 0 13a6.5 6.5 0 0 0 0 13a6.5 6.5 0 0 0 0 13a6.5 6.5 0 0 0 0 13"/>
+        <path class="w" d="M381 34H420V52H432M381 86H420V68H432"/>
+        <rect class="mag" x="432" y="46" width="9" height="28" rx="1"/>
+        <polygon class="cone" id="cone" points="441,46 466,30 466,90 441,74"/>
+        <text class="val" x="474" y="56">speaker</text><text class="val" x="474" y="72">8 Ω</text>
+        <text class="val" x="338" y="48" text-anchor="end">output</text><text class="val" x="338" y="62" text-anchor="end">transformer</text>
+        <g class="mk"><path d="M338 92H350"/><circle cx="330" cy="92" r="9"/><text x="330" y="96" text-anchor="middle">2</text></g>
+        <!-- B+ rail -->
+        <path class="w" d="M350 24H560"/>
+        <path class="flow" id="flowB" d="M560 24H350V34"/>
+        <rect class="pill" x="560" y="12" width="74" height="24" rx="12"/>
+        <text class="lbl" x="597" y="28.5" text-anchor="middle">B+ 250 V</text>
+      </svg>
+    </div>
+    <div class="ctlgrid">
+      <div class="sl"><label for="ampA"><span>Input sine (peak)</span> <b id="ampAOut">1.0 V</b></label><input type="range" id="ampA" class="syncA" min="0.2" max="25" step="0.1" value="1"></div>
+      <div class="sl"><label for="ampBias"><span>Grid bias</span> <b id="ampBiasOut">−12.5 V</b></label><input type="range" id="ampBias" min="-20" max="-5" step="0.5" value="-12.5"></div>
+    </div>
+    <div class="panel-head" style="border-top:1px solid var(--line)"><span class="t">Scope · ① grid in, ② plate out</span>
+      <div class="seg" role="group" aria-label="Scope scale" id="scaleSeg"><button aria-pressed="true" data-sc="zoom">Zoom each</button><button aria-pressed="false" data-sc="same">Same scale</button></div></div>
+    <canvas id="scopeAmp" class="scope tall" style="border-top:0" aria-label="Two-lane scope: input at the grid on top, output at the plate below. The output is inverted."></canvas>
+    <div class="cursorbox" id="ampReads"></div>
+    <div class="heatcard">
+      <div class="glass" id="glass"><svg viewBox="0 0 56 96" aria-hidden="true"><path class="env" d="M10 80V26a18 18 0 0136 0v54z"/><rect class="pl" x="17" y="26" width="22" height="34" rx="3"/><ellipse class="hg" cx="28" cy="70" rx="7" ry="4"/><rect class="basep" x="8" y="80" width="40" height="12" rx="3"/></svg></div>
+      <div><div class="kicker" id="heatVal">11.3 W</div><p id="heatTxt" style="font-size:.92rem">Idle plate heat, out of a 12 W rating.</p></div>
+    </div>
+    <div class="listen">
+      <button class="btn glowbtn" id="listenBtn" type="button" aria-pressed="false">▶ Listen</button>
+      <div class="sl"><label for="pitch"><span>Pitch</span> <b id="pitchOut">110 Hz</b></label><input type="range" id="pitch" min="82" max="440" step="1" value="110"></div>
+      <div class="sl"><label for="vol"><span>Volume</span> <b id="volOut">50%</b></label><input type="range" id="vol" min="0" max="1" step="0.01" value="0.5"></div>
+    </div>
+    <p class="note">The sound is the plate waveform from the model, played at your chosen pitch and kept at a steady loudness, so you hear the <i>tone</i> change as you raise the input. The animation runs at half a cycle per second so you can follow it.</p>
+  </div>
+
+  <div class="topic" id="walk" data-title="Step by step">
+    <span class="eyebrow">Follow the signal</span>
+    <h3>Step by step through the circuit</h3>
+    <ol>
+      <li><b>Input.</b> The weak AC sine passes through the coupling capacitor <b>C</b>. A capacitor blocks steady DC but lets a wiggle through, so the source can't upset the grid's bias.</li>
+      <li><b>Bias.</b> The 100 kΩ resistor ties the grid to −12.5 V. The sine rides on top: with a 1 V input, the grid swings between −13.5 V and −11.5 V. It never goes positive, so the grid draws almost no current.</li>
+      <li><b>Transconductance.</b> Each volt of grid swing changes the plate current by about 4.1 mA. That ratio is the tube's <b>transconductance</b>, g<sub>m</sub> = ΔI<sub>P</sub> / ΔV<sub>G</sub> ≈ 4.1 mA/V.</li>
+      <li><b>Load.</b> The plate current flows through the transformer's primary, which looks like a 5 kΩ load to the tube. Combined with the tube's own 50 kΩ plate resistance that's about 4.6 kΩ, and 4.1 mA × 4.6 kΩ ≈ <b>19 V of plate swing per volt of input</b>.</li>
+      <li><b>Upside down.</b> Grid up → more current → bigger drop across the primary → plate voltage <i>down</i>. Compare ① and ② on the scope: the output is inverted. Your ear can't tell.</li>
+      <li><b>Speaker.</b> The speaker is only 8 Ω, but the tube wants about 5 kΩ. The transformer (about 25 turns to 1) trades the plate's high voltage and small current for low voltage and big current, like a gearbox trades speed for torque.</li>
+    </ol>
+    <div class="analogy"><span class="eyebrow">Analogy · a hand on the tap</span><p>The B+ supply is a water main under high pressure. The grid is a tap handle. Your weak sine wave is a hand wiggling the handle a few degrees back and forth. The flow through the pipe (plate current) wiggles in step, with far more power than your hand put in. The energy comes from the water main; the hand only controls it.</p></div>
+    <details class="deeper"><summary>Why does the plate swing above the 250 V supply?</summary><div>
+      <p>The transformer's primary is a big inductor. When the plate current drops, the inductor's magnetic field collapses and pushes the plate voltage <i>above</i> B+, giving back energy it stored on the other half-cycle. At full drive the plate swings from about 75 V up to about 460 V around its 250 V resting point.</p>
+    </div></details>
+  </div>
+
+  <div class="topic" id="loadline" data-title="The load line">
+    <span class="eyebrow">See it on the curves</span>
+    <h3>The load line</h3>
+    <p>Each grey curve shows how plate current depends on plate voltage for one fixed grid voltage. The blue <b>load line</b> is every combination of voltage and current the 5 kΩ load allows. The tube has to sit where both agree, so as the grid swings, the operating point (orange dot) slides up and down the line.</p>
+    <div class="panel">
+      <div class="panel-head"><span class="t">6V6 plate curves · screen at 250 V</span><span class="status" id="llStatus"></span></div>
+      <div class="lc" id="curves"></div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="ampA2"><span>Input sine (peak)</span> <b class="syncAOut">1.0 V</b></label><input type="range" id="ampA2" class="syncA" min="0.2" max="25" step="0.1" value="1"></div>
+      </div>
+      <p class="note">Notice the curves go flat once the plate is above about 50 V: the plate current hardly cares about the plate voltage. That's the screen grid at work. The red dashed curve is the 12 W limit on plate heat.</p>
+    </div>
+  </div>
+
+  <div class="topic" id="push" data-title="Push it: clipping">
+    <span class="eyebrow">Turn it up</span>
+    <h3>Push it: clipping and harmonics</h3>
+    <p>Raise the input past about 12.5 V peak and the tube runs out of room:</p>
+    <ul>
+      <li><b>Top of the grid swing:</b> the grid reaches 0 V and starts collecting electrons itself (grid current). It can't go any higher, so that half of the wave flattens.</li>
+      <li><b>Bottom of the grid swing:</b> the grid gets so negative the current stops altogether (cutoff, near −26 V), and the other half flattens too.</li>
+    </ul>
+    <p>The two halves flatten differently. That lopsided clipping adds <b>harmonics</b>: extra tones at 2, 3, 4… times the input frequency. A 2nd harmonic is an octave up, which blends in smoothly; that's a big part of the "warm" sound people like in single-ended tube amps. The datasheet allows about 8% distortion at the full 4.5 W.</p>
+    <div class="panel">
+      <div class="panel-head"><span class="t">Harmonics in the output · % of the fundamental</span><span class="status" id="thdStatus"></span></div>
+      <div class="harm" id="harm"></div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="ampA3"><span>Input sine (peak)</span> <b class="syncAOut">1.0 V</b></label><input type="range" id="ampA3" class="syncA" min="0.2" max="25" step="0.1" value="1"></div>
+      </div>
+      <p class="note">Try 1 V (almost pure), 12.5 V (full rated power) and 25 V (heavily overdriven), then hit Listen in the amplifier panel above.</p>
+    </div>
+    <div class="warn"><b>Bias and red-plating.</b> Class A means current flows through the whole cycle, so the 6V6 idles at 45 mA × 250 V ≈ 11 W of heat even in silence. Slide the bias toward 0 V in the amplifier panel and the idle heat passes the 12 W rating: the plate starts to glow red ("red-plating") and the tube dies young. Slide it toward −20 V and it runs cool, but clips early on one side.</div>
+  </div>
+</section>
+
+<!-- ================= GOING DEEPER ================= -->
+<section class="part" id="beam" data-title="Why beam?">
+  <div class="part-head">
+    <div class="part-letter">3</div>
+    <div class="eyebrow">Going deeper</div>
+    <h2>Why "beam" tetrode?</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Electrons hit the plate hard enough to knock other electrons loose. In a plain tetrode, when the plate dips below the screen voltage, the screen steals those loose electrons and the plate current collapses. The 6V6's dense beam pushes them back home.</p></div>
+  <div class="topic" style="padding-top:0">
+    <p>An electron arriving at 250 V is moving at about 9,000 km/s (3% of the speed of light). When it slams into the plate it can knock out one or more <b>secondary electrons</b>. Where they go next depends on which nearby electrode is more positive.</p>
+    <div class="panel" id="beamPanel">
+      <div class="panel-head"><span class="t">Secondary emission</span>
+        <div class="seg" role="group" aria-label="Tube type" id="beamSeg"><button aria-pressed="false" data-m="plain">Plain tetrode</button><button aria-pressed="true" data-m="beam">Beam tetrode (6V6)</button></div></div>
+      <canvas id="simBeam" class="sim" aria-label="Animation: primary electrons hit the plate and knock out secondary electrons, shown in cyan"></canvas>
+      <div class="flow-ctl">
+        <label for="vpBeam">Plate voltage</label>
+        <input type="range" id="vpBeam" min="0" max="400" step="1" value="150">
+        <output id="vpBeamOut" for="vpBeam">150 V</output>
+      </div>
+      <div class="reads">
+        <div class="read"><div class="k">Plate current</div><div class="v" id="bIp">–</div></div>
+        <div class="read"><div class="k">Screen current</div><div class="v" id="bIg2">–</div></div>
+        <div class="read"><div class="k">Secondaries</div><div class="v" id="bSec" style="font-size:.95rem">–</div></div>
+      </div>
+      <div class="bc" id="beamChart" style="border-top:1px solid var(--line)"></div>
+      <p class="note">Grid fixed at −12.5 V, screen at 250 V (green dotted line). Cyan dots are secondary electrons. Set the plate to 150 V and switch between the two tube types.</p>
+    </div>
+    <ul>
+      <li><b>Plain tetrode:</b> with the plate below the screen, the screen is the most positive thing around, so it collects the secondaries. Between about 50 and 230 V the plate current sags, even goes negative. That dip is the <b>tetrode kink</b>: there, more plate voltage gives <i>less</i> current, which makes plain tetrodes poor power-output tubes.</li>
+      <li><b>Beam tetrode:</b> beam-forming plates (tied to the cathode) squeeze the electrons into dense sheets. All that negative charge between screen and plate forms a low-voltage pocket (a "virtual cathode") that turns the secondaries around and sends them back to the plate. No kink.</li>
+      <li><b>Bonus:</b> the screen-grid wires sit in the shadow of the control-grid wires, so fewer electrons hit the screen. Less wasted current, more efficiency.</li>
+    </ul>
+    <div class="analogy"><span class="eyebrow">Analogy · splashback</span><p>Throw mud at a wall and bits splash back. In a plain tetrode, a fan behind you (the screen) sucks the splashes away whenever the wall is "lower" than the fan. The beam tetrode packs a crowd between you and the wall that shoves the splashes right back onto the wall.</p></div>
+    <details class="deeper"><summary>A bit of history</summary><div>
+      <p>The pentode solves the same problem with a third grid (the suppressor), and Philips held the patent on it. Engineers at EMI in Britain found a way around it: shape the beam so the electrons themselves do the suppressing. They patented the beam tetrode in 1933. RCA's 6L6 made the idea famous in 1936, and the smaller 6V6 soon followed.</p>
+    </div></details>
+  </div>
+
+  <div class="topic" id="vs" data-title="Tube vs transistor">
+    <span class="eyebrow">If you've studied BJTs</span>
+    <h3>Tube vs transistor</h3>
+    <p>The 6V6 and the BJT from your homework do the same job: a small input controls a large current, with flat curves in the useful region. The differences are in the details.</p>
+    <div class="tbl vs"><table>
+      <thead><tr><th></th><th>6V6 beam tetrode</th><th>npn BJT (2N3904)</th></tr></thead>
+      <tbody>
+        <tr><td>Controlled by</td><td>Grid <b>voltage</b> (almost no input current)</td><td>Base <b>current</b></td></tr>
+        <tr><td>Gain number</td><td>g<sub>m</sub> ≈ 4.1 mA per volt</td><td>β ≈ 100–300</td></tr>
+        <tr><td>Flat-curve region</td><td>Plate above the knee (~50 V)</td><td>Active region (V<sub>CE</sub> ≳ 0.5 V)</td></tr>
+        <tr><td>Off</td><td>Grid below about −26 V: cutoff</td><td>Base below 0.7 V: cutoff</td></tr>
+        <tr><td>Fully on</td><td>Grid reaches 0 V and draws current</td><td>Saturation</td></tr>
+        <tr><td>Behaves like</td><td>Voltage-controlled current source</td><td>Current-controlled current source</td></tr>
+        <tr><td>Typical voltage</td><td>250 V</td><td>5–15 V</td></tr>
+        <tr><td>Just to stay ready</td><td>2.8 W of heater power and a short warm-up</td><td>Nothing</td></tr>
+      </tbody></table></div>
+  </div>
+
+  <footer>
+    <p>Numbers come from the RCA 6V6GT datasheet's typical class A operation: 250 V plate and screen, −12.5 V grid, 5 kΩ load. The curves, waveforms and sound on this page come from a simple model fitted to those figures. It gives 45 mA idle current, 4.2 mA/V and 52 kΩ plate resistance, and 4.3 W at 8.5% distortion at full drive, close to the datasheet's 45 mA, 4.1 mA/V, about 50 kΩ, and 4.5 W at 8%. The plain-tetrode curve is illustrative.</p>
+  </footer>
+</section>
+
+</main>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+const themeListeners = [];
+const minus = s => String(s).replace("-", "−");
+
+/* ---------- colour helpers ---------- */
+function hexRgb(h) {
+  h = (h || "").trim();
+  if (h[0] === "#") {
+    if (h.length === 4) h = "#" + [...h.slice(1)].map(x => x + x).join("");
+    const n = parseInt(h.slice(1, 7), 16);
+    return [n >> 16 & 255, n >> 8 & 255, n & 255];
+  }
+  const m = h.match(/\d+(\.\d+)?/g);
+  return m ? m.slice(0, 3).map(Number) : [128, 128, 128];
+}
+const rgba = (h, a) => { const [r, g, b] = hexRgb(h); return `rgba(${r},${g},${b},${a})`; };
+const mix = (h1, h2, t) => { const a = hexRgb(h1), b = hexRgb(h2); return `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(",")})`; };
+
+/* ---------- theme ---------- */
+const themeBtn = $("#themebtn");
+const effectiveDark = () => { const t = document.documentElement.dataset.theme; return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
+const labelTheme = () => { themeBtn.textContent = effectiveDark() ? "Light mode" : "Dark mode"; };
+const savedTheme = store.get("bjt-theme");
+if (savedTheme === "dark" || savedTheme === "light") document.documentElement.dataset.theme = savedTheme;
+labelTheme();
+themeBtn.addEventListener("click", () => {
+  const next = effectiveDark() ? "light" : "dark";
+  document.documentElement.dataset.theme = next; store.set("bjt-theme", next); labelTheme();
+  themeListeners.forEach(f => f());
+});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { labelTheme(); themeListeners.forEach(f => f()); });
+
+/* ---------- nav ---------- */
+const toc = $("#toc"), navbtn = $("#navbtn");
+let scrim = null;
+function closeNav() { toc.classList.remove("open"); navbtn.setAttribute("aria-expanded", "false"); if (scrim) { scrim.remove(); scrim = null; } }
+navbtn.addEventListener("click", () => {
+  if (toc.classList.contains("open")) return closeNav();
+  toc.classList.add("open"); navbtn.setAttribute("aria-expanded", "true");
+  scrim = document.createElement("div"); scrim.className = "scrim"; scrim.addEventListener("click", closeNav); document.body.appendChild(scrim);
+});
+toc.addEventListener("click", e => { if (e.target.closest("a")) closeNav(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeNav(); });
+const spyTargets = $$("[data-title][id]"), links = $$(".toc li li a"), here = $("#here"), progress = $("#progress");
+function spy() {
+  const y = scrollY + 120; let cur = spyTargets[0];
+  for (const t of spyTargets) if (t.getBoundingClientRect().top + scrollY <= y) cur = t;
+  here.textContent = cur ? cur.dataset.title : "";
+  links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + cur.id));
+  const h = document.documentElement.scrollHeight - innerHeight;
+  progress.style.transform = `scaleX(${h > 0 ? Math.min(1, scrollY / h) : 0})`;
+}
+let spyQ = false;
+addEventListener("scroll", () => { if (!spyQ) { spyQ = true; requestAnimationFrame(() => { spyQ = false; spy(); }); } }, { passive: true });
+spy();
+
+/* ---------- 6V6 model (fitted to RCA 6V6GT class A1 data) ---------- */
+const VG2 = 250, MU = 9.5, NX = 1.3, VA = 2100, KK = 1.62811;
+const ikOf = vg1 => { const x = vg1 + VG2 / MU; return x > 0 ? KK * Math.pow(x, NX) : 0; };          // cathode current, mA
+function ipOf(vg1, vp) {                                                                           // plate current, mA
+  const k = ikOf(vg1); if (k <= 0) return 0;
+  const vk = 12 + 0.45 * k;
+  return k * 0.91 * Math.tanh(Math.max(vp, 0) / vk) * (1 + vp / VA) / (1 + 250 / VA);
+}
+const gEff = v => v > 0 ? 0.6 * Math.tanh(v / 0.6) : v;                                           // grid current clamps positive swings
+function solveVp(vg, bias, RL = 5, vq = 250) {                                                     // plate voltage on the 5 kΩ AC load line
+  const iq = ipOf(bias, vq); let lo = 0.5, hi = 900;
+  for (let i = 0; i < 40; i++) { const m = (lo + hi) / 2; if (m - vq + (ipOf(gEff(vg), m) - iq) * RL > 0) hi = m; else lo = m; }
+  return (lo + hi) / 2;
+}
+const secYield = vp => { const v = Math.max(vp, 0), vm = 200; return 1.35 * (v / vm) * Math.exp(1 - v / vm); };
+const steal = vp => 1 / (1 + Math.exp((vp - (VG2 - 25)) / 6));
+const ipTet = (vg1, vp) => ipOf(vg1, vp) * (1 - secYield(vp) * steal(vp));                          // illustrative plain tetrode
+function waveStats(A, bias, n = 256) {
+  const vin = new Float32Array(n), vout = new Float32Array(n), ipw = new Float32Array(n);
+  for (let k = 0; k < n; k++) {
+    const s = Math.sin(2 * Math.PI * k / n), vg = bias + A * s, vp = solveVp(vg, bias);
+    vin[k] = A * s; vout[k] = vp - 250; ipw[k] = ipOf(gEff(vg), vp);
+  }
+  const h = [];
+  for (let m = 1; m <= 6; m++) {
+    let re = 0, im = 0;
+    for (let k = 0; k < n; k++) { re += vout[k] * Math.cos(2 * Math.PI * m * k / n); im += vout[k] * Math.sin(2 * Math.PI * m * k / n); }
+    h.push(Math.hypot(re, im) * 2 / n);
+  }
+  let mx = -1e9, mn = 1e9; for (const v of vout) { if (v > mx) mx = v; if (v < mn) mn = v; }
+  const thd = Math.sqrt(h.slice(1).reduce((a, v) => a + v * v, 0)) / (h[0] || 1);
+  return { n, vin, vout, ipw, h, thd, gain: h[0] / A, pk: (mx - mn) / 2, mx, mn, P: h[0] * h[0] / (2 * 5000), iq: ipOf(bias, 250) };
+}
+
+/* ---------- particle tube ---------- */
+const near = (arr, y) => { let b = arr[0], d = 1e9; for (const v of arr) { const e = Math.abs(v - y); if (e < d) { d = e; b = v; } } return b; };
+const nearGap = (arr, y) => { let b = y, d = 1e9; for (let i = 0; i < arr.length - 1; i++) { const g = (arr[i] + arr[i + 1]) / 2, e = Math.abs(g - y); if (e < d) { d = e; b = g; } } return b; };
+class TubeSim {
+  constructor(cv, o) {
+    this.cv = cv; this.ctx = cv.getContext("2d"); this.o = o;
+    this.parts = []; this.cloud = []; this.acc = 0; this.t = 0; this.fl2 = 0; this.flp = 0;
+    this.running = false; this.paused = false;
+    this.readColors();
+    themeListeners.push(() => { this.readColors(); this.draw(); });
+    this.size(); this.seed(); this.draw();
+    new ResizeObserver(() => { const w = this.W; this.size(); if (Math.abs(this.W - w) > 2) this.seed(); this.draw(); }).observe(cv);
+    if (!reduce) new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? this.start() : this.stop())).observe(cv);
+  }
+  readColors() { this.c = { bg: css("--plot"), ink: css("--ink"), muted: css("--muted"), e: css("--t2"), sec: css("--t4"), glow: css("--glow"), wire: css("--accent"), plate: css("--platec"), screen: css("--t1"), line: css("--line") }; }
+  size() {
+    const dpr = Math.min(2, devicePixelRatio || 1);
+    this.W = this.cv.clientWidth || 600; this.H = this.cv.clientHeight || 300;
+    this.cv.width = Math.round(this.W * dpr); this.cv.height = Math.round(this.H * dpr);
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const W = this.W, H = this.H, top = 34, bot = H - 32, k = Math.max(0.55, W / 800), s = Math.max(15, (bot - top) / 11);
+    const w1 = []; for (let y = top + s * 0.75; y < bot - s * 0.4; y += s) w1.push(y);
+    this.g = { W, H, top, bot, mid: (top + bot) / 2, k, s, kx: Math.max(30, W * 0.07), g1: W * 0.25, g2: W * 0.45, px: W * 0.875, w1, w2u: w1.map(y => y + s / 2).filter(y => y < bot - 4) };
+  }
+  seed() { this.parts = []; this.cloud = []; this.acc = 0; for (let i = 0; i < 270; i++) this.update(1 / 60); }
+  newCloud(st, spread) {
+    const g = this.g, k = g.k;
+    const p = { x: g.kx + 7, y: g.top + 6 + Math.random() * (g.bot - g.top - 12), vx: (16 + Math.random() * 42) * k, vy: (Math.random() - 0.5) * 14 };
+    if (spread) { const a = (st.stage === 0 ? 70 : 110) * k, tt = Math.random() * 2 * p.vx / a; p.x += p.vx * tt - a * tt * tt / 2; p.vx -= a * tt; }
+    return p;
+  }
+  spawn(st) {
+    const g = this.g, k = g.k;
+    this.parts.push({ kind: "e", x: g.kx + 7, y: g.top + 8 + Math.random() * (g.bot - g.top - 16), vx: (26 + Math.random() * 24) * k, vy: 0, cap: st.stage >= 3 && Math.random() < st.ps, ys: null });
+  }
+  update(dt) {
+    const g = this.g, k = g.k;
+    this.t += dt;
+    const st = this.st = this.o.state(this.t);
+    const cloudN = st.stage === 0 ? 72 : 34;
+    while (this.cloud.length < cloudN) this.cloud.push(this.newCloud(st, true));
+    if (this.cloud.length > cloudN) this.cloud.length = cloudN;
+    const dec = (st.stage === 0 ? 70 : 110) * k;
+    for (const p of this.cloud) { p.x += p.vx * dt; p.y += p.vy * dt; p.vx -= dec * dt; if (p.x <= g.kx + 7) Object.assign(p, this.newCloud(st, false)); }
+    if (st.stage >= 1) { this.acc += st.ik * 2.0 * dt; let guard = 0; while (this.acc >= 1 && guard++ < 40) { this.acc -= 1; this.spawn(st); } }
+    const keep = [];
+    for (let i = 0; i < this.parts.length; i++) { const p = this.parts[i]; if (this.step(p, dt, st)) keep.push(p); }
+    this.parts = keep;
+    this.fl2 = Math.max(0, this.fl2 - dt * 4); this.flp = Math.max(0, this.flp - dt * 2);
+    if (this.o.onStep) this.o.onStep(st, this.t);
+  }
+  step(p, dt, st) {
+    const g = this.g, k = g.k;
+    if (p.kind === "e") {
+      let a;
+      if (st.stage <= 1) a = 240 * k;
+      else if (p.x < g.g1) a = 70 * k;
+      else if (st.stage === 2 || p.x < g.g2) a = 300 * k;
+      else a = 160 * k * (st.vp - VG2) / VG2;
+      p.vx = Math.min(560 * k, Math.max(30 * k, p.vx + a * dt));
+      p.x += p.vx * dt;
+      if (st.stage >= 2 && Math.abs(p.x - g.g1) < 18) p.y += (nearGap(g.w1, p.y) - p.y) * Math.min(1, 10 * dt);
+      if (st.stage >= 3) {
+        const wires = st.stage === 3 ? g.w2u : g.w1;
+        if (p.cap && p.x > g.g2 - 24) { p.y += (near(wires, p.y) - p.y) * Math.min(1, 14 * dt); if (p.x >= g.g2 - 3) { this.fl2 = 1; return false; } }
+        else if (Math.abs(p.x - g.g2) < 18) p.y += (nearGap(wires, p.y) - p.y) * Math.min(1, 10 * dt);
+      }
+      if (st.stage === 4 && p.x > g.g2 + 4) { if (p.ys === null) p.ys = p.y; const tg = g.mid + (p.ys - g.mid) * 0.5; p.y += (tg - p.y) * Math.min(1, 2.4 * dt); }
+      if (p.x >= g.px - 4) {
+        this.flp = Math.min(1, this.flp + 0.06);
+        if (st.sec && Math.random() < Math.min(0.9, secYield(st.vp) * 0.5))
+          this.parts.push({ kind: "s", x: g.px - 6, y: p.y + (Math.random() - 0.5) * 8, vx: -(60 + Math.random() * 80) * k, vy: (Math.random() - 0.5) * 50 });
+        return false;
+      }
+      return true;
+    }
+    const toScreen = st.stage === 3 && steal(st.vp) > 0.5;
+    p.vx += (toScreen ? -170 : 1100) * k * dt;
+    p.x += p.vx * dt; p.y += p.vy * dt; p.vy *= Math.max(0, 1 - 2 * dt);
+    if (p.vx > 0 && p.x >= g.px - 4) return false;
+    if (p.x <= g.g2 + 2) { this.fl2 = 1; return false; }
+    return true;
+  }
+  draw() {
+    const c = this.ctx, g = this.g, col = this.c, st = this.st || this.o.state(this.t);
+    c.clearRect(0, 0, g.W, g.H);
+    c.fillStyle = col.bg; c.fillRect(0, 0, g.W, g.H);
+    const rg = c.createRadialGradient(g.kx, g.mid, 4, g.kx, g.mid, 110 * g.k + 40);
+    rg.addColorStop(0, rgba(col.glow, 0.32)); rg.addColorStop(1, rgba(col.glow, 0));
+    c.fillStyle = rg; c.fillRect(0, 0, g.kx + 200, g.H);
+    if (st.stage === 4) {
+      const hz = c.createLinearGradient(g.g2, 0, g.px, 0), h = (g.bot - g.top) * 0.56;
+      hz.addColorStop(0, rgba(col.e, 0)); hz.addColorStop(0.65, rgba(col.e, 0.12)); hz.addColorStop(1, rgba(col.e, 0.04));
+      c.fillStyle = hz; c.fillRect(g.g2, g.mid - h / 2, g.px - g.g2, h);
+    }
+    // cathode sleeve + heater
+    c.fillStyle = rgba(col.glow, 0.92);
+    if (c.roundRect) { c.beginPath(); c.roundRect(g.kx - 6, g.top, 12, g.bot - g.top, 5); c.fill(); } else c.fillRect(g.kx - 6, g.top, 12, g.bot - g.top);
+    c.strokeStyle = rgba(col.bg, 0.75); c.lineWidth = 1.5; c.beginPath();
+    for (let y = g.top + 6, i = 0; y < g.bot - 6; y += 8, i++) { if (i === 0) c.moveTo(g.kx - 2.5, y); c.lineTo(i % 2 ? g.kx - 2.5 : g.kx + 2.5, y + 4); }
+    c.stroke();
+    // plate
+    if (st.stage >= 1) {
+      c.fillStyle = col.plate; c.fillRect(g.px, g.top - 8, 12, g.bot - g.top + 16);
+      if (this.flp > 0.02) { c.fillStyle = rgba(col.e, 0.35 * this.flp); c.fillRect(g.px - 3, g.top - 8, 3, g.bot - g.top + 16); }
+    }
+    if (st.stage >= 2) { c.fillStyle = col.wire; for (const y of g.w1) { c.beginPath(); c.arc(g.g1, y, 2.5, 0, 6.283); c.fill(); } }
+    if (st.stage >= 3) {
+      c.fillStyle = this.fl2 > 0.05 ? mix(col.screen, col.e, this.fl2 * 0.6) : col.screen;
+      for (const y of (st.stage === 3 ? g.w2u : g.w1)) { c.beginPath(); c.arc(g.g2, y, 2.5, 0, 6.283); c.fill(); }
+    }
+    if (st.stage === 4) {
+      c.strokeStyle = col.muted; c.lineWidth = 3; c.lineCap = "round"; const d = (g.bot - g.top) * 0.2;
+      c.beginPath(); c.moveTo(g.g2 + 14, g.top - 4); c.lineTo(g.px - 30, g.top + d); c.moveTo(g.g2 + 14, g.bot + 4); c.lineTo(g.px - 30, g.bot - d); c.stroke();
+    }
+    c.fillStyle = rgba(col.e, 0.5); for (const p of this.cloud) { c.beginPath(); c.arc(p.x, p.y, 1.8, 0, 6.283); c.fill(); }
+    c.fillStyle = col.e; for (const p of this.parts) if (p.kind === "e") { c.beginPath(); c.arc(p.x, p.y, 2.2, 0, 6.283); c.fill(); }
+    c.fillStyle = col.sec; for (const p of this.parts) if (p.kind === "s") { c.beginPath(); c.arc(p.x, p.y, 2.6, 0, 6.283); c.fill(); }
+    // labels
+    const narrow = g.W < 520;
+    c.font = `600 ${narrow ? 9.5 : 11}px "JetBrains Mono", ui-monospace, monospace`; c.textAlign = "center"; c.fillStyle = col.muted;
+    const ty = g.top - 14, by = g.bot + 22;
+    c.fillText("CATHODE", Math.max(g.kx, 26), ty);
+    c.fillStyle = col.ink; c.fillText("0 V", Math.max(g.kx, 26), by);
+    if (st.stage >= 1) { c.fillStyle = col.muted; c.fillText("PLATE", g.px + 6, ty); c.fillStyle = col.ink; c.fillText(`+${Math.round(st.vp)} V`, g.px + 2, by); }
+    if (st.stage >= 2) { c.fillStyle = col.muted; c.fillText(narrow ? "GRID" : "CONTROL GRID", g.g1, ty); c.fillStyle = col.ink; c.fillText(minus(st.vg1.toFixed(1)) + " V", g.g1, by); }
+    if (st.stage >= 3) { c.fillStyle = col.muted; c.fillText("SCREEN", g.g2, ty); c.fillStyle = col.ink; c.fillText("+250 V", g.g2, by); }
+    if (st.stage === 4) { c.fillStyle = col.muted; c.fillText(narrow ? "BEAM" : "BEAM PLATES", (g.g2 + g.px) / 2, ty); }
+  }
+  start() {
+    if (this.running) return; this.running = true; this.last = performance.now();
+    const loop = now => {
+      if (!this.running) return;
+      const dt = Math.min(0.05, (now - this.last) / 1000); this.last = now;
+      if (!this.paused) this.update(dt);
+      this.draw(); if (this.o.onFrame) this.o.onFrame(this.st, this.t);
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
+  stop() { this.running = false; }
+}
+
+/* ---------- hero: live tube + same-scale scope ---------- */
+(function hero() {
+  const ampEl = $("#ampHero"), out = $("#ampHeroOut"), sc = $("#scopeHero"), sctx = sc.getContext("2d");
+  let A = +ampEl.value, stats = waveStats(A, -12.5), buf = [], frame = 0;
+  const F = 0.45;
+  function state(t) {
+    const vg = -12.5 + A * Math.sin(2 * Math.PI * F * t), vp = solveVp(vg, -12.5), ge = gEff(vg), ik = ikOf(ge), ip = ipOf(ge, vp);
+    return { stage: 4, vg1: vg, vp, ik, ip, ps: ik > 0 ? Math.max(0.03, (ik - ip) / ik) : 0, sec: false };
+  }
+  let col = {};
+  const readCol = () => { col = { bg: css("--plot"), grid: css("--grid"), muted: css("--muted"), e: css("--t2"), glow: css("--glow"), ink: css("--ink") }; };
+  readCol();
+  function drawScope() {
+    const dpr = Math.min(2, devicePixelRatio || 1), W = sc.clientWidth, H = sc.clientHeight;
+    if (sc.width !== Math.round(W * dpr) || sc.height !== Math.round(H * dpr)) { sc.width = Math.round(W * dpr); sc.height = Math.round(H * dpr); }
+    sctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    sctx.fillStyle = col.bg; sctx.fillRect(0, 0, W, H);
+    let R = 10; for (const s of buf) R = Math.max(R, Math.abs(s.vo) * 1.15, Math.abs(s.vi) * 1.15);
+    const mid = H / 2 + 6, half = H / 2 - 18, now = buf.length ? buf[buf.length - 1].t : 0, span = 4;
+    sctx.strokeStyle = col.grid; sctx.lineWidth = 1; sctx.setLineDash([3, 4]);
+    for (const f of [-1, 0, 1]) { sctx.beginPath(); sctx.moveTo(0, mid + f * half); sctx.lineTo(W, mid + f * half); sctx.stroke(); }
+    sctx.setLineDash([]);
+    const trace = (key, color, w) => {
+      sctx.strokeStyle = color; sctx.lineWidth = w; sctx.beginPath(); let first = true;
+      for (const s of buf) { const x = W - (now - s.t) / span * W; if (x < -2) continue; const y = mid - s[key] / R * half; if (first) { sctx.moveTo(x, y); first = false; } else sctx.lineTo(x, y); }
+      sctx.stroke();
+    };
+    trace("vo", col.glow, 2.4); trace("vi", col.e, 2.2);
+    sctx.font = `600 11px "JetBrains Mono", ui-monospace, monospace`; sctx.textAlign = "left";
+    sctx.fillStyle = col.e; sctx.fillText(`input at grid ±${A.toFixed(1)} V`, 8, 14);
+    sctx.fillStyle = col.glow; sctx.fillText(`output at plate ±${stats.pk.toFixed(0)} V`, W < 420 ? 8 : 200, W < 420 ? 28 : 14);
+    sctx.fillStyle = col.muted; sctx.textAlign = "right"; sctx.fillText(`same scale · ±${R.toFixed(0)} V`, W - 8, 14);
+  }
+  const sim = new TubeSim($("#simHero"), {
+    state,
+    onStep(st, t) { buf.push({ t, vi: st.vg1 + 12.5, vo: st.vp - 250 }); while (buf.length && buf[0].t < t - 4.6) buf.shift(); },
+    onFrame(st) {
+      drawScope();
+      if (frame++ % 5) return;
+      $("#hVg").textContent = minus(st.vg1.toFixed(1)) + " V";
+      $("#hIp").textContent = st.ip.toFixed(1) + " mA";
+      $("#hVp").textContent = st.vp.toFixed(0) + " V";
+    }
+  });
+  function setA() {
+    A = +ampEl.value; stats = waveStats(A, -12.5);
+    out.textContent = A.toFixed(1) + " V peak";
+    $("#hGain").textContent = A > 0.05 ? "×" + stats.gain.toFixed(1) : "–";
+    if (reduce || sim.paused) { const st = state(sim.t); sim.st = st; drawScope(); }
+  }
+  ampEl.addEventListener("input", setA); setA();
+  const st0 = sim.st; $("#hVg").textContent = minus(st0.vg1.toFixed(1)) + " V"; $("#hIp").textContent = st0.ip.toFixed(1) + " mA"; $("#hVp").textContent = st0.vp.toFixed(0) + " V";
+  drawScope(); themeListeners.push(() => { readCol(); drawScope(); });
+  new ResizeObserver(drawScope).observe(sc);
+  const pb = $("#pauseHero");
+  pb.addEventListener("click", () => { sim.paused = !sim.paused; pb.textContent = sim.paused ? "Play" : "Pause"; pb.setAttribute("aria-pressed", String(sim.paused)); });
+  if (reduce) { pb.hidden = true; }
+})();
+
+/* ---------- build a 6V6 ---------- */
+(function build() {
+  const COPY = [
+    { e: "Step 1 · thermionic emission", h: "A hot cathode", p: [
+      "A heater (a tungsten wire, like a toaster element) warms a nickel sleeve coated with barium and strontium oxides to roughly 750 °C. At that temperature, electrons in the coating have enough energy to jump off the surface. This is <b>thermionic emission</b>, like steam rising off hot water.",
+      "With nothing to pull them away, the electrons hang in a cloud near the cathode (the <b>space charge</b>) and fall back.",
+      "<b>Why a vacuum?</b> Air molecules would get in the way, and oxygen would ruin the hot cathode. The glass holds less than a billionth of normal air pressure. The silvery patch inside the glass is the getter, a bit of barium that soaks up stray gas." ] },
+    { e: "Step 2 · the diode, 1904", h: "Add a plate", p: [
+      "A metal plate held at +250 V pulls the electrons across the vacuum. Current now flows, but only one way: the plate is cold, so it can't emit electrons back.",
+      "That's John Ambrose Fleming's <b>diode</b> (he called it a valve), a one-way gate like the silicon pn junction, built from hot metal instead of doped crystal." ] },
+    { e: "Step 3 · the triode, 1906", h: "Add a control grid", p: [
+      "Lee de Forest put a fine wire mesh close to the cathode. Make it negative and it pushes electrons back into the cloud; make it less negative and more get through. <b>Try the slider.</b>",
+      "Because the grid sits so close to the cathode, a few volts on it matter as much as a hundred volts on the plate. And since it stays negative, it collects almost no electrons, so the input costs almost no current. That's amplification.",
+      "<b>Analogy:</b> Venetian blinds. A small twist of the rod controls a lot of sunlight." ] },
+    { e: "Step 4 · the tetrode, 1920s", h: "Add a screen grid", p: [
+      "A second grid held at a steady +250 V does the pulling, so the plate no longer has to. Two big wins: the plate current hardly depends on the plate voltage (flat curves, like a BJT's active region), and the screen shields the control grid from the plate so the output can't leak back into the input.",
+      "The cost: the screen catches some electrons (the green flashes). Here its wires sit in the gaps of the control grid, right in the electrons' path." ] },
+    { e: "Step 5 · the beam tetrode, 1930s", h: "Add beam-forming plates: this is the 6V6", p: [
+      "Two changes. The screen wires now line up behind the control-grid wires, hiding in their shadow, so far fewer electrons hit them. And two plates tied to the cathode squeeze the electrons into a dense beam (the blue haze).",
+      "That dense beam fixes a sneaky problem with plain tetrodes, covered in <a href=\"#beam\">Why \"beam\"?</a> below." ] }
+  ];
+  let stage = 4;
+  const grid = $("#gridBuild"), gOut = $("#gridBuildOut"), ctl = $("#buildCtl"), reads = $("#buildReads"), copy = $("#buildCopy"), status = $("#buildStatus");
+  function state() {
+    const vg = +grid.value;
+    if (stage === 0) return { stage: 0, vg1: 0, vp: 0, ik: 0, ip: 0, ps: 0 };
+    if (stage === 1) return { stage: 1, vg1: 0, vp: 250, ik: 60, ip: 60, ps: 0 };
+    if (stage === 2) { const x = vg + 250 / 9.8, ik = x > 0 ? 0.96 * Math.pow(x, 1.5) : 0; return { stage: 2, vg1: vg, vp: 250, ik, ip: ik, ps: 0 }; }
+    const ik = ikOf(vg), ip = ipOf(vg, 250);
+    if (stage === 3) return { stage: 3, vg1: vg, vp: 250, ik, ip: ik * 0.8, ps: 0.2 };
+    return { stage: 4, vg1: vg, vp: 250, ik, ip, ps: ik > 0 ? (ik - ip) / ik : 0 };
+  }
+  const sim = new TubeSim($("#simBuild"), { state });
+  function render() {
+    const st = state(), c = COPY[stage];
+    $$(".stepnav button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.s === stage)));
+    grid.disabled = stage < 2; ctl.classList.toggle("ctl-off", stage < 2);
+    gOut.textContent = minus((+grid.value).toFixed(1)) + " V";
+    copy.innerHTML = `<span class="eyebrow">${c.e}</span><h4>${c.h}</h4>` + c.p.map(t => `<p>${t}</p>`).join("");
+    const r = [];
+    if (stage === 0) r.push(["Plate current", "0 mA"], ["Electrons", "boil off, fall back"]);
+    if (stage === 1) r.push(["Plate current", "flows freely"], ["Control", "none"]);
+    if (stage === 2) r.push(["Plate current", st.ip.toFixed(1) + " mA"], ["Grid current", "≈ 0"]);
+    if (stage >= 3) r.push(["Cathode current", st.ik.toFixed(1) + " mA"], ["Plate current", st.ip.toFixed(1) + " mA"], ["Screen current", (st.ik - st.ip).toFixed(1) + " mA"]);
+    reads.innerHTML = r.map(([k, v]) => `<div class="read"><div class="k">${k}</div><div class="v">${v}</div></div>`).join("");
+    status.textContent = stage >= 2 && st.ik === 0 ? "grid past cutoff: no current" : "";
+    if (!sim.running) { sim.st = st; sim.draw(); }
+  }
+  $(".stepnav").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; stage = +b.dataset.s; sim.seed(); render(); });
+  grid.addEventListener("input", render);
+  render();
+})();
+
+/* ---------- pinout ---------- */
+(function pins() {
+  const P = [
+    [1, "No connection", "Unused. On the original metal 6V6, this pin grounds the metal shell.", "--muted"],
+    [2, "Heater", "One end of the heater. Feed 6.3 V (AC or DC) between pins 2 and 7; it draws 0.45 A.", "--glow"],
+    [3, "Plate", "The output. Connects to the output transformer and sits around +250 V.", "--t3"],
+    [4, "Screen grid (g2)", "Held at a steady +250 V. Does the pulling so the plate doesn't have to.", "--t1"],
+    [5, "Control grid (g1)", "The input. Biased at −12.5 V with the signal riding on top.", "--accent"],
+    [6, "No connection", "Unused.", "--muted"],
+    [7, "Heater", "The other end of the heater.", "--glow"],
+    [8, "Cathode + beam plates", "The electron source. Grounded here (or through a bias resistor). The beam plates are tied to it inside the tube.", "--cursor"]
+  ];
+  const cx = 130, cy = 130;
+  let s = `<svg viewBox="0 0 260 270" role="img" aria-label="Octal base viewed from the bottom, pins 1 to 8 clockwise from the key">`;
+  s += `<circle class="base" cx="${cx}" cy="${cy}" r="112"/><circle class="post" cx="${cx}" cy="${cy}" r="34"/><rect class="keyr" x="${cx - 6}" y="${cy - 42}" width="12" height="12" rx="2"/>`;
+  s += `<text class="cap" x="${cx}" y="${cy + 4}" text-anchor="middle">key ↑</text>`;
+  P.forEach(([n, , , c]) => {
+    const a = (-67.5 + 45 * (n - 1)) * Math.PI / 180, x = cx + 78 * Math.cos(a), y = cy + 78 * Math.sin(a);
+    s += `<g class="pin" data-n="${n}" tabindex="0" role="button" aria-label="Pin ${n}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="16" style="stroke:var(${c})"/><text x="${x.toFixed(1)}" y="${(y + 4.5).toFixed(1)}" text-anchor="middle">${n}</text></g>`;
+  });
+  s += `<text class="cap" x="${cx}" y="262" text-anchor="middle">bottom view</text></svg>`;
+  $("#pinSvg").innerHTML = s;
+  $("#pinList").innerHTML = P.map(([n, name, , c]) => `<li><button type="button" data-n="${n}"><span class="num">${n}</span><span class="sw" style="background:var(${c})"></span><span>${name}</span></button></li>`).join("");
+  function pick(n) {
+    $$("#pinSvg .pin").forEach(g => g.classList.toggle("on", +g.dataset.n === n));
+    $$("#pinList button").forEach(b => b.classList.toggle("on", +b.dataset.n === n));
+    const p = P[n - 1]; $("#pinDesc").innerHTML = `<b>Pin ${n} · ${p[1]}.</b> ${p[2]}`;
+  }
+  $("#pinSvg").addEventListener("click", e => { const g = e.target.closest(".pin"); if (g) pick(+g.dataset.n); });
+  $("#pinSvg").addEventListener("keydown", e => { const g = e.target.closest(".pin"); if (g && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); pick(+g.dataset.n); } });
+  $("#pinList").addEventListener("click", e => { const b = e.target.closest("button"); if (b) pick(+b.dataset.n); });
+  pick(5);
+})();
+
+/* ---------- the amplifier ---------- */
+const amp = { A: 1, bias: -12.5, w: null, t: 0, same: false };
+const ampCol = {};
+function readAmpColors() { Object.assign(ampCol, { bg: css("--plot"), grid: css("--grid"), muted: css("--muted"), e: css("--t2"), glow: css("--glow"), ink: css("--ink") }); }
+readAmpColors();
+function phaseIdx() { const n = amp.w.n; return Math.floor((((amp.t * 0.5) % 1) + 1) % 1 * n) % n; }
+
+// load-line chart
+let ll = null;
+function drawCurves() {
+  const host = $("#curves"), W = Math.max(280, host.clientWidth), H = W < 520 ? 270 : 310, m = { l: 50, r: 16, t: 18, b: 36 };
+  const X = v => m.l + v / 500 * (W - m.l - m.r), Y = i => H - m.b - Math.max(-2, Math.min(132, i)) / 130 * (H - m.t - m.b);
+  let s = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Plate characteristic curves with the 5 kilohm load line and the moving operating point">`;
+  s += `<rect class="bg" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}"/>`;
+  for (let v = 0; v <= 500; v += 100) s += `<line class="gr" x1="${X(v)}" x2="${X(v)}" y1="${m.t}" y2="${H - m.b}"/><text class="tk" x="${X(v)}" y="${H - m.b + 16}" text-anchor="middle">${v}V</text>`;
+  for (let i = 0; i <= 120; i += 20) s += `<line class="gr" x1="${m.l}" x2="${W - m.r}" y1="${Y(i)}" y2="${Y(i)}"/><text class="tk" x="${m.l - 6}" y="${Y(i) + 4}" text-anchor="end">${i}mA</text>`;
+  s += `<rect class="ax" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}"/>`;
+  for (const vg of [0, -5, -10, -15, -20, -25]) {
+    let d = ""; for (let v = 0; v <= 500; v += 4) d += (v ? "L" : "M") + X(v).toFixed(1) + " " + Y(ipOf(vg, v)).toFixed(1);
+    const ie = ipOf(vg, 500);
+    s += `<path class="fam" d="${d}"/>`;
+    if (Y(ie) > m.t + 8) s += `<text class="tk" x="${X(500) - 4}" y="${Y(ie) - 5}" text-anchor="end">${minus(vg)} V</text>`;
+  }
+  let pd = ""; for (let v = 96; v <= 500; v += 4) pd += (v === 96 ? "M" : "L") + X(v).toFixed(1) + " " + Y(12000 / v).toFixed(1);
+  s += `<path class="pd" d="${pd}"/><text class="tk" x="${X(110)}" y="${Y(118)}" style="fill:var(--bad)">12 W</text>`;
+  const iq = amp.w.iq, v0 = Math.min(500, 250 + iq * 5), i0 = iq + 250 / 5;
+  s += `<line class="load" x1="${X(0)}" y1="${Y(i0)}" x2="${X(v0)}" y2="${Y(Math.max(0, iq - (v0 - 250) / 5))}"/>`;
+  let sw = ""; const w = amp.w; for (let k = 0; k <= w.n; k++) { const j = k % w.n; sw += (k ? "L" : "M") + X(250 + w.vout[j]).toFixed(1) + " " + Y(w.ipw[j]).toFixed(1); }
+  s += `<path class="swing" d="${sw}"/>`;
+  s += `<circle class="q" cx="${X(250)}" cy="${Y(iq)}" r="5"/><text class="lab" x="${X(250) + 8}" y="${Y(iq) + 16}" style="fill:var(--accent)">Q</text>`;
+  s += `<text class="lab" x="${X(v0) - 4}" y="${Y(0) - 8}" text-anchor="end" style="fill:var(--accent)">5 kΩ load line</text>`;
+  s += `<circle class="now" id="llDot" r="7" cx="${X(250)}" cy="${Y(iq)}"/></svg>`;
+  host.innerHTML = s; ll = { X, Y, dot: $("#llDot") };
+}
+new ResizeObserver(() => { if (amp.w) drawCurves(); }).observe($("#curves"));
+
+// harmonics
+function drawHarm() {
+  const w = amp.w, hp = w.h.slice(1, 6).map(v => v / (w.h[0] || 1) * 100), top = Math.max(10, ...hp) * 1.15;
+  $("#harm").innerHTML = hp.map((p, i) => `<div class="hb"><div class="col" style="height:${(p / top * 100).toFixed(1)}%"></div><div class="pc">${p < 0.05 ? "0" : p.toFixed(1)}%</div><div class="hn">${i + 2}× · H${i + 2}</div></div>`).join("");
+  $("#thdStatus").textContent = `total distortion ${(w.thd * 100).toFixed(1)}%`;
+}
+
+// schematic electrons
+const EL_N = 24, els = [];
+(function () {
+  const g = $("#schEl"); let s = "";
+  for (let i = 0; i < EL_N; i++) { els.push({ x: 330 + Math.random() * 40, y: 116 + Math.random() * 70 }); s += `<circle class="el" r="2.2" cx="0" cy="0"/>`; }
+  g.innerHTML = s; els.forEach((e, i) => e.node = g.children[i]);
+})();
+const flows = [{ el: $("#flowB"), off: 0 }, { el: $("#flowK"), off: 0 }];
+
+function ampReadouts() {
+  const w = amp.w, pdW = 250 * w.iq / 1000, hot = pdW > 12;
+  $("#ampReads").innerHTML =
+    `<div><div class="k">① Input</div><div class="v">±${amp.A.toFixed(1)} V</div></div>` +
+    `<div><div class="k">② Plate swing</div><div class="v">±${w.pk.toFixed(0)} V</div></div>` +
+    `<div><div class="k">Gain</div><div class="v">×${w.gain.toFixed(1)}</div></div>` +
+    `<div><div class="k">Speaker power</div><div class="v">${w.P < 0.1 ? (w.P * 1000).toFixed(0) + " mW" : w.P.toFixed(2) + " W"}</div></div>` +
+    `<div class="${w.thd > 0.08 ? "hl" : ""}"><div class="k">Distortion</div><div class="v">${(w.thd * 100).toFixed(1)}%</div></div>`;
+  $("#heatVal").textContent = pdW.toFixed(1) + " W";
+  $("#heatTxt").innerHTML = hot ? `<span class="warnline">Red-plating!</span> Idle plate heat is over the 12 W rating. Bias it more negative.` : `Idle plate heat (${w.iq.toFixed(0)} mA × 250 V), out of a 12 W rating.`;
+  $("#glass").classList.toggle("red", hot);
+  $("#schIn").textContent = amp.A.toFixed(1) + " V peak";
+  $("#ampAOut").textContent = amp.A.toFixed(1) + " V";
+  $$(".syncAOut").forEach(b => b.textContent = amp.A.toFixed(1) + " V");
+  $("#ampBiasOut").textContent = minus(amp.bias.toFixed(1)) + " V";
+  $("#llStatus").textContent = `bias ${minus(amp.bias.toFixed(1))} V · Q at ${w.iq.toFixed(0)} mA`;
+}
+function ampRecompute(biasChanged) {
+  amp.w = waveStats(amp.A, amp.bias);
+  ampReadouts(); drawHarm(); drawCurves(); ampFrame(0);
+  audioUpdate(biasChanged);
+}
+function drawAmpScope() {
+  const cv = $("#scopeAmp"), c = cv.getContext("2d"), dpr = Math.min(2, devicePixelRatio || 1), W = cv.clientWidth, H = cv.clientHeight;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  c.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const col = ampCol, w = amp.w, n = w.n;
+  c.fillStyle = col.bg; c.fillRect(0, 0, W, H);
+  const outR = Math.max(5, w.pk * 1.2, Math.abs(w.mx) * 1.1, Math.abs(w.mn) * 1.1), inR = amp.same ? outR : Math.max(0.5, amp.A * 1.25);
+  const lanes = [{ arr: w.vin, R: inR, color: col.e, name: "① grid (input)" }, { arr: w.vout, R: outR, color: col.glow, name: "② plate (output)" }];
+  const span = 4;
+  lanes.forEach((L, li) => {
+    const y0 = li * H / 2, h = H / 2, mid = y0 + h / 2 + 6, half = h / 2 - 16;
+    c.strokeStyle = col.grid; c.lineWidth = 1; c.setLineDash([3, 4]);
+    for (const f of [-1, 0, 1]) { c.beginPath(); c.moveTo(0, mid + f * half); c.lineTo(W, mid + f * half); c.stroke(); }
+    c.setLineDash([]);
+    c.strokeStyle = L.color; c.lineWidth = 2.4; c.beginPath();
+    for (let px = 0; px <= W; px += 2) {
+      const tt = amp.t - (W - px) / W * span, ph = (((tt * 0.5) % 1) + 1) % 1, k = Math.floor(ph * n) % n;
+      const y = mid - L.arr[k] / L.R * half; if (px === 0) c.moveTo(px, y); else c.lineTo(px, y);
+    }
+    c.stroke();
+    c.font = `600 11px "JetBrains Mono", ui-monospace, monospace`;
+    c.fillStyle = L.color; c.textAlign = "left"; c.fillText(L.name, 8, y0 + 14);
+    c.fillStyle = col.muted; c.textAlign = "right"; c.fillText(`±${L.R < 10 ? L.R.toFixed(1) : L.R.toFixed(0)} V scale`, W - 8, y0 + 14);
+  });
+  c.strokeStyle = col.grid; c.beginPath(); c.moveTo(0, H / 2); c.lineTo(W, H / 2); c.stroke();
+}
+function ampFrame(dt) {
+  if (!amp.w) return;
+  amp.t += dt;
+  const k = phaseIdx(), w = amp.w, ip = w.ipw[k];
+  if (ll) { ll.dot.setAttribute("cx", ll.X(250 + w.vout[k]).toFixed(1)); ll.dot.setAttribute("cy", ll.Y(ip).toFixed(1)); }
+  const vis = Math.round(Math.max(0, Math.min(1, ip / 100)) * EL_N), sp = 25 + ip * 1.4;
+  els.forEach((e, i) => {
+    e.y -= sp * dt; if (e.y < 116) { e.y = 186; e.x = 330 + Math.random() * 40; }
+    e.node.setAttribute("cx", e.x.toFixed(1)); e.node.setAttribute("cy", e.y.toFixed(1));
+    e.node.style.opacity = i < vis ? 1 : 0;
+  });
+  flows.forEach(f => { f.off -= (6 + ip * 0.9) * dt; f.el.style.strokeDashoffset = f.off.toFixed(1); f.el.style.opacity = ip > 0.3 ? 1 : 0; });
+  $("#cone").setAttribute("transform", `translate(${(w.vout[k] / 230 * 4).toFixed(2)} 0)`);
+  drawAmpScope();
+}
+themeListeners.push(() => { readAmpColors(); drawAmpScope(); });
+new ResizeObserver(() => { if (amp.w) drawAmpScope(); }).observe($("#scopeAmp"));
+(function ampLoop() {
+  let on = false, last = 0;
+  const loop = now => { if (!on) return; const dt = Math.min(0.05, (now - last) / 1000); last = now; ampFrame(dt); requestAnimationFrame(loop); };
+  if (!reduce) new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting && !on) { on = true; last = performance.now(); requestAnimationFrame(loop); }
+    else if (!e.isIntersecting) on = false;
+  }), { rootMargin: "100px" }).observe($("#amp"));
+})();
+
+$$(".syncA").forEach(el => el.addEventListener("input", () => {
+  amp.A = +el.value; $$(".syncA").forEach(o => { if (o !== el) o.value = el.value; });
+  ampRecompute(false);
+}));
+$("#ampBias").addEventListener("input", e => { amp.bias = +e.target.value; ampRecompute(true); });
+$("#scaleSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  $$("#scaleSeg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  amp.same = b.dataset.sc === "same"; drawAmpScope();
+});
+
+/* ---------- sound ---------- */
+const au = { ctx: null };
+function makeCurve(bias) {
+  const n = 2049, c = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const s = i / (n - 1) * 2 - 1; c[i] = -(solveVp(bias + 25 * s, bias) - 250) / 300; }
+  return c;
+}
+function audioUpdate(biasChanged) {
+  if (!au.ctx) return;
+  const t = au.ctx.currentTime;
+  if (biasChanged) {
+    const sh = au.ctx.createWaveShaper(); sh.curve = makeCurve(amp.bias); sh.oversample = "4x";
+    au.pre.disconnect(); au.pre.connect(sh); sh.connect(au.hp);
+    try { au.sh.disconnect(); } catch (e) {}
+    au.sh = sh;
+  }
+  au.pre.gain.setTargetAtTime(amp.A / 25, t, 0.03);
+  au.osc.frequency.setTargetAtTime(+$("#pitch").value, t, 0.03);
+  au.post.gain.setTargetAtTime(Math.min(12, (+$("#vol").value) * 0.22 / Math.max(0.01, amp.w.pk / 300)), t, 0.05);
+}
+function audioStop() {
+  if (!au.ctx) return;
+  try { au.osc.stop(); } catch (e) {}
+  au.ctx.close(); au.ctx = null;
+  const b = $("#listenBtn"); b.textContent = "▶ Listen"; b.setAttribute("aria-pressed", "false");
+}
+$("#listenBtn").addEventListener("click", () => {
+  if (au.ctx) return audioStop();
+  const AC = window.AudioContext || window.webkitAudioContext; if (!AC) { $("#listenBtn").textContent = "Audio unavailable"; return; }
+  const ctx = new AC();
+  au.ctx = ctx; au.osc = ctx.createOscillator(); au.osc.type = "sine";
+  au.pre = ctx.createGain(); au.sh = ctx.createWaveShaper(); au.sh.curve = makeCurve(amp.bias); au.sh.oversample = "4x";
+  au.hp = ctx.createBiquadFilter(); au.hp.type = "highpass"; au.hp.frequency.value = 25;
+  au.post = ctx.createGain(); au.post.gain.value = 0;
+  au.osc.connect(au.pre); au.pre.connect(au.sh); au.sh.connect(au.hp); au.hp.connect(au.post); au.post.connect(ctx.destination);
+  au.osc.frequency.value = +$("#pitch").value; au.osc.start();
+  audioUpdate(false);
+  const b = $("#listenBtn"); b.textContent = "■ Stop"; b.setAttribute("aria-pressed", "true");
+});
+$("#pitch").addEventListener("input", e => { $("#pitchOut").textContent = e.target.value + " Hz"; audioUpdate(false); });
+$("#vol").addEventListener("input", e => { $("#volOut").textContent = Math.round(e.target.value * 100) + "%"; audioUpdate(false); });
+document.addEventListener("visibilitychange", () => { if (document.hidden) audioStop(); });
+
+ampRecompute(false);
+
+/* ---------- why beam ---------- */
+(function beam() {
+  let mode = "beam";
+  const vpEl = $("#vpBeam");
+  function state() {
+    const vp = +vpEl.value, vg = -12.5, ik = ikOf(vg), beamOn = mode === "beam";
+    const ip = beamOn ? ipOf(vg, vp) : ipTet(vg, vp);
+    return { stage: beamOn ? 4 : 3, vg1: vg, vp, ik, ip, ps: beamOn ? Math.max(0.05, (ik - ipOf(vg, vp)) / ik) : Math.max(0.2, 1 - ipOf(vg, vp) / ik), sec: true };
+  }
+  const sim = new TubeSim($("#simBeam"), { state });
+  let bc = null;
+  function chart() {
+    const host = $("#beamChart"), W = Math.max(280, host.clientWidth), H = W < 520 ? 220 : 250, m = { l: 50, r: 16, t: 18, b: 34 };
+    const X = v => m.l + v / 400 * (W - m.l - m.r), Y = i => H - m.b - (i + 20) / 80 * (H - m.t - m.b);
+    let s = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Plate current versus plate voltage for a plain tetrode, which dips below zero, and the beam tetrode, which stays smooth">`;
+    s += `<rect class="bg" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}"/>`;
+    for (let v = 0; v <= 400; v += 100) s += `<line class="gr" x1="${X(v)}" x2="${X(v)}" y1="${m.t}" y2="${H - m.b}"/><text class="tk" x="${X(v)}" y="${H - m.b + 16}" text-anchor="middle">${v}V</text>`;
+    for (let i = -20; i <= 60; i += 20) s += `<line class="gr" x1="${m.l}" x2="${W - m.r}" y1="${Y(i)}" y2="${Y(i)}"/><text class="tk" x="${m.l - 6}" y="${Y(i) + 4}" text-anchor="end">${minus(i)}mA</text>`;
+    s += `<rect class="ax" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}"/>`;
+    s += `<line class="zero" x1="${m.l}" x2="${W - m.r}" y1="${Y(0)}" y2="${Y(0)}"/><line class="vg2" x1="${X(250)}" x2="${X(250)}" y1="${m.t}" y2="${H - m.b}"/>`;
+    let d1 = "", d2 = ""; for (let v = 0; v <= 400; v += 2) { d1 += (v ? "L" : "M") + X(v).toFixed(1) + " " + Y(ipOf(-12.5, v)).toFixed(1); d2 += (v ? "L" : "M") + X(v).toFixed(1) + " " + Y(Math.max(-19, ipTet(-12.5, v))).toFixed(1); }
+    s += `<path class="plain" d="${d2}" style="opacity:${mode === "plain" ? 1 : .45}"/><path class="beam" d="${d1}" style="opacity:${mode === "beam" ? 1 : .45}"/>`;
+    s += `<text class="tk" x="${X(255)}" y="${m.t + 12}" style="fill:var(--t1)">screen 250 V</text>`;
+    s += `<text class="tk" x="${X(398)}" y="${Y(ipOf(-12.5, 400)) - 8}" text-anchor="end" style="fill:var(--accent)">beam tetrode</text>`;
+    s += `<text class="tk" x="${X(78)}" y="${Y(6)}" style="fill:var(--bad)">plain tetrode: the kink</text>`;
+    s += `<circle class="now" id="bcDot" r="7"/></svg>`;
+    host.innerHTML = s; bc = { X, Y, dot: $("#bcDot") }; dot();
+  }
+  function dot() { if (!bc) return; const vp = +vpEl.value, ip = mode === "beam" ? ipOf(-12.5, vp) : ipTet(-12.5, vp); bc.dot.setAttribute("cx", bc.X(vp).toFixed(1)); bc.dot.setAttribute("cy", bc.Y(Math.max(-19, ip)).toFixed(1)); }
+  function reads() {
+    const st = state();
+    $("#vpBeamOut").textContent = st.vp + " V";
+    $("#bIp").textContent = minus(st.ip.toFixed(1)) + " mA";
+    $("#bIg2").textContent = (st.ik - st.ip).toFixed(1) + " mA";
+    const toScreen = mode === "plain" && steal(st.vp) > 0.5;
+    $("#bSec").textContent = st.vp < 5 ? "none (no impact energy)" : toScreen ? "stolen by the screen" : "pushed back to the plate";
+    dot();
+    if (!sim.running) { sim.st = st; sim.draw(); }
+  }
+  vpEl.addEventListener("input", reads);
+  $("#beamSeg").addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    $$("#beamSeg button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    mode = b.dataset.m; sim.seed(); chart(); reads();
+  });
+  new ResizeObserver(chart).observe($("#beamChart"));
+  themeListeners.push(chart);
+  chart(); reads();
+})();
+})();
+</script>
+</body>
+</html>

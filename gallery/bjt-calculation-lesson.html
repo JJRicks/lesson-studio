@@ -1,0 +1,1234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BJT Calculations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a lab-notebook reading column beside a sticky probe index; every interactive is framed like an instrument panel, traces use LTspice's step colours */
+:root{
+  --bg:#F2F4F8; --surface:#FFFFFF; --surface-2:#E8ECF4; --ink:#111A30; --muted:#55617C; --line:#D5DBE7;
+  --accent:#2A43D4; --accent-ink:#FFFFFF; --accent-soft:#E1E6FF;
+  --cursor:#B36A00; --cursor-soft:#FFF0D6;
+  --good:#16804A; --good-soft:#DCF2E5; --bad:#B4302A; --bad-soft:#FBE2E0;
+  --t1:#1C9638; --t2:#2E52DE; --t3:#CF3A2E; --t4:#0B8F9C;
+  --plot:#FFFFFF; --grid:#D2D8E4; --nreg:#DCE4FF; --preg:#FFE6BF; --sat:#FCE3E1; --act:#DDF2E5;
+  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --r:10px; --shadow:0 1px 2px rgba(17,26,48,.06),0 8px 24px -12px rgba(17,26,48,.18);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1120; --surface:#151B2E; --surface-2:#1C2339; --ink:#E5E9F5; --muted:#9BA5BF; --line:#2A3250;
+  --accent:#8FA2FF; --accent-ink:#0D1120; --accent-soft:#1E2752;
+  --cursor:#F4B64E; --cursor-soft:#3A2C12;
+  --good:#5BD38E; --good-soft:#123323; --bad:#FF7F75; --bad-soft:#3B1715;
+  --t1:#4FD86B; --t2:#7E9CFF; --t3:#FF6F63; --t4:#3BD0DC;
+  --plot:#0F1424; --grid:#283049; --nreg:#1C2752; --preg:#3A2A10; --sat:#3A1A1A; --act:#12301F;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0D1120; --surface:#151B2E; --surface-2:#1C2339; --ink:#E5E9F5; --muted:#9BA5BF; --line:#2A3250;
+  --accent:#8FA2FF; --accent-ink:#0D1120; --accent-soft:#1E2752;
+  --cursor:#F4B64E; --cursor-soft:#3A2C12;
+  --good:#5BD38E; --good-soft:#123323; --bad:#FF7F75; --bad-soft:#3B1715;
+  --t1:#4FD86B; --t2:#7E9CFF; --t3:#FF6F63; --t4:#3BD0DC;
+  --plot:#0F1424; --grid:#283049; --nreg:#1C2752; --preg:#3A2A10; --sat:#3A1A1A; --act:#12301F;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:76px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:1.0625rem;line-height:1.65}
+img,svg,canvas{max-width:100%}
+a{color:var(--accent)}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:4px}
+h1,h2,h3,h4{font-family:var(--f-display);line-height:1.12;text-wrap:balance;margin:0;letter-spacing:-.01em}
+h2{font-size:clamp(1.9rem,4.4vw,2.6rem);font-weight:800}
+h3{font-size:1.5rem;font-weight:700;margin-top:.2rem}
+h4{font-size:1.12rem;font-weight:700}
+p{margin:0}
+sub,sup{font-size:.7em;line-height:0}
+h1 sub,h2 sub,h3 sub,h4 sub,.grp sub{font-family:var(--f-body);letter-spacing:0}
+.mono{font-family:var(--f-mono);font-size:.92em}
+kbd{font-family:var(--f-mono);font-size:.8em;padding:.08em .4em;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;background:var(--surface);white-space:nowrap}
+code{font-family:var(--f-mono);font-size:.88em;background:var(--surface-2);padding:.08em .35em;border-radius:4px}
+.eyebrow{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* ---------- top bar ---------- */
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.topbar-in{display:flex;align-items:center;gap:12px;height:56px;max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.brand{font-family:var(--f-display);font-weight:800;font-size:1.05rem;display:flex;align-items:center;gap:10px;min-width:0;white-space:nowrap}
+.brand svg{flex:none}
+.here{color:var(--muted);font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1}
+.iconbtn{appearance:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;height:36px;padding:0 12px;font:inherit;font-size:.9rem;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.iconbtn:hover{border-color:var(--accent)}
+.progress{position:absolute;left:0;bottom:-1px;height:3px;width:100%;transform-origin:0 50%;transform:scaleX(0);background:var(--accent)}
+#navbtn{display:none}
+#themebtn{margin-left:auto}
+@media (max-width:640px){.here{display:none}}
+@media (max-width:420px){.brand span{display:none}}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);gap:56px;max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 96px}
+.toc{position:sticky;top:76px;align-self:start;max-height:calc(100vh - 92px);overflow:auto;padding-block:28px 24px;font-size:.9rem}
+.toc ol{list-style:none;margin:0;padding:0}
+.toc>ol>li{margin-bottom:14px}
+.toc .grp{display:block;font-family:var(--f-mono);font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;text-decoration:none}
+.toc a{color:var(--ink);text-decoration:none}
+.toc li li a{display:block;padding:3px 0 3px 12px;border-left:2px solid var(--line);color:var(--muted);line-height:1.35}
+.toc li li a:hover{color:var(--ink)}
+.toc li li a.on{border-left-color:var(--accent);color:var(--ink);font-weight:700}
+.toc .prob a{color:var(--cursor)}
+main{min-width:0;max-width:780px}
+
+@media (max-width:1000px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  #navbtn{display:inline-flex}
+  .toc{position:fixed;z-index:70;top:0;left:0;bottom:0;width:min(320px,86vw);max-height:none;background:var(--surface);border-right:1px solid var(--line);padding:calc(20px + env(safe-area-inset-top,0px)) 20px 24px max(20px,env(safe-area-inset-left,0px));transform:translateX(-102%);transition:transform .25s ease;box-shadow:var(--shadow)}
+  .toc.open{transform:none}
+  .scrim{position:fixed;inset:0;z-index:65;background:rgba(5,8,20,.45)}
+  main{margin:0 auto}
+}
+
+/* ---------- hero ---------- */
+.hero{padding-block:44px 8px;display:grid;gap:22px}
+.hero h1{font-size:clamp(2.6rem,8vw,4.6rem);font-weight:800;letter-spacing:-.03em;line-height:.98}
+.hero h1 span{color:var(--accent)}
+.lede{font-size:1.2rem;color:var(--muted);max-width:62ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--f-mono);font-size:.78rem;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted)}
+.load>*{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.load>*:nth-child(2){animation-delay:.08s}.load>*:nth-child(3){animation-delay:.16s}.load>*:nth-child(4){animation-delay:.24s}.load>*:nth-child(5){animation-delay:.32s}
+@keyframes rise{from{transform:translateY(14px)}to{transform:none}}
+
+/* ---------- instrument panel ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.panel-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.panel-head .t{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;font-weight:600;flex:1;min-width:12ch}
+.panel-body{padding:14px}
+.btn{appearance:none;font:inherit;font-size:.88rem;font-weight:700;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);padding:6px 14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn:hover{filter:brightness(1.08)}
+.btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{appearance:none;border:0;background:var(--surface);color:var(--muted);font:inherit;font-size:.82rem;padding:5px 10px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--ink);font-weight:700}
+.status{font-family:var(--f-mono);font-size:.8rem;color:var(--muted);min-height:1.4em}
+input[type=range]{width:100%;accent-color:var(--accent)}
+select{font:inherit;font-size:.9rem;padding:4px 8px;border-radius:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+
+/* hero flow */
+#flow{display:block;width:100%;height:240px}
+.flow-ctl{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px 4px}
+.flow-ctl label{font-family:var(--f-mono);font-weight:600}
+.flow-ctl output{font-family:var(--f-mono);font-variant-numeric:tabular-nums;min-width:7ch;text-align:right;font-weight:600}
+.reads{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line);margin-top:10px}
+.read{background:var(--surface);padding:10px 14px}
+.read .k{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.read .v{font-family:var(--f-mono);font-size:1.15rem;font-weight:600;font-variant-numeric:tabular-nums}
+.note{font-size:.86rem;color:var(--muted);padding:10px 14px 12px}
+
+/* ---------- sections ---------- */
+.hero,.part,.topic,.problems,.prob-body,.ans,.big,.analogy,.card,details.deeper>div{grid-template-columns:minmax(0,1fr)}
+.hero>*,.part>*,.topic>*,.problems>*,.prob-body>*,.ans>*{min-width:0}
+.part{padding-top:72px;display:grid;gap:22px}
+.part-head{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;align-items:end;padding-bottom:18px;border-bottom:2px solid var(--ink)}
+.part-letter{grid-row:span 2;font-family:var(--f-display);font-weight:800;font-size:clamp(4rem,12vw,6.5rem);line-height:.8;color:var(--accent);letter-spacing:-.04em}
+.topic{display:grid;gap:16px;padding-top:30px}
+.topic>p,.topic>ul,.topic>ol{max-width:68ch}
+.topic ul,.topic ol{margin:0;padding-left:1.25em;display:grid;gap:6px}
+.big{background:var(--accent-soft);border-radius:var(--r);padding:16px 18px;display:grid;gap:6px}
+.big .eyebrow{color:var(--accent)}
+.big p{font-size:1.12rem;font-weight:700;line-height:1.5}
+.analogy{border:1px dashed var(--muted);border-radius:var(--r);padding:14px 16px;display:grid;gap:6px;background:var(--surface)}
+.analogy .eyebrow{color:var(--cursor)}
+.key{border-left:4px solid var(--accent);padding:4px 0 4px 14px;font-weight:700}
+.warn{background:var(--cursor-soft);border-radius:var(--r);padding:12px 16px}
+.warn b{color:var(--cursor)}
+details.deeper{border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+details.deeper>summary{cursor:pointer;padding:12px 16px;font-weight:700;list-style:none;display:flex;gap:10px;align-items:center}
+details.deeper>summary::-webkit-details-marker{display:none}
+details.deeper>summary::before{content:"+";font-family:var(--f-mono);color:var(--accent);width:1ch}
+details.deeper[open]>summary::before{content:"–"}
+details.deeper>div{padding:0 16px 14px;display:grid;gap:10px}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:6px;align-content:start}
+.card h4{display:flex;gap:8px;align-items:baseline}
+
+/* math */
+.eq{font-family:var(--f-mono);font-size:1.12rem;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;overflow-x:auto;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.eq .cap{font-family:var(--f-body);font-size:.85rem;color:var(--muted);flex-basis:100%}
+.fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1.25}
+.fr>span:first-child{border-bottom:1.5px solid currentColor;padding:0 4px}
+.fr>span:last-child{padding:0 4px}
+
+/* tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--surface-2)}
+tr:last-child td{border-bottom:0}
+td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* unit ladder */
+.ladder{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rung{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:12px;display:grid;gap:2px;text-align:center}
+.rung b{font-family:var(--f-display);font-size:1.6rem}
+.rung span{font-size:.82rem;color:var(--muted)}
+@media (max-width:480px){.ladder{grid-template-columns:1fr}}
+
+/* plots */
+.plot{position:relative;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.plot svg{display:block;width:100%;cursor:ew-resize}
+.plot svg:focus-visible{outline:2.5px solid var(--accent);outline-offset:-3px}
+.plot .gr{stroke:var(--grid);stroke-width:1;stroke-dasharray:3 4}
+.plot .ax{stroke:var(--muted);stroke-width:1;fill:none}
+.plot .tk{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.plot .ttl{fill:var(--ink);font-family:var(--f-mono);font-size:11.5px;font-weight:600}
+.plot .tr{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.plot .cv{stroke:var(--ink);stroke-width:1.3;stroke-dasharray:2 3}
+.plot .ch{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:2 3;opacity:.7}
+.plot .mk{stroke:var(--plot);stroke-width:2}
+.plot .band-sat{fill:var(--sat)}.plot .band-act{fill:var(--act)}
+.plot .bl{font-family:var(--f-mono);font-size:10.5px;fill:var(--muted);letter-spacing:.06em}
+.plot .bg{fill:var(--plot)}
+.cursorbox{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line)}
+.cursorbox>div{background:var(--surface);padding:9px 14px}
+.cursorbox .k{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.cursorbox .v{font-family:var(--f-mono);font-size:1.05rem;font-weight:600;font-variant-numeric:tabular-nums;font-style:normal}
+.cursorbox .hl{background:var(--cursor-soft)}
+.fam-table td.n{font-size:.92rem}
+.fam-table tr.sel td{background:var(--cursor-soft)}
+.sw{display:inline-block;width:12px;height:3px;border-radius:2px;vertical-align:middle;margin-right:6px}
+.hintok{color:var(--good);font-weight:700}
+
+/* schematic */
+.schem{background:var(--plot)}
+.schem svg{display:block;width:100%;max-width:440px;margin:0 auto;height:auto}
+.schem .w{stroke:var(--accent);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.schem .thick{stroke-width:4}
+.schem .gnd{fill:none;stroke:var(--accent);stroke-width:2}
+.schem .src{fill:var(--plot);stroke:var(--accent);stroke-width:2}
+.schem .arrow{fill:var(--accent)}
+.schem .lbl{fill:var(--ink);font-family:var(--f-mono);font-size:14px;font-weight:600}
+.schem .lbl.sm{font-size:12px;font-weight:400;fill:var(--muted)}
+.schem .pin{fill:var(--cursor);font-family:var(--f-mono);font-size:11px;font-weight:600}
+.schem .loop{fill:none;stroke-width:9;stroke-linecap:round;stroke-linejoin:round;opacity:0;transition:opacity .3s}
+.schem .loop.in{stroke:var(--t1)}.schem .loop.out{stroke:var(--t3)}
+.schem .flowd{fill:none;stroke-width:2.5;stroke-dasharray:4 10;stroke-linecap:round;opacity:0;transition:opacity .3s;animation:dash 0.9s linear infinite}
+.schem .flowd.in{stroke:var(--t1)}.schem .flowd.out{stroke:var(--t3)}
+.schem[data-show~="in"] .in,.schem[data-show~="out"] .out{opacity:.32}
+.schem[data-show~="in"] .flowd.in,.schem[data-show~="out"] .flowd.out{opacity:1}
+@keyframes dash{to{stroke-dashoffset:-14}}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.86rem;color:var(--muted);padding:0 14px 12px}
+
+/* token decoder */
+.tokens{display:flex;flex-wrap:wrap;gap:6px;font-family:var(--f-mono);font-size:1.05rem}
+.tok{appearance:none;font:inherit;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:7px;padding:4px 10px;cursor:pointer;transition:transform .15s,background .15s}
+.tok:hover{transform:translateY(-2px)}
+.tok[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tok.g2{border-style:dashed}
+.tokexp{min-height:3.2em;margin-top:10px;padding:10px 12px;border-radius:8px;background:var(--surface-2);font-size:.95rem}
+pre.code{font-family:var(--f-mono);font-size:.86rem;background:var(--surface-2);border-radius:8px;padding:12px 14px;margin:0;overflow-x:auto;line-height:1.6}
+pre.code .on{background:var(--cursor-soft);color:var(--ink);border-radius:3px;box-shadow:0 0 0 3px var(--cursor-soft)}
+.cmt{color:var(--muted)}
+
+/* morph */
+.morph{display:grid;place-items:center;height:200px;position:relative;background:var(--plot)}
+.morph svg{position:absolute;width:min(260px,80%);height:180px;transition:opacity .45s,transform .45s}
+.morph .w{stroke:var(--ink);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.morph .af{fill:var(--ink)}
+.morph text{fill:var(--ink);font-family:var(--f-mono);font-size:14px}
+.morph .hot{stroke:var(--accent)}
+.morph .hotf{fill:var(--accent)}
+.morph[data-m="bjt"] .m-src{opacity:0;transform:scale(.9)}
+.morph[data-m="src"] .m-bjt{opacity:0;transform:scale(.9)}
+
+/* mini iv graphs */
+.mini svg{display:block;width:100%;height:auto}
+.mini .ax{stroke:var(--muted);stroke-width:1.5;fill:none}
+.mini .ln{stroke:var(--accent);stroke-width:3;fill:none;stroke-linecap:round}
+.mini text{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+
+/* problems */
+.problems{display:grid;gap:22px;padding-top:34px}
+.problems-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.problems-head h3{font-size:1.75rem}
+.prob{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+.prob-head{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line)}
+.pnum{font-family:var(--f-display);font-weight:800;font-size:1.25rem}
+.pts{margin-left:auto;font-family:var(--f-mono);font-size:.75rem;padding:3px 9px;border-radius:999px;background:var(--cursor-soft);color:var(--cursor);font-weight:600;white-space:nowrap}
+.prob-body{padding:16px 18px 18px;display:grid;gap:16px}
+.ask{border-left:3px solid var(--line);padding-left:14px;color:var(--muted);font-size:.98rem}
+.ask b{color:var(--ink)}
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:14px}
+ol.steps>li{counter-increment:s;display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px 12px}
+ol.steps>li::before{content:counter(s);grid-row:span 3;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);font-family:var(--f-mono);font-size:.82rem;font-weight:600;display:grid;place-items:center;margin-top:1px}
+ol.steps>li>*{grid-column:2;min-width:0}
+ol.steps h5{font-family:var(--f-body);font-size:1rem;margin:0;font-weight:700}
+ol.steps p{color:var(--ink)}
+.check{list-style:none;padding:0;margin:4px 0 0;display:grid;gap:6px}
+.check label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{margin-top:.35em;accent-color:var(--good);width:16px;height:16px;flex:none}
+.check input:checked+span{color:var(--muted);text-decoration:line-through;text-decoration-color:var(--good)}
+
+details.reveal{border-radius:10px;border:2px dashed var(--cursor);background:var(--cursor-soft)}
+details.reveal>summary{list-style:none;cursor:pointer;padding:12px 16px;font-weight:700;color:var(--cursor);display:flex;align-items:center;gap:10px}
+details.reveal>summary::-webkit-details-marker{display:none}
+details.reveal>summary::before{content:"";width:18px;height:18px;flex:none;border-radius:4px;background:var(--cursor);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5C5 5 1 12 1 12s4 7 11 7 11-7 11-7-4-7-11-7zm0 11a4 4 0 110-8 4 4 0 010 8z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 5C5 5 1 12 1 12s4 7 11 7 11-7 11-7-4-7-11-7zm0 11a4 4 0 110-8 4 4 0 010 8z'/%3E%3C/svg%3E") center/contain no-repeat}
+details.reveal[open]{border-style:solid;background:var(--surface)}
+details.reveal[open]>summary{border-bottom:1px solid var(--line)}
+details.reveal .ans{padding:14px 16px;display:grid;gap:10px;animation:pop .45s cubic-bezier(.2,.8,.2,1)}
+.ans .final{font-family:var(--f-display);font-weight:800;font-size:clamp(1.6rem,5vw,2.2rem);line-height:1.1}
+.ans .final small{font-family:var(--f-body);font-weight:400;font-size:.95rem;color:var(--muted);display:block;margin-top:4px}
+@keyframes pop{from{opacity:.0;transform:translateY(-6px) scale(.98)}to{opacity:1;transform:none}}
+
+.mcq{display:grid;gap:8px}
+.mcq button{appearance:none;text-align:left;font:inherit;font-size:.98rem;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:9px;padding:10px 14px;cursor:pointer;display:grid;grid-template-columns:22px 1fr;gap:10px;transition:border-color .2s,background .2s}
+.mcq button:hover{border-color:var(--accent)}
+.mcq button b{font-family:var(--f-mono)}
+.mcq button.right{border-color:var(--good);background:var(--good-soft)}
+.mcq button.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.mcq-fb{font-size:.95rem;min-height:1.4em}
+.mcq-fb.right{color:var(--good)}.mcq-fb.wrong{color:var(--bad)}
+
+.cheat{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:12px}
+.cheat .card .eqs{font-family:var(--f-mono);font-size:1rem}
+footer{margin-top:64px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);font-size:.86rem;display:grid;gap:6px}
+
+@media (max-width:560px){
+  body{font-size:1rem}
+  .hero{padding-top:28px}
+  .prob-body,.prob-head{padding-left:14px;padding-right:14px}
+  .part{padding-top:56px}
+  #flow{height:210px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}
+  html{scroll-behavior:auto}
+}
+
+/* ---------- additions for the calculation lesson ---------- */
+.ckt{background:var(--plot)}
+.ckt svg{display:block;width:100%;max-width:470px;margin:0 auto;height:auto}
+.ckt .w{stroke:var(--accent);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.ckt .thick{stroke-width:4}
+.ckt .gnd{fill:none;stroke:var(--accent);stroke-width:2}
+.ckt .src{fill:var(--plot);stroke:var(--accent);stroke-width:2}
+.ckt .arrow,.ckt .dot{fill:var(--accent)}
+.ckt .tag{fill:var(--plot);stroke:var(--accent);stroke-width:2}
+.ckt .lbl{fill:var(--ink);font-family:var(--f-mono);font-size:14px;font-weight:600}
+.ckt .val{fill:var(--muted);font-family:var(--f-mono);font-size:13px}
+.ckt .pin{fill:var(--cursor);font-family:var(--f-mono);font-size:13px;font-weight:600}
+.ckt .flow{fill:none;stroke-width:3;stroke-linecap:round;stroke-dasharray:3 11;animation:dash var(--dur,1s) linear infinite;transition:opacity .3s}
+.ckt .flow.b{stroke:var(--t1)}.ckt .flow.c{stroke:var(--t3)}
+.ckt .live{fill:var(--ink);font-family:var(--f-mono);font-size:12px;font-weight:600}
+.ckt .live.b{fill:var(--t1)}.ckt .live.c{fill:var(--t3)}
+@keyframes dash{to{stroke-dashoffset:-14}}
+.sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px 20px;padding:14px;border-top:1px solid var(--line)}
+.sl{display:grid;gap:2px}
+.sl label{display:flex;justify-content:space-between;gap:8px;font-size:.88rem}
+.sl label b{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--f-mono);font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:4px 10px;border-radius:999px}
+.badge::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.badge.active{background:var(--good-soft);color:var(--good)}
+.badge.saturation{background:var(--bad-soft);color:var(--bad)}
+.badge.cutoff{background:var(--surface-2);color:var(--muted)}
+.why{padding:10px 14px 12px;font-size:.92rem;border-top:1px solid var(--line)}
+.ll svg{display:block;width:100%}
+.ll .gr{stroke:var(--grid);stroke-dasharray:3 4}
+.ll .ax{stroke:var(--muted);fill:none}
+.ll .tk{fill:var(--muted);font-family:var(--f-mono);font-size:11px}
+.ll .ttl{fill:var(--ink);font-family:var(--f-mono);font-size:11.5px;font-weight:600}
+.ll .load{stroke:var(--accent);stroke-width:2.5}
+.ll .beta{stroke:var(--t3);stroke-width:2;stroke-dasharray:6 5}
+.ll .sat{fill:var(--sat)}
+.ll .q{stroke:var(--plot);stroke-width:2.5}
+.ll .bg{fill:var(--plot)}
+.two{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:0}
+.two>*+*{border-left:1px solid var(--line)}
+@media (max-width:720px){.two{grid-template-columns:minmax(0,1fr)}.two>*+*{border-left:0;border-top:1px solid var(--line)}}
+.stair{padding:14px;display:grid;gap:10px}
+.stair .bar{display:flex;height:46px;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:var(--surface-2)}
+.stair .seg1,.stair .seg2{display:grid;place-items:center;font-family:var(--f-mono);font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;transition:flex-basis .2s}
+.stair .seg1{background:var(--accent-soft);color:var(--ink)}
+.stair .seg2{background:var(--cursor-soft);color:var(--cursor)}
+.flowchart{display:grid;gap:0}
+.fc{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;display:grid;gap:4px}
+.fc+.fc{margin-top:26px;position:relative}
+.fc+.fc::before{content:"↓";position:absolute;top:-25px;left:22px;font-family:var(--f-mono);color:var(--muted)}
+.fc .eyebrow{color:var(--accent)}
+.fork{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:10px}
+.fork>div{border-radius:8px;padding:10px 12px}
+.fork .ok{background:var(--good-soft)}.fork .no{background:var(--bad-soft)}
+.sub-q{display:grid;gap:14px;padding-top:6px;border-top:1px dashed var(--line)}
+.sub-q h4{display:flex;gap:10px;align-items:baseline}
+.sub-q h4 .pts{margin-left:0}
+.given{display:flex;flex-wrap:wrap;gap:6px}
+.given span{font-family:var(--f-mono);font-size:.82rem;padding:3px 9px;border-radius:6px;background:var(--surface-2)}
+.prob .ckt{border:1px solid var(--line);border-radius:var(--r);padding:6px}
+.signs svg{display:block;width:100%;max-width:380px;margin:0 auto}
+.signs .w{stroke:var(--ink);stroke-width:2;fill:none;stroke-linecap:round}
+.signs .af{fill:var(--ink)}
+.signs .in{stroke:var(--good);stroke-width:2.5;fill:none}.signs .inf{fill:var(--good)}
+.signs .out{stroke:var(--bad);stroke-width:2.5;fill:none}.signs .outf{fill:var(--bad)}
+.signs text{font-family:var(--f-mono);font-size:13px;fill:var(--ink)}
+.signs text.g{fill:var(--good);font-weight:600}.signs text.r{fill:var(--bad);font-weight:600}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <button class="iconbtn" id="navbtn" aria-controls="toc" aria-expanded="false">Contents</button>
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M4 12h6M10 7v10M10 9.5l6-4M10 14.5l6 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16.4 18.8l-3.3-.4 1.6-2.6z" fill="currentColor"/></svg>
+      <span>BJT Calculations</span>
+    </div>
+    <div class="here" id="here"></div>
+    <button class="iconbtn" id="themebtn" aria-label="Switch colour theme">Theme</button>
+  </div>
+  <div class="progress" id="progress"></div>
+</header>
+
+<div class="shell">
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#start">Start here</a>
+      <ol>
+        <li><a href="#ohm">Ohm's law &amp; KVL</a></li>
+        <li><a href="#model">The 3-rule BJT model</a></li>
+        <li><a href="#regions">Regions of operation</a></li>
+        <li><a href="#method">Assume, solve, check</a></li>
+      </ol></li>
+    <li><a class="grp" href="#partA">Part A · npn</a>
+      <ol>
+        <li><a href="#ib">Base current</a></li>
+        <li class="prob"><a href="#p1">Problem 1</a></li>
+        <li><a href="#ic">Collector current</a></li>
+        <li class="prob"><a href="#p2">Problem 2</a></li>
+        <li><a href="#vout">V<sub>out</sub> &amp; the region</a></li>
+        <li class="prob"><a href="#p3">Problems 3–4</a></li>
+      </ol></li>
+    <li><a class="grp" href="#partB">Part B · pnp</a>
+      <ol>
+        <li><a href="#pib">pnp base current &amp; signs</a></li>
+        <li class="prob"><a href="#p5">Problem 5</a></li>
+        <li><a href="#pic">pnp collector current</a></li>
+        <li class="prob"><a href="#p6">Problem 6</a></li>
+        <li><a href="#pvout">pnp V<sub>out</sub> &amp; the region</a></li>
+        <li class="prob"><a href="#p7">Problems 7–8</a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas &amp; mistakes</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<!-- ================= HERO ================= -->
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Week 7 · BJT calculation homework</div>
+  <h1>BJT <span>Calculations</span></h1>
+  <p class="lede">The last lesson measured transistors in LTspice. This one predicts them with pencil and paper. Three simple rules plus Ohm's law are enough to find every current and voltage in all 8 circuits.</p>
+  <div class="chips"><span class="chip">8 problems</span><span class="chip">18 points</span><span class="chip">4 npn · 4 pnp</span><span class="chip">V<sub>BE</sub> = 0.7 V</span></div>
+  <div class="panel" id="pgA">
+    <div class="panel-head"><span class="t">npn circuit playground</span><span class="badge" data-region></span></div>
+    <div class="two">
+      <div class="ckt" data-ckt></div>
+      <div class="ll" data-ll></div>
+    </div>
+    <div class="cursorbox" data-reads></div>
+    <p class="why" data-why></p>
+    <div class="sliders" data-sliders></div>
+    <p class="note">Same circuit layout as Problems 1–4. Green dashes show base current, red dashes collector current (faster = more current). Try raising β or R<sub>2</sub> until the transistor saturates.</p>
+  </div>
+</section>
+
+<section class="topic" aria-labelledby="map-h">
+  <h3 id="map-h">The homework at a glance</h3>
+  <p>Every problem is the same recipe applied a little further: find the base current, multiply by β to get the collector current, use Ohm's law to get V<sub>out</sub>, then check which region the transistor is really in.</p>
+  <div class="grid2">
+    <a class="card" href="#partA" style="text-decoration:none;color:inherit">
+      <span class="eyebrow">Part A · Problems 1–4 · 9 pts</span>
+      <h4>npn transistor</h4>
+      <p>I<sub>B</sub> → I<sub>C</sub> → V<sub>out</sub> and region. Base driven by V<sub>1</sub> through R<sub>1</sub>, collector fed from V<sub>CC</sub> through R<sub>2</sub>.</p>
+    </a>
+    <a class="card" href="#partB" style="text-decoration:none;color:inherit">
+      <span class="eyebrow">Part B · Problems 5–8 · 9 pts</span>
+      <h4>pnp transistor</h4>
+      <p>The same four steps, upside down: emitter at V<sub>CC</sub>, currents flowing <i>out</i> of the base and collector, so they get negative signs.</p>
+    </a>
+  </div>
+</section>
+
+<!-- ================= START HERE ================= -->
+<section class="part" id="start" data-title="Start here">
+  <div class="part-head">
+    <div class="part-letter">0</div>
+    <div class="eyebrow">Start here · no prior knowledge needed</div>
+    <h2>Foundations</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>You only need two circuit laws (Ohm's law and Kirchhoff's voltage law) and a three-rule model of the transistor. Then one habit: guess the transistor's region, solve, and check that the guess holds.</p></div>
+
+  <div class="topic" id="ohm" data-title="Ohm's law & KVL">
+    <span class="eyebrow">Foundation 1</span>
+    <h3>Ohm's law and Kirchhoff's voltage law</h3>
+    <div class="grid2">
+      <div class="card"><h4>Ohm's law</h4><div class="eq" style="border:0;padding:4px 0">V = I · R &nbsp;&nbsp; ⇔ &nbsp;&nbsp; I = V / R</div><p>The voltage across a resistor equals the current through it times its resistance. Like water: a narrower pipe (bigger R) needs more pressure (V) for the same flow (I).</p></div>
+      <div class="card"><h4>Kirchhoff's voltage law (KVL)</h4><p>Walk around any closed loop and add up the voltages. The rises exactly equal the drops. Like hiking a loop trail: when you get back to the car, you're at the same altitude you started.</p></div>
+    </div>
+    <p>Two shortcuts that make this homework fast:</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Voltage across</th><th>Resistor</th><th>Current</th></tr></thead>
+      <tbody>
+        <tr><td class="n">1 V</td><td class="n">1 kΩ</td><td class="n">1 mA</td></tr>
+        <tr><td class="n">1 V</td><td class="n">100 kΩ</td><td class="n">10 µA</td></tr>
+        <tr><td class="n">1 mA × 1 kΩ</td><td></td><td class="n">= 1 V</td></tr>
+      </tbody></table></div>
+    <p>So volts ÷ kΩ gives mA, and mA × kΩ gives volts. No powers of ten needed.</p>
+    <ul>
+      <li><b>Ground</b> (the triangle symbol) is the 0 V reference. Every voltage in the problems, like V<sub>out</sub>, is measured from ground.</li>
+      <li><b>Prefixes:</b> 1 mA = 0.001 A, 1 µA = 0.000001 A, so 1 mA = 1000 µA. 1 kΩ = 1000 Ω.</li>
+    </ul>
+  </div>
+
+  <div class="topic" id="model" data-title="The 3-rule BJT model">
+    <span class="eyebrow">Foundation 2</span>
+    <h3>The 3-rule BJT model</h3>
+    <p>A real transistor is complicated. For hand calculations, three rules capture almost everything (these are the facts you measured in last week's LTspice homework):</p>
+    <div class="grid2">
+      <div class="card"><span class="eyebrow">Rule 1 · the base is a diode</span><p>When the transistor is on, the base–emitter junction drops a fixed <b>0.7 V</b>. npn: V<sub>BE</sub> = 0.7 V (base above emitter). pnp: V<sub>EB</sub> = 0.7 V (base below emitter).</p></div>
+      <div class="card"><span class="eyebrow">Rule 2 · the collector copies the base</span><p>In the active region, <b>I<sub>C</sub> = β · I<sub>B</sub></b>. β (beta) is the current gain, given in each problem.</p></div>
+      <div class="card"><span class="eyebrow">Rule 3 · nothing gets lost</span><p>All current in must come out: <b>I<sub>E</sub> = I<sub>C</sub> + I<sub>B</sub></b>.</p></div>
+    </div>
+    <div class="analogy"><span class="eyebrow">Analogy · a remote-controlled valve</span><p>The base is a small control pipe with a fixed "toll" of 0.7 V to enter. Whatever trickle you send through it opens the big collector valve by β times as much. The big flow comes from the V<sub>CC</sub> supply; the base only decides how much.</p></div>
+    <details class="deeper"><summary>Why exactly 0.7 V?</summary><div>
+      <p>The base–emitter junction's current is exponential in voltage: each extra 60 mV multiplies current by 10. Over the currents in this homework (tens of µA), V<sub>BE</sub> only changes by tens of millivolts, so treating it as a constant 0.7 V is accurate enough and makes the algebra easy.</p>
+    </div></details>
+  </div>
+
+  <div class="topic" id="regions" data-title="Regions of operation">
+    <span class="eyebrow">Foundation 3</span>
+    <h3>The three regions of operation</h3>
+    <p>Rule 2 only holds in one of three regions. Half the points in this homework ask which region the transistor is in.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Region</th><th>How to spot it</th><th>What's true</th><th>Used as</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge cutoff">Cutoff</span></td><td>Base drive below 0.7 V, so I<sub>B</sub> = 0</td><td>I<sub>C</sub> = 0. No drop across R<sub>2</sub>.</td><td>Switch off</td></tr>
+        <tr><td><span class="badge active">Active</span></td><td>V<sub>CE</sub> (pnp: V<sub>EC</sub>) ≥ 0.2 V</td><td>I<sub>C</sub> = β · I<sub>B</sub> exactly as the model says.</td><td>Amplifier</td></tr>
+        <tr><td><span class="badge saturation">Saturation</span></td><td>β · I<sub>B</sub> would need V<sub>CE</sub> &lt; 0.2 V</td><td>V<sub>CE</sub> stuck at ≈ 0.2 V. I<sub>C</sub> &lt; β · I<sub>B</sub>, limited by R<sub>2</sub>.</td><td>Switch fully on</td></tr>
+      </tbody></table></div>
+    <p>The 0.2 V figure is V<sub>CE(sat)</sub>, the smallest voltage a saturated transistor drops. It's the usual textbook value and the one this lesson uses.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · faucet and drainpipe</span><p>The base sets how far the faucet is opened (β · I<sub>B</sub> is how much water it <i>wants</i> to let through). R<sub>2</sub> is a drainpipe that can only carry so much. If the faucet asks for more than the pipe can carry, the flow is capped by the pipe, not the faucet. That capped state is saturation.</p></div>
+    <p>The <b>load line</b> makes this visual. R<sub>2</sub> and V<sub>CC</sub> allow only certain combinations of I<sub>C</sub> and V<sub>CE</sub>: a straight line from "all voltage, no current" (V<sub>CE</sub> = V<sub>CC</sub>) to "all current, no voltage" (I<sub>C</sub> = V<sub>CC</sub>/R<sub>2</sub>). The transistor's operating point must sit on that line. In the playground at the top, push β up and watch the dot slide left until it hits the red saturation strip and stops.</p>
+  </div>
+
+  <div class="topic" id="method" data-title="Assume, solve, check">
+    <span class="eyebrow">Foundation 4</span>
+    <h3>The method: assume, solve, check</h3>
+    <p>You can't know the region before you calculate, so you guess, solve, and then check that the guess is consistent.</p>
+    <div class="flowchart">
+      <div class="fc"><span class="eyebrow">Step 1 · base loop</span><p>Is the base drive above 0.7 V? If not, it's <b>cutoff</b>: I<sub>B</sub> = I<sub>C</sub> = 0. If yes, find I<sub>B</sub> with KVL around the base loop.</p></div>
+      <div class="fc"><span class="eyebrow">Step 2 · assume active</span><p>I<sub>C</sub> = β · I<sub>B</sub>.</p></div>
+      <div class="fc"><span class="eyebrow">Step 3 · collector loop</span><p>Use Ohm's law on R<sub>2</sub> to find V<sub>out</sub>, then V<sub>CE</sub> (npn) or V<sub>EC</sub> (pnp).</p></div>
+      <div class="fc"><span class="eyebrow">Step 4 · check</span>
+        <div class="fork">
+          <div class="ok"><b>V<sub>CE</sub> ≥ 0.2 V</b><br>Guess holds. <b>Active.</b> Your numbers are final.</div>
+          <div class="no"><b>V<sub>CE</sub> &lt; 0.2 V (or negative)</b><br>Guess failed. <b>Saturation.</b> Set V<sub>CE</sub> = 0.2 V and redo I<sub>C</sub> and V<sub>out</sub> from that.</div>
+        </div></div>
+    </div>
+    <div class="analogy"><span class="eyebrow">Analogy · guess and check</span><p>It's like guessing the answer to "I'm thinking of a number; double it and add 3 to get 11." Guess 4, check: 2·4 + 3 = 11. Correct. If the check fails, the guess was wrong and you try the other option. Here there are only two options for an on transistor, so the second guess is always right.</p></div>
+  </div>
+</section>
+
+<!-- ================= PART A ================= -->
+<section class="part" id="partA" data-title="Part A · npn">
+  <div class="part-head">
+    <div class="part-letter">A</div>
+    <div class="eyebrow">Part A · Problems 1–4 · 9 points</div>
+    <h2>npn circuits</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>V<sub>1</sub> pushes a small current through R<sub>1</sub> into the base. β multiplies it into a collector current that flows down from V<sub>CC</sub> through R<sub>2</sub>. The bigger that current, the more voltage R<sub>2</sub> eats, and the lower V<sub>out</sub> sits.</p></div>
+
+  <div class="topic" id="ib" data-title="Base current">
+    <span class="eyebrow">Topic A1 · for Problem 1</span>
+    <h3>Finding the base current</h3>
+    <p>Follow the <b>base loop</b>: start at ground, up through V<sub>1</sub>, across R<sub>1</sub>, into the base, out the emitter, back to ground. KVL says the rise from V<sub>1</sub> is used up by two drops:</p>
+    <div class="eq"><span>V<sub>1</sub> = I<sub>B</sub>R<sub>1</sub> + V<sub>BE</sub></span><span>⇒</span><span>I<sub>B</sub> = </span><span class="fr"><span>V<sub>1</sub> − 0.7 V</span><span>R<sub>1</sub></span></span><span class="cap">Whatever voltage is left after the 0.7 V "toll" sits across R<sub>1</sub>. Ohm's law turns it into current.</span></div>
+    <div class="panel">
+      <div class="panel-head"><span class="t">Where V<sub>1</sub> goes (R<sub>1</sub> = 100 kΩ)</span><span class="status" id="stairA-ib"></span></div>
+      <div class="stair" id="stairA">
+        <div class="sl"><label for="stA"><span>V<sub>1</sub></span> <b id="stA-out">3.00 V</b></label><input type="range" id="stA" min="0" max="5" step="0.05" value="2.5"></div>
+        <div class="bar"><div class="seg1"></div><div class="seg2"></div></div>
+        <p class="note" style="padding:0">Blue: voltage across R<sub>1</sub>, sets I<sub>B</sub>. Amber: the fixed 0.7 V across the base–emitter junction.</p>
+      </div>
+    </div>
+    <ul>
+      <li>Notice the collector side (V<sub>CC</sub>, R<sub>2</sub>) doesn't appear. With the emitter tied to ground, the base loop doesn't care what the collector is doing.</li>
+      <li>If V<sub>1</sub> &lt; 0.7 V, the junction never turns on: I<sub>B</sub> = 0 and the transistor is in cutoff.</li>
+    </ul>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p1" data-title="Problem 1">
+      <div class="prob-head"><span class="pnum">Problem 1</span><span class="eyebrow">npn · I<sub>B</sub></span><span class="pts">1 pt</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Task:</b> Determine the base current I<sub>B</sub> of Q1. Assume V<sub>BE</sub> = 0.7 V. (Hint: between 20 and 30 µA.)</p>
+        <div class="ckt" data-static='{"t":"npn","V1":3,"R1":100,"R2":1,"Vcc":5}'></div>
+        <div class="given"><span>V<sub>1</sub> = 3 V</span><span>R<sub>1</sub> = 100 kΩ</span><span>V<sub>BE</sub> = 0.7 V</span></div>
+        <ol class="steps">
+          <li><h5>Is the transistor on?</h5><p>V<sub>1</sub> = 3 V is more than 0.7 V, so the base–emitter junction turns on.</p></li>
+          <li><h5>Write KVL for the base loop</h5><div class="eq"><span>3 V = I<sub>B</sub>(100 kΩ) + 0.7 V</span></div></li>
+          <li><h5>Find the voltage across R<sub>1</sub></h5><p>3 V − 0.7 V = 2.3 V.</p></li>
+          <li><h5>Ohm's law</h5><div class="eq"><span>I<sub>B</sub> = </span><span class="fr"><span>2.3 V</span><span>100,000 Ω</span></span><span>= ?</span></div><p>Shortcut: 1 V across 100 kΩ is 10 µA, so 2.3 V gives 2.3 × 10 µA.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">I<sub>B</sub> = 23.0 µA<small>2.3 V ÷ 100 kΩ = 0.000023 A. Inside the 20–30 µA hint <span class="hintok">✓</span></small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="ic" data-title="Collector current">
+    <span class="eyebrow">Topic A2 · for Problem 2</span>
+    <h3>Finding the collector current</h3>
+    <p>Once you have I<sub>B</sub>, Rule 2 gives the collector current directly, assuming the active region:</p>
+    <div class="eq"><span>I<sub>C</sub> = β · I<sub>B</sub></span><span class="cap">β is unitless, so I<sub>C</sub> comes out in the same unit as I<sub>B</sub>. Then convert: 1000 µA = 1 mA.</span></div>
+    <ul>
+      <li>β is given in the problem. Real transistors vary a lot (a 2N3904 can be anywhere from 100 to 300), which is why each problem states it.</li>
+      <li>Strictly, you should confirm the active-region assumption with the check in Step 4 of the method. It takes one line, and Problem 2's reveal shows it.</li>
+    </ul>
+    <div class="analogy"><span class="eyebrow">Analogy · exchange rate</span><p>β is an exchange rate: every base microamp "buys" β collector microamps. With β = 100, 20 µA of base current buys 2000 µA = 2 mA of collector current.</p></div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p2" data-title="Problem 2">
+      <div class="prob-head"><span class="pnum">Problem 2</span><span class="eyebrow">npn · I<sub>C</sub></span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Task:</b> Determine the collector current I<sub>C</sub> of Q1 given β = 100. (Hint: between 1.8 and 2.2 mA.)</p>
+        <div class="ckt" data-static='{"t":"npn","V1":2.7,"R1":100,"R2":1,"Vcc":5}'></div>
+        <div class="given"><span>V<sub>1</sub> = 2.7 V</span><span>R<sub>1</sub> = 100 kΩ</span><span>R<sub>2</sub> = 1 kΩ</span><span>V<sub>CC</sub> = 5 V</span><span>β = 100</span></div>
+        <ol class="steps">
+          <li><h5>Base current first</h5><div class="eq"><span>I<sub>B</sub> = </span><span class="fr"><span>2.7 − 0.7 V</span><span>100 kΩ</span></span><span>= </span><span class="fr"><span>2.0 V</span><span>100 kΩ</span></span><span>= 20 µA</span></div></li>
+          <li><h5>Multiply by β</h5><div class="eq"><span>I<sub>C</sub> = 100 × 20 µA = ? µA</span></div></li>
+          <li><h5>Convert to mA</h5><p>Divide the µA answer by 1000.</p></li>
+          <li><h5>Check it's really active</h5><p>Find V<sub>CE</sub> = V<sub>CC</sub> − I<sub>C</sub>R<sub>2</sub> and confirm it's at least 0.2 V.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">I<sub>C</sub> = 2.00 mA<small>100 × 20 µA = 2000 µA = 2.00 mA. Inside the 1.8–2.2 mA hint <span class="hintok">✓</span></small></div>
+          <p>Check: V<sub>CE</sub> = 5 V − (2 mA)(1 kΩ) = 3 V ≥ 0.2 V, so the transistor is active and I<sub>C</sub> = βI<sub>B</sub> is valid.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="vout" data-title="Vout & the region">
+    <span class="eyebrow">Topic A3 · for Problems 3 and 4</span>
+    <h3>Finding V<sub>out</sub> and the region of operation</h3>
+    <p>V<sub>out</sub> is the collector voltage. Follow the <b>collector loop</b> from V<sub>CC</sub> down through R<sub>2</sub>: the collector current makes R<sub>2</sub> drop I<sub>C</sub>R<sub>2</sub>, and whatever is left is V<sub>out</sub>.</p>
+    <div class="eq"><span>V<sub>out</sub> = V<sub>C</sub> = V<sub>CC</sub> − I<sub>C</sub>R<sub>2</sub></span><span class="cap">The emitter is at ground (0 V), so V<sub>CE</sub> = V<sub>C</sub> − 0 = V<sub>out</sub>. Here V<sub>out</sub> <i>is</i> V<sub>CE</sub>.</span></div>
+    <p class="key">More collector current → bigger drop across R<sub>2</sub> → lower V<sub>out</sub>. When β·I<sub>B</sub> is so big that V<sub>out</sub> would fall below 0.2 V, the transistor saturates instead.</p>
+    <h4>Quick way to check saturation</h4>
+    <p>The most current R<sub>2</sub> can ever pass (with V<sub>CE</sub> at its 0.2 V floor) is:</p>
+    <div class="eq"><span>I<sub>C(max)</sub> = </span><span class="fr"><span>V<sub>CC</sub> − 0.2 V</span><span>R<sub>2</sub></span></span><span class="cap">If β·I<sub>B</sub> is below this, the transistor is active. If β·I<sub>B</sub> is above it, it's saturated and I<sub>C</sub> = I<sub>C(max)</sub>.</span></div>
+    <div class="tbl"><table>
+      <thead><tr><th>If you find…</th><th>Region</th><th>V<sub>out</sub> (npn)</th></tr></thead>
+      <tbody>
+        <tr><td>V<sub>1</sub> ≤ 0.7 V</td><td><span class="badge cutoff">Cutoff</span></td><td>V<sub>CC</sub> (no current, no drop)</td></tr>
+        <tr><td>V<sub>CC</sub> − βI<sub>B</sub>R<sub>2</sub> ≥ 0.2 V</td><td><span class="badge active">Active</span></td><td>V<sub>CC</sub> − βI<sub>B</sub>R<sub>2</sub></td></tr>
+        <tr><td>V<sub>CC</sub> − βI<sub>B</sub>R<sub>2</sub> &lt; 0.2 V</td><td><span class="badge saturation">Saturation</span></td><td>≈ 0.2 V</td></tr>
+      </tbody></table></div>
+    <div class="warn"><b>Watch the edge.</b> Problems in this homework are tuned to land close to the 0.2 V line. Carry at least 4 digits through the calculation so you don't round your way into the wrong region.</div>
+  </div>
+
+  <div class="problems" id="probA34">
+    <article class="prob" id="p3" data-title="Problems 3–4">
+      <div class="prob-head"><span class="pnum">Problem 3</span><span class="eyebrow">npn · V<sub>out</sub> &amp; region</span><span class="pts">3 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Task:</b> Given β = 53, find V<sub>out</sub> (2 pts) and the region of operation (1 pt). (Hint: I<sub>B</sub> between 40 and 50 µA.)</p>
+        <div class="ckt" data-static='{"t":"npn","V1":3,"R1":51,"R2":2,"Vcc":5}'></div>
+        <div class="given"><span>V<sub>1</sub> = 3.0 V</span><span>R<sub>1</sub> = 51 kΩ</span><span>R<sub>2</sub> = 2 kΩ</span><span>V<sub>CC</sub> = 5 V</span><span>β = 53</span></div>
+        <div class="sub-q"><h4>(a) V<sub>out</sub> <span class="pts">2 pts</span></h4>
+        <ol class="steps">
+          <li><h5>Base current</h5><div class="eq"><span>I<sub>B</sub> = </span><span class="fr"><span>3.0 − 0.7 V</span><span>51 kΩ</span></span><span>= </span><span class="fr"><span>2.3 V</span><span>51 kΩ</span></span><span>= 45.10 µA</span></div><p>Inside the 40–50 µA hint <span class="hintok">✓</span></p></li>
+          <li><h5>Assume active, find I<sub>C</sub></h5><div class="eq"><span>I<sub>C</sub> = 53 × 45.10 µA = 2390 µA = 2.390 mA</span></div></li>
+          <li><h5>Voltage drop across R<sub>2</sub></h5><div class="eq"><span>I<sub>C</sub>R<sub>2</sub> = 2.390 mA × 2 kΩ = 4.780 V</span></div><p>mA × kΩ gives volts directly.</p></li>
+          <li><h5>Subtract from V<sub>CC</sub></h5><div class="eq"><span>V<sub>out</sub> = 5 V − 4.780 V = ?</span></div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal V<sub>out</sub></summary><div class="ans">
+          <div class="final">V<sub>out</sub> ≈ 0.220 V<small>5 − 4.7804 = 0.2196 V. Keep 4 digits here; rounding I<sub>C</sub> to 2.4 mA would wrongly give 0.200 V.</small></div>
+        </div></details>
+        </div>
+        <div class="sub-q"><h4>(b) Region of operation <span class="pts">1 pt</span></h4>
+        <ol class="steps">
+          <li><h5>Not cutoff</h5><p>V<sub>1</sub> = 3 V &gt; 0.7 V, and current is flowing.</p></li>
+          <li><h5>Compare V<sub>CE</sub> to 0.2 V</h5><p>The emitter is grounded, so V<sub>CE</sub> = V<sub>out</sub> ≈ 0.2196 V. Is that at least 0.2 V?</p></li>
+          <li><h5>Cross-check with I<sub>C(max)</sub></h5><p>I<sub>C(max)</sub> = (5 − 0.2) V / 2 kΩ = 2.400 mA. The transistor wants β·I<sub>B</sub> = 2.390 mA. Does it fit under the cap?</p></li>
+          <li><h5>Pick a region</h5>
+            <div class="mcq" data-answer="act">
+              <button type="button" data-k="cut" data-fb="No. V1 = 3 V turns the base on and 45 µA of base current flows."><b>·</b><span>Cutoff</span></button>
+              <button type="button" data-k="sat" data-fb="Very close, but no. VCE = 0.2196 V is still just above 0.2 V, and 2.390 mA fits under the 2.400 mA cap."><b>·</b><span>Saturation</span></button>
+              <button type="button" data-k="act" data-fb="Yes, just barely. VCE = 0.2196 V ≥ 0.2 V, so IC = βIB holds."><b>·</b><span>Active region</span></button>
+              <p class="mcq-fb" aria-live="polite"></p>
+            </div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the region</summary><div class="ans">
+          <div class="final">Active region (just barely)<small>V<sub>CE</sub> = 0.2196 V ≥ 0.2 V. The circuit is tuned so that β = 54 would push it into saturation.</small></div>
+          <p class="note" style="padding:0">This answer depends on using V<sub>CE(sat)</sub> = 0.2 V, the usual textbook value. If your class uses a bigger saturation voltage, this edge case would flip to saturation.</p>
+        </div></details>
+        </div>
+      </div>
+    </article>
+
+    <article class="prob" id="p4">
+      <div class="prob-head"><span class="pnum">Problem 4</span><span class="eyebrow">npn · V<sub>out</sub> &amp; region</span><span class="pts">3 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Task:</b> Given β = 100, find V<sub>out</sub> (2 pts) and the region of operation (1 pt). (Hint: I<sub>B</sub> between 25 and 35 µA.)</p>
+        <div class="ckt" data-static='{"t":"npn","V1":3.7,"R1":100,"R2":1,"Vcc":5}'></div>
+        <div class="given"><span>V<sub>1</sub> = 3.7 V</span><span>R<sub>1</sub> = 100 kΩ</span><span>R<sub>2</sub> = 1 kΩ</span><span>V<sub>CC</sub> = 5 V</span><span>β = 100</span></div>
+        <div class="sub-q"><h4>(a) V<sub>out</sub> <span class="pts">2 pts</span></h4>
+        <ol class="steps">
+          <li><h5>Base current</h5><div class="eq"><span>I<sub>B</sub> = </span><span class="fr"><span>3.7 − 0.7 V</span><span>100 kΩ</span></span><span>= 30 µA</span></div><p>Inside the 25–35 µA hint <span class="hintok">✓</span></p></li>
+          <li><h5>Assume active, find I<sub>C</sub></h5><div class="eq"><span>I<sub>C</sub> = 100 × 30 µA = 3.00 mA</span></div></li>
+          <li><h5>Drop across R<sub>2</sub></h5><div class="eq"><span>I<sub>C</sub>R<sub>2</sub> = 3.00 mA × 1 kΩ = 3.00 V</span></div></li>
+          <li><h5>Subtract from V<sub>CC</sub></h5><div class="eq"><span>V<sub>out</sub> = 5 V − 3.00 V = ?</span></div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal V<sub>out</sub></summary><div class="ans">
+          <div class="final">V<sub>out</sub> = 2.00 V</div>
+        </div></details>
+        </div>
+        <div class="sub-q"><h4>(b) Region of operation <span class="pts">1 pt</span></h4>
+        <ol class="steps">
+          <li><h5>Compare V<sub>CE</sub> to 0.2 V</h5><p>V<sub>CE</sub> = V<sub>out</sub>. Is it comfortably above 0.2 V?</p></li>
+          <li><h5>Pick a region</h5>
+            <div class="mcq" data-answer="act">
+              <button type="button" data-k="cut" data-fb="No. 30 µA of base current is flowing."><b>·</b><span>Cutoff</span></button>
+              <button type="button" data-k="sat" data-fb="No. VCE = 2 V is far above the 0.2 V saturation floor."><b>·</b><span>Saturation</span></button>
+              <button type="button" data-k="act" data-fb="Yes. VCE = 2 V ≥ 0.2 V, so the active assumption holds."><b>·</b><span>Active region</span></button>
+              <p class="mcq-fb" aria-live="polite"></p>
+            </div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the region</summary><div class="ans">
+          <div class="final">Active region<small>V<sub>CE</sub> = 2.00 V ≥ 0.2 V. The operating point sits in the middle of the load line, which is exactly where you'd bias an amplifier.</small></div>
+        </div></details>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= PART B ================= -->
+<section class="part" id="partB" data-title="Part B · pnp">
+  <div class="part-head">
+    <div class="part-letter">B</div>
+    <div class="eyebrow">Part B · Problems 5–8 · 9 points</div>
+    <h2>pnp circuits</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>A pnp is an npn flipped upside down. The emitter connects to V<sub>CC</sub>, current flows <i>out</i> of the base and collector toward ground, and V<sub>out</sub> is the voltage the collector current builds up across R<sub>2</sub>. Same four steps, with signs.</p></div>
+
+  <div class="topic" id="pib" data-title="pnp base current & signs">
+    <span class="eyebrow">Topic B1 · for Problem 5</span>
+    <h3>pnp base current and the sign convention</h3>
+    <p>In these circuits the emitter sits at V<sub>CC</sub>. For the pnp to turn on, the base must be <b>0.7 V below</b> the emitter (V<sub>EB</sub> = 0.7 V). Current flows into the emitter, out of the base, and down through R<sub>1</sub> to ground.</p>
+    <p>Base loop: V<sub>CC</sub> → emitter → base (0.7 V drop) → R<sub>1</sub> → ground.</p>
+    <div class="eq"><span>V<sub>CC</sub> = V<sub>EB</sub> + |I<sub>B</sub>|R<sub>1</sub></span><span>⇒</span><span>|I<sub>B</sub>| = </span><span class="fr"><span>V<sub>CC</sub> − 0.7 V</span><span>R<sub>1</sub></span></span></div>
+    <div class="panel">
+      <div class="panel-head"><span class="t">Where V<sub>CC</sub> goes (R<sub>1</sub> = 100 kΩ)</span><span class="status" id="stairB-ib"></span></div>
+      <div class="stair" id="stairB">
+        <div class="sl"><label for="stB"><span>V<sub>CC</sub></span> <b id="stB-out">5.00 V</b></label><input type="range" id="stB" min="0" max="5" step="0.05" value="4"></div>
+        <div class="bar"><div class="seg2"></div><div class="seg1"></div></div>
+        <p class="note" style="padding:0">Amber: 0.7 V from emitter down to base. Blue: the rest, across R<sub>1</sub>, which sets |I<sub>B</sub>|.</p>
+      </div>
+    </div>
+    <h4>The sign rule</h4>
+    <p class="key">Current flowing <i>into</i> a transistor terminal is positive. Current flowing <i>out</i> of a terminal is negative. (This is the same convention SPICE uses, which you saw last week.)</p>
+    <div class="grid2">
+      <div class="card signs">
+        <svg viewBox="0 0 300 200" aria-label="pnp current directions example">
+          <path class="w" d="M90 100H150"/><path class="w" d="M150 70V130" style="stroke-width:4"/>
+          <path class="w" d="M150 88L190 60V20"/><path class="w" d="M150 112L190 140V180"/>
+          <polygon class="af" points="155,85 169,83 163,73"/>
+          <path class="in" d="M205 22V48"/><polygon class="inf" points="205,54 199,44 211,44"/>
+          <text class="g" x="214" y="40">I_E = +2.02 mA</text>
+          <path class="out" d="M100 88H62"/><polygon class="outf" points="56,88 66,82 66,94"/>
+          <text class="r" x="8" y="76">I_B = −20 µA</text>
+          <path class="out" d="M205 150V176"/><polygon class="outf" points="205,182 199,172 211,172"/>
+          <text class="r" x="214" y="168">I_C = −2.00 mA</text>
+          <text x="120" y="70">B</text><text x="176" y="16">E</text><text x="176" y="196">C</text>
+        </svg>
+      </div>
+      <div class="card"><h4>Example (not from the homework)</h4><p>|I<sub>B</sub>| = 20 µA and β = 100.</p><ul style="margin:0;padding-left:1.2em"><li>I<sub>B</sub> flows out: <b>−20 µA</b></li><li>I<sub>C</sub> flows out: <b>−2.00 mA</b></li><li>I<sub>E</sub> flows in: <b>+2.02 mA</b></li></ul><p>Check: with signs, the three always add to zero: 2.02 − 2.00 − 0.02 = 0. Charge in = charge out.</p></div>
+    </div>
+    <div class="analogy"><span class="eyebrow">Analogy · bank statement</span><p>Deposits are +, withdrawals are −. Taking $43 out of an account shows as −$43. The base current of a pnp is a withdrawal from the transistor, so it gets a minus sign. The size of the current doesn't change.</p></div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p5" data-title="Problem 5">
+      <div class="prob-head"><span class="pnum">Problem 5</span><span class="eyebrow">pnp · I<sub>B</sub></span><span class="pts">1 pt</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Task:</b> Determine the base current I<sub>B</sub> of Q1, noting current is negative when flowing out of a terminal. Assume V<sub>EB</sub> = 0.7 V. (Hint: magnitude between 40 and 50 µA.)</p>
+        <div class="ckt" data-static='{"t":"pnp","R1":100,"R2":1,"Vcc":5}'></div>
+        <div class="given"><span>V<sub>CC</sub> = 5 V</span><span>R<sub>1</sub> = 100 kΩ</span><span>V<sub>EB</sub> = 0.7 V</span></div>
+        <ol class="steps">
+          <li><h5>Trace the base loop</h5><p>V<sub>CC</sub> (5 V) → emitter → down 0.7 V to the base → through R<sub>1</sub> → ground (0 V).</p></li>
+          <li><h5>Voltage across R<sub>1</sub></h5><p>The base sits at 5 − 0.7 = 4.3 V, and the bottom of R<sub>1</sub> is at 0 V, so R<sub>1</sub> has 4.3 V across it.</p></li>
+          <li><h5>Magnitude with Ohm's law</h5><div class="eq"><span>|I<sub>B</sub>| = </span><span class="fr"><span>4.3 V</span><span>100 kΩ</span></span><span>= ? µA</span></div></li>
+          <li><h5>Apply the sign</h5><p>The current leaves the base and flows down R<sub>1</sub>. Out of the terminal means negative.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">I<sub>B</sub> = −43.0 µA<small>|I<sub>B</sub>| = 4.3 V ÷ 100 kΩ = 43 µA, negative because it flows out of the base. Magnitude inside 40–50 µA <span class="hintok">✓</span></small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="pic" data-title="pnp collector current">
+    <span class="eyebrow">Topic B2 · for Problem 6</span>
+    <h3>pnp collector current</h3>
+    <p>Rule 2 still holds, and the sign carries through: base current flows out, so collector current flows out too.</p>
+    <div class="eq"><span>I<sub>C</sub> = β · I<sub>B</sub></span><span class="cap">With I<sub>B</sub> negative, I<sub>C</sub> comes out negative automatically. Or work with magnitudes, |I<sub>C</sub>| = β|I<sub>B</sub>|, and add the minus sign at the end.</span></div>
+    <ul>
+      <li>The collector current flows out of the collector and down through R<sub>2</sub> to ground.</li>
+      <li>The emitter carries the sum: |I<sub>E</sub>| = |I<sub>C</sub>| + |I<sub>B</sub>|, flowing in (positive).</li>
+    </ul>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p6" data-title="Problem 6">
+      <div class="prob-head"><span class="pnum">Problem 6</span><span class="eyebrow">pnp · I<sub>C</sub></span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Task:</b> Determine the collector current I<sub>C</sub> of Q1 given β = 110, noting current is negative when flowing out of a terminal. (Hint: magnitude between 4.2 and 4.6 mA.)</p>
+        <div class="ckt" data-static='{"t":"pnp","R1":100,"R2":1,"Vcc":4.7}'></div>
+        <div class="given"><span>V<sub>CC</sub> = 4.7 V</span><span>R<sub>1</sub> = 100 kΩ</span><span>R<sub>2</sub> = 1 kΩ</span><span>β = 110</span></div>
+        <ol class="steps">
+          <li><h5>Base current</h5><div class="eq"><span>|I<sub>B</sub>| = </span><span class="fr"><span>4.7 − 0.7 V</span><span>100 kΩ</span></span><span>= 40 µA</span><span>⇒ I<sub>B</sub> = −40 µA</span></div></li>
+          <li><h5>Multiply by β</h5><div class="eq"><span>|I<sub>C</sub>| = 110 × 40 µA = ? µA</span></div></li>
+          <li><h5>Convert and apply the sign</h5><p>Divide by 1000 for mA. The current flows out of the collector, so it's negative.</p></li>
+          <li><h5>Check it's active</h5><p>V<sub>out</sub> = |I<sub>C</sub>| × R<sub>2</sub>, then V<sub>EC</sub> = V<sub>CC</sub> − V<sub>out</sub>. Must be at least 0.2 V.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">I<sub>C</sub> = −4.40 mA<small>110 × 40 µA = 4400 µA = 4.40 mA, flowing out. Magnitude inside 4.2–4.6 mA <span class="hintok">✓</span></small></div>
+          <p>Check: V<sub>out</sub> = 4.40 mA × 1 kΩ = 4.40 V, so V<sub>EC</sub> = 4.7 − 4.40 = 0.30 V ≥ 0.2 V. Active, though close to the edge.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="pvout" data-title="pnp Vout & the region">
+    <span class="eyebrow">Topic B3 · for Problems 7 and 8</span>
+    <h3>pnp V<sub>out</sub> and the region of operation</h3>
+    <p>In the pnp circuits R<sub>2</sub> hangs <b>below</b> the collector, down to ground. The collector current flowing down through it lifts V<sub>out</sub> above ground:</p>
+    <div class="eq"><span>V<sub>out</sub> = V<sub>C</sub> = |I<sub>C</sub>| · R<sub>2</sub></span><span class="cap">Then V<sub>EC</sub> = V<sub>E</sub> − V<sub>C</sub> = V<sub>CC</sub> − V<sub>out</sub>.</span></div>
+    <p class="key">This is the opposite of the npn: more collector current means a <i>higher</i> V<sub>out</sub>. It keeps rising until V<sub>out</sub> gets within 0.2 V of V<sub>CC</sub>. Then the pnp saturates.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>If you find…</th><th>Region</th><th>V<sub>out</sub> (pnp)</th></tr></thead>
+      <tbody>
+        <tr><td>V<sub>CC</sub> ≤ 0.7 V</td><td><span class="badge cutoff">Cutoff</span></td><td>0 V (no current)</td></tr>
+        <tr><td>V<sub>CC</sub> − β|I<sub>B</sub>|R<sub>2</sub> ≥ 0.2 V</td><td><span class="badge active">Active</span></td><td>β|I<sub>B</sub>|R<sub>2</sub></td></tr>
+        <tr><td>V<sub>CC</sub> − β|I<sub>B</sub>|R<sub>2</sub> &lt; 0.2 V</td><td><span class="badge saturation">Saturation</span></td><td>≈ V<sub>CC</sub> − 0.2 V</td></tr>
+      </tbody></table></div>
+    <div class="panel" id="pgB">
+      <div class="panel-head"><span class="t">pnp circuit playground</span><span class="badge" data-region></span></div>
+      <div class="two">
+        <div class="ckt" data-ckt></div>
+        <div class="ll" data-ll></div>
+      </div>
+      <div class="cursorbox" data-reads></div>
+      <p class="why" data-why></p>
+      <div class="sliders" data-sliders></div>
+      <p class="note">Same layout as Problems 5–8. Raise R<sub>2</sub> or β and watch V<sub>out</sub> climb toward V<sub>CC</sub> until it pins 0.2 V below it.</p>
+    </div>
+    <details class="deeper"><summary>What happens to the current in saturation?</summary><div>
+      <p>In saturation the base current is still set by the base loop (V<sub>CC</sub> − 0.7)/R<sub>1</sub>, because nothing in that loop changed. But the collector current is now capped by R<sub>2</sub>: |I<sub>C</sub>| = (V<sub>CC</sub> − 0.2)/R<sub>2</sub>. The ratio |I<sub>C</sub>|/|I<sub>B</sub>| drops below β. Engineers call that ratio the "forced β".</p>
+    </div></details>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p7" data-title="Problems 7–8">
+      <div class="prob-head"><span class="pnum">Problem 7</span><span class="eyebrow">pnp · V<sub>out</sub> &amp; region</span><span class="pts">3 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Task:</b> Given β = 95, find V<sub>out</sub> (2 pts) and the region of operation (1 pt). (Hint: |I<sub>B</sub>| between 18 and 25 µA.)</p>
+        <div class="ckt" data-static='{"t":"pnp","R1":200,"R2":1,"Vcc":5}'></div>
+        <div class="given"><span>V<sub>CC</sub> = 5 V</span><span>R<sub>1</sub> = 200 kΩ</span><span>R<sub>2</sub> = 1 kΩ</span><span>β = 95</span></div>
+        <div class="sub-q"><h4>(a) V<sub>out</sub> <span class="pts">2 pts</span></h4>
+        <ol class="steps">
+          <li><h5>Base current</h5><div class="eq"><span>|I<sub>B</sub>| = </span><span class="fr"><span>5 − 0.7 V</span><span>200 kΩ</span></span><span>= 21.5 µA</span></div><p>Inside the 18–25 µA hint <span class="hintok">✓</span></p></li>
+          <li><h5>Assume active, find |I<sub>C</sub>|</h5><div class="eq"><span>|I<sub>C</sub>| = 95 × 21.5 µA = 2042.5 µA = 2.0425 mA</span></div></li>
+          <li><h5>Ohm's law on R<sub>2</sub></h5><div class="eq"><span>V<sub>out</sub> = 2.0425 mA × 1 kΩ = ?</span></div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal V<sub>out</sub></summary><div class="ans">
+          <div class="final">V<sub>out</sub> ≈ 2.04 V<small>2.0425 mA × 1 kΩ = 2.0425 V.</small></div>
+        </div></details>
+        </div>
+        <div class="sub-q"><h4>(b) Region of operation <span class="pts">1 pt</span></h4>
+        <ol class="steps">
+          <li><h5>Find V<sub>EC</sub></h5><p>V<sub>EC</sub> = V<sub>CC</sub> − V<sub>out</sub> = 5 − 2.04 = 2.96 V.</p></li>
+          <li><h5>Pick a region</h5>
+            <div class="mcq" data-answer="act">
+              <button type="button" data-k="cut" data-fb="No. VCC = 5 V is well above the 0.7 V turn-on, so 21.5 µA of base current flows."><b>·</b><span>Cutoff</span></button>
+              <button type="button" data-k="sat" data-fb="No. VEC = 2.96 V is far above 0.2 V."><b>·</b><span>Saturation</span></button>
+              <button type="button" data-k="act" data-fb="Yes. VEC = 2.96 V ≥ 0.2 V, so the active assumption holds."><b>·</b><span>Active region</span></button>
+              <p class="mcq-fb" aria-live="polite"></p>
+            </div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the region</summary><div class="ans">
+          <div class="final">Active region<small>V<sub>EC</sub> = 2.96 V ≥ 0.2 V.</small></div>
+        </div></details>
+        </div>
+      </div>
+    </article>
+
+    <article class="prob" id="p8">
+      <div class="prob-head"><span class="pnum">Problem 8</span><span class="eyebrow">pnp · V<sub>out</sub> &amp; region</span><span class="pts">3 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Task:</b> Given β = 60, find V<sub>out</sub> (2 pts) and the region of operation (1 pt). (Hint: |I<sub>B</sub>| between 30 and 50 µA.)</p>
+        <div class="ckt" data-static='{"t":"pnp","R1":100,"R2":1.91,"Vcc":4.7}'></div>
+        <div class="given"><span>V<sub>CC</sub> = 4.7 V</span><span>R<sub>1</sub> = 100 kΩ</span><span>R<sub>2</sub> = 1.91 kΩ</span><span>β = 60</span></div>
+        <div class="sub-q"><h4>(a) V<sub>out</sub> <span class="pts">2 pts</span></h4>
+        <ol class="steps">
+          <li><h5>Base current</h5><div class="eq"><span>|I<sub>B</sub>| = </span><span class="fr"><span>4.7 − 0.7 V</span><span>100 kΩ</span></span><span>= 40 µA</span></div><p>Inside the 30–50 µA hint <span class="hintok">✓</span></p></li>
+          <li><h5>Assume active</h5><div class="eq"><span>|I<sub>C</sub>| = 60 × 40 µA = 2.400 mA</span><span>V<sub>out</sub> = 2.400 mA × 1.91 kΩ = 4.584 V</span></div></li>
+          <li><h5>Check the guess</h5><p>V<sub>EC</sub> = 4.7 − 4.584 = 0.116 V. That's <b>below</b> 0.2 V, so a pnp can't actually get there. The active guess failed.</p></li>
+          <li><h5>Redo it as saturated</h5><p>Pin V<sub>EC</sub> at 0.2 V: V<sub>out</sub> = V<sub>CC</sub> − 0.2 V = ?</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal V<sub>out</sub></summary><div class="ans">
+          <div class="final">V<sub>out</sub> ≈ 4.50 V<small>4.7 V − 0.2 V. The actual collector current is 4.50 V ÷ 1.91 kΩ = 2.356 mA, less than β|I<sub>B</sub>| = 2.400 mA (forced β ≈ 58.9).</small></div>
+          <p class="note" style="padding:0">If you stopped at the active assumption you'd get 4.58 V, but that would need V<sub>EC</sub> = 0.12 V, below what the transistor can reach. That's how you know it's saturated.</p>
+        </div></details>
+        </div>
+        <div class="sub-q"><h4>(b) Region of operation <span class="pts">1 pt</span></h4>
+        <ol class="steps">
+          <li><h5>Use the failed check</h5><p>β|I<sub>B</sub>| = 2.400 mA. The most R<sub>2</sub> can pass is I<sub>C(max)</sub> = (4.7 − 0.2) V / 1.91 kΩ = 2.356 mA. The transistor asks for more than R<sub>2</sub> allows.</p></li>
+          <li><h5>Pick a region</h5>
+            <div class="mcq" data-answer="sat">
+              <button type="button" data-k="cut" data-fb="No. 40 µA of base current is flowing."><b>·</b><span>Cutoff</span></button>
+              <button type="button" data-k="sat" data-fb="Yes. The active assumption gives VEC = 0.116 V < 0.2 V, so the transistor is saturated."><b>·</b><span>Saturation</span></button>
+              <button type="button" data-k="act" data-fb="No. Assuming active leads to VEC = 0.116 V, below the 0.2 V floor. The assumption contradicts itself."><b>·</b><span>Active region</span></button>
+              <p class="mcq-fb" aria-live="polite"></p>
+            </div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the region</summary><div class="ans">
+          <div class="final">Saturation<small>β|I<sub>B</sub>|R<sub>2</sub> = 4.584 V would leave V<sub>EC</sub> = 0.116 V &lt; 0.2 V.</small></div>
+        </div></details>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= CHEAT SHEET ================= -->
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">npn base</span><div class="eqs">I<sub>B</sub> = (V<sub>1</sub> − 0.7) / R<sub>1</sub></div></div>
+    <div class="card"><span class="eyebrow">pnp base</span><div class="eqs">|I<sub>B</sub>| = (V<sub>CC</sub> − 0.7) / R<sub>1</sub></div><p>Negative sign: flows out.</p></div>
+    <div class="card"><span class="eyebrow">Collector (active)</span><div class="eqs">I<sub>C</sub> = β · I<sub>B</sub></div><p>pnp: negative, flows out.</p></div>
+    <div class="card"><span class="eyebrow">npn V<sub>out</sub></span><div class="eqs">V<sub>CC</sub> − I<sub>C</sub>R<sub>2</sub></div><p>= V<sub>CE</sub> (emitter grounded).</p></div>
+    <div class="card"><span class="eyebrow">pnp V<sub>out</sub></span><div class="eqs">|I<sub>C</sub>| · R<sub>2</sub></div><p>V<sub>EC</sub> = V<sub>CC</sub> − V<sub>out</sub>.</p></div>
+    <div class="card"><span class="eyebrow">Region test</span><p>V<sub>CE</sub> or V<sub>EC</sub> ≥ 0.2 V → active. Below → saturation, pin it at 0.2 V. No base drive → cutoff.</p></div>
+    <div class="card"><span class="eyebrow">Saturation cap</span><div class="eqs">I<sub>C(max)</sub> = (V<sub>CC</sub> − 0.2) / R<sub>2</sub></div></div>
+    <div class="card"><span class="eyebrow">Units shortcut</span><p>V ÷ kΩ = mA. mA × kΩ = V. 1 V ÷ 100 kΩ = 10 µA.</p></div>
+  </div>
+  <div class="topic" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Forgetting to subtract the 0.7 V before dividing by R<sub>1</sub>.</li>
+      <li>Multiplying µA by β and reporting the result as mA without converting.</li>
+      <li>Rounding I<sub>C</sub> early on an edge case (Problem 3) and landing in the wrong region.</li>
+      <li>Reporting the active-assumption V<sub>out</sub> after the check failed (Problem 8).</li>
+      <li>Dropping the minus sign on pnp I<sub>B</sub> and I<sub>C</sub>.</li>
+      <li>Using the npn formula V<sub>CC</sub> − I<sub>C</sub>R<sub>2</sub> on a pnp circuit, where R<sub>2</sub> is below the collector.</li>
+    </ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal all answers</summary>
+      <div class="ans">
+        <div class="tbl"><table>
+          <thead><tr><th>#</th><th>Asks for</th><th>Answer</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>npn I<sub>B</sub></td><td class="n">23.0 µA</td></tr>
+            <tr><td>2</td><td>npn I<sub>C</sub></td><td class="n">2.00 mA</td></tr>
+            <tr><td>3</td><td>V<sub>out</sub>, region (β = 53)</td><td class="n">0.220 V, active (barely)</td></tr>
+            <tr><td>4</td><td>V<sub>out</sub>, region (β = 100)</td><td class="n">2.00 V, active</td></tr>
+            <tr><td>5</td><td>pnp I<sub>B</sub></td><td class="n">−43.0 µA</td></tr>
+            <tr><td>6</td><td>pnp I<sub>C</sub></td><td class="n">−4.40 mA</td></tr>
+            <tr><td>7</td><td>V<sub>out</sub>, region (β = 95)</td><td class="n">2.04 V, active</td></tr>
+            <tr><td>8</td><td>V<sub>out</sub>, region (β = 60)</td><td class="n">4.50 V, saturation</td></tr>
+          </tbody></table></div>
+      </div></details>
+  </div>
+  <footer>
+    <p>All answers use V<sub>BE</sub> = V<sub>EB</sub> = 0.7 V (as the homework states) and V<sub>CE(sat)</sub> = V<sub>EC(sat)</sub> = 0.2 V. Each one lands inside the homework's hint range.</p>
+  </footer>
+</section>
+
+</main>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+const themeListeners = [];
+const VON = 0.7, VSAT = 0.2;
+
+function eng(v, unit, sig = 3) {
+  if (!isFinite(v)) return "–";
+  if (Math.abs(v) < 1e-15) return "0 " + unit;
+  const a = Math.abs(v);
+  const pre = [[1e-9, "n"], [1e-6, "µ"], [1e-3, "m"], [1, ""], [1e3, "k"]];
+  let p = pre[0];
+  for (const q of pre) if (a >= q[0] * 0.99995) p = q;
+  return (v / p[0]).toPrecision(sig).replace("-", "−") + " " + p[1] + unit;
+}
+const fmtR = k => (k >= 1 ? (+k.toFixed(2)) + "k" : Math.round(k * 1000)) + "Ω";
+
+/* ---------- theme ---------- */
+const themeBtn = $("#themebtn");
+const effectiveDark = () => { const t = document.documentElement.dataset.theme; return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
+const labelTheme = () => { themeBtn.textContent = effectiveDark() ? "Light mode" : "Dark mode"; };
+const savedTheme = store.get("bjt-theme");
+if (savedTheme === "dark" || savedTheme === "light") document.documentElement.dataset.theme = savedTheme;
+labelTheme();
+themeBtn.addEventListener("click", () => {
+  const next = effectiveDark() ? "light" : "dark";
+  document.documentElement.dataset.theme = next; store.set("bjt-theme", next); labelTheme();
+  themeListeners.forEach(f => f());
+});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { labelTheme(); themeListeners.forEach(f => f()); });
+
+/* ---------- nav ---------- */
+const toc = $("#toc"), navbtn = $("#navbtn");
+let scrim = null;
+function closeNav() { toc.classList.remove("open"); navbtn.setAttribute("aria-expanded", "false"); if (scrim) { scrim.remove(); scrim = null; } }
+navbtn.addEventListener("click", () => {
+  if (toc.classList.contains("open")) return closeNav();
+  toc.classList.add("open"); navbtn.setAttribute("aria-expanded", "true");
+  scrim = document.createElement("div"); scrim.className = "scrim"; scrim.addEventListener("click", closeNav); document.body.appendChild(scrim);
+});
+toc.addEventListener("click", e => { if (e.target.closest("a")) closeNav(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeNav(); });
+const spyTargets = $$("[data-title][id]"), links = $$(".toc li li a"), here = $("#here"), progress = $("#progress");
+function spy() {
+  const y = scrollY + 120; let cur = spyTargets[0];
+  for (const t of spyTargets) if (t.getBoundingClientRect().top + scrollY <= y) cur = t;
+  here.textContent = cur ? cur.dataset.title : "";
+  links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + cur.id));
+  const h = document.documentElement.scrollHeight - innerHeight;
+  progress.style.transform = `scaleX(${h > 0 ? Math.min(1, scrollY / h) : 0})`;
+}
+let q = false;
+addEventListener("scroll", () => { if (!q) { q = true; requestAnimationFrame(() => { q = false; spy(); }); } }, { passive: true });
+spy();
+
+/* ---------- solver ---------- */
+// R values in kΩ; currents returned in mA (magnitudes)
+function solve(p) {
+  const drive = p.t === "npn" ? p.V1 : p.Vcc;
+  const ib = Math.max(0, (drive - VON) / p.R1);
+  if (ib <= 0) return { ib: 0, ic: 0, region: "cutoff", vout: p.t === "npn" ? p.Vcc : 0, v: p.Vcc, want: 0 };
+  const want = p.beta * ib, icmax = (p.Vcc - VSAT) / p.R2;
+  if (want <= icmax) {
+    const v = p.Vcc - want * p.R2;
+    return { ib, ic: want, region: "active", v, vout: p.t === "npn" ? v : want * p.R2, want, icmax };
+  }
+  const ic = Math.max(0, icmax);
+  return { ib, ic, region: "saturation", v: VSAT, vout: p.t === "npn" ? VSAT : p.Vcc - VSAT, want, icmax };
+}
+
+/* ---------- schematic drawing ---------- */
+function arrowHead(x1, y1, x2, y2, t, cls = "arrow") {
+  const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), ux = dx / L, uy = dy / L;
+  const tx = x1 + dx * t, ty = y1 + dy * t, bx = tx - ux * 12, by = ty - uy * 12, px = -uy * 5.5, py = ux * 5.5;
+  return `<polygon class="${cls}" points="${tx.toFixed(1)},${ty.toFixed(1)} ${(bx + px).toFixed(1)},${(by + py).toFixed(1)} ${(bx - px).toFixed(1)},${(by - py).toFixed(1)}"/>`;
+}
+function resV(x, y0, y1) {
+  const lead = 10, n = 6, seg = (y1 - y0 - 2 * lead) / n;
+  let d = `M${x} ${y0}V${y0 + lead}`;
+  for (let i = 0; i < n; i++) d += `L${x + (i % 2 ? -8 : 8)} ${(y0 + lead + seg * (i + 0.5)).toFixed(1)}`;
+  return `<path class="w" d="${d}L${x} ${y1 - lead}V${y1}"/>`;
+}
+function resH(y, x0, x1) {
+  const lead = 10, n = 6, seg = (x1 - x0 - 2 * lead) / n;
+  let d = `M${x0} ${y}H${x0 + lead}`;
+  for (let i = 0; i < n; i++) d += `L${(x0 + lead + seg * (i + 0.5)).toFixed(1)} ${y + (i % 2 ? 8 : -8)}`;
+  return `<path class="w" d="${d}L${x1 - lead} ${y}H${x1}"/>`;
+}
+const gnd = (x, y) => `<path class="w" d="M${x} ${y - 14}V${y}"/><path class="gnd" d="M${x - 12} ${y}H${x + 12}L${x} ${y + 11}Z"/>`;
+const vsrc = (cx, cy) => `<circle class="src" cx="${cx}" cy="${cy}" r="22"/><path class="w" d="M${cx - 6} ${cy - 9}H${cx + 6}M${cx} ${cy - 15}V${cy - 3}M${cx - 6} ${cy + 10}H${cx + 6}"/>`;
+const tag = (x, y) => `<circle class="dot" cx="${x}" cy="${y}" r="4"/><path class="w" d="M${x} ${y}H${x + 26}"/><path class="tag" d="M${x + 26} ${y - 12}H${x + 84}L${x + 96} ${y}L${x + 84} ${y + 12}H${x + 26}Z"/><text class="lbl" x="${x + 34}" y="${y + 5}">Vout</text>`;
+const vfmt = v => (Number.isInteger(v) ? v : +v.toFixed(2)) + "V";
+
+function npnSVG(p, live) {
+  let s = `<svg viewBox="0 0 450 300" role="img" aria-label="npn circuit: V1 ${p.V1} volts through R1 ${p.R1} kilohms to the base; Vcc ${p.Vcc} volts through R2 ${p.R2} kilohms to the collector; emitter grounded">`;
+  if (live) {
+    s += `<path class="flow b" data-f="b" d="M60 218V205H300L330 235V266"/>`;
+    s += `<path class="flow c" data-f="c" d="M110 53V22H330V175L300 193V217L330 235V266"/>`;
+  }
+  s += `<path class="w" d="M110 53V22H330V36"/>` + resV(330, 36, 112) + `<path class="w" d="M330 112V175L300 193"/>`;
+  s += `<path class="w thick" d="M300 180V230"/><path class="w" d="M300 217L330 235V258"/>` + arrowHead(300, 217, 330, 235, 0.92);
+  s += vsrc(110, 75) + gnd(110, 111);
+  s += `<path class="w" d="M60 218V205H122"/>` + resH(205, 122, 232) + `<path class="w" d="M232 205H300"/>`;
+  s += vsrc(60, 240) + gnd(60, 276) + gnd(330, 272);
+  s += tag(330, 140);
+  s += `<text class="lbl" x="80" y="70" text-anchor="end">Vcc</text><text class="val" x="80" y="90" text-anchor="end" data-v="Vcc">${vfmt(p.Vcc)}</text>`;
+  s += `<text class="lbl" x="350" y="66">R2</text><text class="val" x="350" y="86" data-v="R2">${fmtR(p.R2)}</text>`;
+  s += `<text class="lbl" x="177" y="186" text-anchor="middle">R1</text><text class="val" x="177" y="232" text-anchor="middle" data-v="R1">${fmtR(p.R1)}</text>`;
+  s += `<text class="lbl" x="32" y="236" text-anchor="end">V1</text><text class="val" x="32" y="256" text-anchor="end" data-v="V1">${vfmt(p.V1)}</text>`;
+  s += `<text class="pin" x="282" y="196">B</text><text class="pin" x="340" y="172">C</text><text class="pin" x="340" y="252">E</text><text class="lbl" x="346" y="212">Q1</text>`;
+  if (live) s += `<text class="live b" x="250" y="262" text-anchor="middle" data-l="ib"></text><text class="live c" x="228" y="16" data-l="ic"></text>`;
+  return s + `</svg>`;
+}
+function pnpSVG(p, live) {
+  let s = `<svg viewBox="0 0 450 300" role="img" aria-label="pnp circuit: Vcc ${p.Vcc} volts to the emitter; base through R1 ${p.R1} kilohms to ground; collector through R2 ${p.R2} kilohms to ground">`;
+  if (live) {
+    s += `<path class="flow b" data-f="b" d="M90 88V25H330V75L300 95V105H220V232"/>`;
+    s += `<path class="flow c" data-f="c" d="M90 88V25H330V75L300 95V117L330 137V258"/>`;
+  }
+  s += `<path class="w" d="M90 88V25H330V75L300 95"/>` + arrowHead(330, 75, 300, 95, 0.78);
+  s += `<path class="w thick" d="M300 80V130"/><path class="w" d="M300 117L330 137V176"/>` + resV(330, 176, 248) + gnd(330, 262);
+  s += `<path class="w" d="M300 105H220V142"/>` + resV(220, 142, 218) + gnd(220, 232);
+  s += vsrc(90, 110) + gnd(90, 146);
+  s += tag(330, 160);
+  s += `<text class="lbl" x="60" y="106" text-anchor="end">Vcc</text><text class="val" x="60" y="126" text-anchor="end" data-v="Vcc">${vfmt(p.Vcc)}</text>`;
+  s += `<text class="lbl" x="236" y="172">R1</text><text class="val" x="204" y="192" text-anchor="end" data-v="R1">${fmtR(p.R1)}</text>`;
+  s += `<text class="lbl" x="348" y="208">R2</text><text class="val" x="348" y="228" data-v="R2">${fmtR(p.R2)}</text>`;
+  s += `<text class="pin" x="340" y="70">E</text><text class="pin" x="282" y="98">B</text><text class="pin" x="340" y="150">C</text><text class="lbl" x="346" y="104">Q1</text><text class="val" x="346" y="122">pnp</text>`;
+  if (live) s += `<text class="live b" x="138" y="124" data-l="ib"></text><text class="live c" x="346" y="290" data-l="ic"></text>`;
+  return s + `</svg>`;
+}
+$$(".ckt[data-static]").forEach(el => {
+  const p = JSON.parse(el.dataset.static);
+  el.innerHTML = p.t === "npn" ? npnSVG(p, false) : pnpSVG(p, false);
+});
+
+/* ---------- load line ---------- */
+function drawLoadLine(host, p, r) {
+  const W = Math.max(260, host.clientWidth), H = W < 420 ? 230 : 260;
+  const m = { l: 50, r: 14, t: 26, b: 34 };
+  const imax = p.Vcc / p.R2, xMax = p.Vcc * 1.05, yMax = imax * 1.15 || 1;
+  const sx = v => m.l + v / xMax * (W - m.l - m.r), sy = i => H - m.b - i / yMax * (H - m.t - m.b);
+  const vl = p.t === "npn" ? "VCE" : "VEC";
+  let s = `<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="Load line with operating point">`;
+  s += `<rect class="bg" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}"/>`;
+  s += `<rect class="sat" x="${m.l}" y="${m.t}" width="${sx(VSAT) - m.l}" height="${H - m.t - m.b}"/>`;
+  const nice = n => { const e = Math.pow(10, Math.floor(Math.log10(n))); const f = n / e; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * e / 2; };
+  const xs = nice(xMax), ys = nice(yMax);
+  for (let v = 0; v <= xMax + 1e-9; v += xs) s += `<line class="gr" x1="${sx(v)}" x2="${sx(v)}" y1="${m.t}" y2="${H - m.b}"/><text class="tk" x="${sx(v)}" y="${H - m.b + 15}" text-anchor="middle">${+v.toFixed(2)}V</text>`;
+  for (let i = 0; i <= yMax + 1e-9; i += ys) s += `<line class="gr" x1="${m.l}" x2="${W - m.r}" y1="${sy(i)}" y2="${sy(i)}"/><text class="tk" x="${m.l - 6}" y="${sy(i) + 4}" text-anchor="end">${+i.toFixed(2)}mA</text>`;
+  s += `<rect class="ax" x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}"/>`;
+  s += `<text class="tk" x="${W - m.r}" y="${H - 4}" text-anchor="end">${vl} →</text><text class="ttl" x="${m.l}" y="16">IC (mA) vs ${vl} · load line</text>`;
+  s += `<line class="load" x1="${sx(0)}" y1="${sy(imax)}" x2="${sx(p.Vcc)}" y2="${sy(0)}"/>`;
+  if (r.want > 0) {
+    const yb = Math.min(r.want, yMax);
+    s += `<line class="beta" x1="${m.l}" x2="${W - m.r}" y1="${sy(yb)}" y2="${sy(yb)}"/>`;
+    s += `<text class="tk" x="${W - m.r - 4}" y="${sy(yb) - 6}" text-anchor="end" style="fill:var(--t3)">${r.want > yMax ? "β·IB ↑ off chart" : "β·IB = " + eng(r.want * 1e-3, "A")}</text>`;
+  }
+  s += `<text class="tk" x="${m.l + 3}" y="${H - m.b - 6}" style="fill:var(--bad)">sat</text>`;
+  s += `<circle class="q" cx="${sx(r.v)}" cy="${sy(r.ic)}" r="7" style="fill:var(--${r.region === "active" ? "good" : r.region === "saturation" ? "bad" : "muted"})"/>`;
+  s += `<text class="ttl" x="${Math.min(sx(r.v) + 10, W - 60)}" y="${sy(r.ic) - 10}">Q</text>`;
+  host.innerHTML = s + `</svg>`;
+}
+
+/* ---------- playgrounds ---------- */
+function playground(root, p, defs) {
+  const ck = $("[data-ckt]", root), ll = $("[data-ll]", root), reads = $("[data-reads]", root), why = $("[data-why]", root), badge = $("[data-region]", root), sl = $("[data-sliders]", root);
+  ck.innerHTML = p.t === "npn" ? npnSVG(p, true) : pnpSVG(p, true);
+  sl.innerHTML = defs.map(d => `<div class="sl"><label for="${root.id}-${d.k}"><span>${d.label}</span> <b id="${root.id}-${d.k}-o"></b></label><input type="range" id="${root.id}-${d.k}" min="${d.min}" max="${d.max}" step="${d.step}" value="${p[d.k]}"></div>`).join("");
+  const fmt = { V1: v => v.toFixed(2) + " V", Vcc: v => v.toFixed(2) + " V", R1: v => v.toFixed(0) + " kΩ", R2: v => v.toFixed(2) + " kΩ", beta: v => v.toFixed(0) };
+  const dur = (mA, base) => Math.max(0.25, Math.min(4, base - Math.log10(mA * 1000) * 0.55));
+  function update() {
+    defs.forEach(d => { p[d.k] = +$("#" + root.id + "-" + d.k).value; $("#" + root.id + "-" + d.k + "-o").textContent = fmt[d.k](p[d.k]); });
+    const r = solve(p), npn = p.t === "npn", sgn = npn ? 1 : -1;
+    $$("[data-v]", ck).forEach(t => { const k = t.dataset.v; t.textContent = k.startsWith("R") ? fmtR(p[k]) : vfmt(p[k]); });
+    const fb = $('[data-f="b"]', ck), fc = $('[data-f="c"]', ck);
+    fb.style.opacity = r.ib > 0 ? 1 : 0; fc.style.opacity = r.ic > 0 ? 1 : 0;
+    fb.style.setProperty("--dur", dur(r.ib, 3.4) + "s"); fc.style.setProperty("--dur", dur(r.ic, 3.4) + "s");
+    $('[data-l="ib"]', ck).textContent = "IB " + eng(sgn * r.ib * 1e-3, "A");
+    $('[data-l="ic"]', ck).textContent = "IC " + eng(sgn * r.ic * 1e-3, "A");
+    badge.className = "badge " + r.region; badge.textContent = r.region;
+    const vl = npn ? "V<sub>CE</sub>" : "V<sub>EC</sub>";
+    reads.innerHTML =
+      `<div><div class="k">I<sub>B</sub></div><div class="v">${eng(sgn * r.ib * 1e-3, "A")}</div></div>` +
+      `<div><div class="k">I<sub>C</sub></div><div class="v">${eng(sgn * r.ic * 1e-3, "A")}</div></div>` +
+      `<div><div class="k">${vl}</div><div class="v">${r.v.toFixed(3)} V</div></div>` +
+      `<div class="hl"><div class="k">V<sub>out</sub></div><div class="v">${r.vout.toFixed(3)} V</div></div>`;
+    const drive = npn ? `V<sub>1</sub> = ${p.V1.toFixed(2)} V` : `V<sub>CC</sub> = ${p.Vcc.toFixed(2)} V`;
+    if (r.region === "cutoff") why.innerHTML = `${drive} is not above 0.7 V, so the base–emitter junction stays off. No current flows anywhere: <b>cutoff</b>.`;
+    else if (r.region === "active") why.innerHTML = `β·I<sub>B</sub> = ${eng(r.want * 1e-3, "A")} fits under the cap of ${eng(r.icmax * 1e-3, "A")} that R<sub>2</sub> allows, leaving ${vl} = ${r.v.toFixed(3)} V ≥ 0.2 V: <b>active</b>.`;
+    else why.innerHTML = `β·I<sub>B</sub> = ${eng(r.want * 1e-3, "A")} is more than the ${eng(r.icmax * 1e-3, "A")} R<sub>2</sub> can pass, so ${vl} pins at 0.2 V: <b>saturation</b>.`;
+    drawLoadLine(ll, p, r);
+  }
+  sl.addEventListener("input", update);
+  new ResizeObserver(() => drawLoadLine(ll, p, solve(p))).observe(ll);
+  themeListeners.push(update);
+  update();
+}
+playground($("#pgA"), { t: "npn", V1: 2.5, R1: 100, R2: 1, Vcc: 5, beta: 100 }, [
+  { k: "V1", label: "V<sub>1</sub>", min: 0, max: 5, step: 0.05 },
+  { k: "beta", label: "β", min: 20, max: 300, step: 1 },
+  { k: "R2", label: "R<sub>2</sub>", min: 0.25, max: 3, step: 0.01 }
+]);
+playground($("#pgB"), { t: "pnp", Vcc: 5, R1: 150, R2: 1.5, beta: 80 }, [
+  { k: "Vcc", label: "V<sub>CC</sub>", min: 0, max: 6, step: 0.05 },
+  { k: "R1", label: "R<sub>1</sub>", min: 50, max: 300, step: 1 },
+  { k: "beta", label: "β", min: 20, max: 300, step: 1 },
+  { k: "R2", label: "R<sub>2</sub>", min: 0.25, max: 3, step: 0.01 }
+]);
+
+/* ---------- base-loop staircases ---------- */
+function stair(id, flip) {
+  const s = $("#" + id.replace("stair", "st")), root = $("#" + id), b1 = $(".seg1", root), b2 = $(".seg2", root), out = $("#" + id.replace("stair", "st") + "-out"), st = $("#" + id + "-ib");
+  const f = () => {
+    const V = +s.value, on = V > VON, vr = on ? V - VON : 0, vj = on ? VON : V;
+    out.textContent = V.toFixed(2) + " V";
+    b1.style.flexBasis = (vr / 5 * 100) + "%"; b2.style.flexBasis = (vj / 5 * 100) + "%";
+    b1.textContent = vr > 0.6 ? `R1: ${vr.toFixed(2)} V` : "";
+    b2.textContent = vj > 0.45 ? (on ? "0.7 V" : `${vj.toFixed(2)} V`) : "";
+    const ib = vr / 100; // mA, R1 = 100k
+    st.textContent = on ? `${flip ? "|IB|" : "IB"} = ${vr.toFixed(2)} V ÷ 100 kΩ = ${(ib * 1000).toFixed(1)} µA` : "below 0.7 V: junction off, IB = 0";
+  };
+  s.addEventListener("input", f); f();
+}
+stair("stairA", false); stair("stairB", true);
+
+/* ---------- multiple choice ---------- */
+$$(".mcq").forEach(qq => {
+  const fb = $(".mcq-fb", qq), ans = qq.dataset.answer;
+  qq.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const ok = b.dataset.k === ans;
+    $$("button", qq).forEach(x => x.classList.remove("right", "wrong"));
+    b.classList.add(ok ? "right" : "wrong");
+    fb.className = "mcq-fb " + (ok ? "right" : "wrong");
+    fb.textContent = b.dataset.fb;
+  });
+});
+})();
+</script>
+</body>
+</html>

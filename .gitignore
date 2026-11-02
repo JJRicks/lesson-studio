@@ -1,0 +1,13 @@
+# Course material stays off GitHub: instructors' PDFs and docx files are theirs, not ours.
+sources/
+*.pdf
+*.docx
+*.doc
+*.pptx
+
+# Generated
+dist/
+.cache/
+__pycache__/
+*.pyc
+.DS_Store

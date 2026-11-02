@@ -1,0 +1,679 @@
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#l22">Lesson 22 · Lagrange</a>
+      <ol>
+        <li><a href="#lag-idea">The idea</a></li>
+        <li><a href="#lag-method">The method</a></li>
+        <li><a href="#lag-3d">Three variables</a></li>
+        <li><a href="#lag-box">Applications</a></li>
+        <li><a href="#lag-two">Two constraints</a></li>
+        <li><a href="#lag-region">Stretch: regions</a></li>
+      </ol></li>
+    <li><a class="grp" href="#l23">Lesson 23 · Rectangles</a>
+      <ol>
+        <li><a href="#riemann">Volume &amp; Riemann sums</a></li>
+        <li><a href="#props">Properties</a></li>
+        <li><a href="#fubini">Iterated integrals</a></li>
+        <li><a href="#rect-apps">Area &amp; average value</a></li>
+      </ol></li>
+    <li><a class="grp" href="#l24">Lesson 24 · General regions</a>
+      <ol>
+        <li><a href="#gen-idea">Any shape</a></li>
+        <li><a href="#types">Type I &amp; Type II</a></li>
+        <li><a href="#limits">Setting up limits</a></li>
+        <li><a href="#gen-apps">Volume, area, average</a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<!-- ================= HERO ================= -->
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Math 215 · Week 8 · Lessons 22–24</div>
+  <h1>Lagrange &amp; <span>Double Integrals</span></h1>
+  <p class="lede">Three lessons, three big ideas. Optimize along a constraint by lining up gradients. Find volume by stacking ever-thinner boxes. Handle curvy regions by letting the inner limits be functions. Each topic builds from scratch, then works one or two examples from your guided notes with the answers hidden until you click.</p>
+  <div class="chips"><span class="chip">Lesson 22 · Lagrange multipliers</span><span class="chip">Lesson 23 · Rectangles</span><span class="chip">Lesson 24 · General regions</span></div>
+  <div class="panel">
+    <div class="panel-head"><span class="t">Boxes → a double integral · live</span><button class="btn ghost" id="heroPlay" type="button" aria-pressed="true">Pause</button></div>
+    <canvas id="heroCv" class="p3" aria-label="3D view: boxes under the surface z = 16 − x² − 2y² over the square from 0 to 2. The grid of boxes keeps getting finer and their total volume approaches 48."></canvas>
+    <div class="reads">
+      <div class="read"><div class="k">Grid</div><div class="v" id="hGrid">–</div></div>
+      <div class="read"><div class="k">Total box volume</div><div class="v" id="hSum">–</div></div>
+      <div class="read"><div class="k">Exact volume</div><div class="v">48</div></div>
+      <div class="read"><div class="k">Still missing</div><div class="v" id="hGap">–</div></div>
+    </div>
+    <p class="note">Boxes under the surface \(z = 16 - x^2 - 2y^2\) over the square \([0,2]\times[0,2]\). As the grid gets finer, the boxes hug the surface and their total volume closes in on the exact volume, 48. That limit <i>is</i> the double integral (Lesson 23). Drag to rotate.</p>
+  </div>
+</section>
+
+<section class="topic" aria-labelledby="map-h">
+  <h3 id="map-h">This week at a glance</h3>
+  <div class="grid2">
+    <a class="card" href="#l22" style="text-decoration:none;color:inherit"><span class="eyebrow">Lesson 22</span><h4>Lagrange multipliers</h4><p>Find the biggest or smallest value of a function when you're only allowed to stand on a curve or surface.</p></a>
+    <a class="card" href="#l23" style="text-decoration:none;color:inherit"><span class="eyebrow">Lesson 23</span><h4>Double integrals over rectangles</h4><p>Volume under a surface, computed one slice at a time with iterated integrals.</p></a>
+    <a class="card" href="#l24" style="text-decoration:none;color:inherit"><span class="eyebrow">Lesson 24</span><h4>Double integrals over general regions</h4><p>The same idea over triangles, parabolas and other shapes: the inner limits become functions.</p></a>
+  </div>
+</section>
+
+<!-- ================= LESSON 22 ================= -->
+<section class="part" id="l22" data-title="Lesson 22 · Lagrange">
+  <div class="part-head">
+    <div class="part-letter">22</div>
+    <div class="eyebrow">Lesson 22 · optimization with a constraint</div>
+    <h2>Lagrange multipliers</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>To find the max or min of \(f\) while you're stuck on a curve \(g = 0\), look for the spots where a level curve of \(f\) just touches the constraint curve. There, the two gradients point along the same line: \(\nabla f = \lambda \nabla g\).</p></div>
+
+  <div class="topic" id="lag-idea" data-title="The idea">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>The idea: where a level curve touches the constraint</h3>
+    <p>Two tools from earlier lessons do all the work:</p>
+    <div class="grid2">
+      <div class="card"><h4>Level curves</h4><p>The curve \(f(x,y) = c\) connects every point where \(f\) has the same value \(c\). They're the contour lines on a hiking map.</p></div>
+      <div class="card"><h4>The gradient</h4><p>\(\nabla f = \langle f_x, f_y\rangle\) points straight uphill. It is always <b>perpendicular to the level curve</b> through that point, and its length says how steep the climb is.</p></div>
+    </div>
+    <p>A constrained problem says: optimize \(f(x,y)\), but only at points on a curve \(g(x,y) = 0\). The unconstrained peak may not even be on the curve, so setting \(\nabla f = \mathbf{0}\) won't work.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a hiking trail</span><p>You're hiking a trail that cuts across a hillside. The trail is the constraint; the hill's height is \(f\). You want the highest point <i>on the trail</i>, not the summit. While the trail crosses contour lines you're still climbing or descending. At the trail's highest point it stops crossing contours and runs <b>along</b> one for an instant: the trail is tangent to a level curve.</p></div>
+    <p>At that tangent point, \(\nabla f\) is perpendicular to the level curve and \(\nabla g\) is perpendicular to the constraint curve. The two curves share a tangent line there, so the two perpendiculars point along the same line. One must be a multiple of the other:</p>
+    <div class="thm"><span class="eyebrow">Lagrange multipliers · one constraint</span>
+      <p>If \(f\), restricted to the curve \(g(x,y) = 0\), has a local extremum at \((x_0,y_0)\) and \(\nabla g(x_0,y_0) \ne \mathbf{0}\), then there is a number \(\lambda\) (the <b>Lagrange multiplier</b>) with</p>
+      \[\nabla f(x_0,y_0) = \lambda\,\nabla g(x_0,y_0).\]
+      <p class="note" style="padding:0">\(f\) is the <b>objective function</b>; \(g = 0\) is the <b>constraint</b>. \(\lambda\) can be negative: the gradients may point in opposite directions.</p>
+    </div>
+    <div class="panel" id="lagPanel">
+      <div class="panel-head"><span class="t">Gradient explorer</span>
+        <div class="seg" role="group" aria-label="Example" id="lagSeg"><button aria-pressed="true" data-k="closest">Closest point</button><button aria-pressed="false" data-k="product">Product on a circle</button></div></div>
+      <div class="setup" style="border-top:0" id="lagStory"></div>
+      <canvas id="lagCv" class="p2" style="height:360px;touch-action:none;cursor:pointer" aria-label="Level curves of f, the constraint curve, and a draggable point showing the two gradient arrows"></canvas>
+      <canvas id="lagMini" class="p2" style="height:110px;border-top:1px solid var(--line)" aria-label="Value of f along the constraint"></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="lagT"><span>Move along the constraint</span> <b id="lagTOut"></b></label><input type="range" id="lagT" min="0" max="1000" step="1" value="200"></div>
+        <div class="row"><button class="btn" type="button" id="lagMin">Slide to a min</button><button class="btn ghost" type="button" id="lagMax">Slide to a max</button></div>
+      </div>
+      <div class="cursorbox" id="lagReads"></div>
+      <div class="legend"><span><span class="sw" style="background:var(--glow)"></span>\(\nabla f\)</span><span><span class="sw" style="background:var(--accent)"></span>\(\nabla g\)</span><span><span class="sw" style="background:var(--muted)"></span>level curves of \(f\)</span><span><span class="sw" style="background:var(--glow);opacity:.6"></span>the level curve through your point</span></div>
+      <p class="note">Drag the point along the constraint (or use the slider). Away from the answer, the dashed level curve <i>crosses</i> the constraint and the arrows disagree. At a max or min, the level curve just touches it and the arrows line up.</p>
+    </div>
+    <details class="quick"><summary>Quick check: at a point, \(\nabla f = \langle 6,-8\rangle\) and \(\nabla g = \langle 3,-4\rangle\). Is it a candidate? What is \(\lambda\)?</summary><div><p>Yes. \(\langle 6,-8\rangle = 2\,\langle 3,-4\rangle\), so the gradients are parallel and \(\lambda = 2\).</p></div></details>
+  </div>
+
+  <div class="topic" id="lag-method" data-title="The method">
+    <span class="eyebrow">Topic 2</span>
+    <h3>The method in four steps</h3>
+    <ol class="steps">
+      <li><h5>Name the pieces</h5><p>Find the objective \(f(x,y)\) and the constraint \(g(x,y) = 0\). Are you maximizing or minimizing?</p></li>
+      <li><h5>Set up the system</h5><div class="mbox">\[\nabla f(x_0,y_0) = \lambda\,\nabla g(x_0,y_0), \qquad g(x_0,y_0) = 0\]</div><p>Written out, that's three equations (\(f_x = \lambda g_x\), \(f_y = \lambda g_y\), \(g = 0\)) in three unknowns (\(x, y, \lambda\)).</p></li>
+      <li><h5>Solve for \(x_0\) and \(y_0\)</h5><p>You usually don't need \(\lambda\) itself; it's a go-between.</p></li>
+      <li><h5>Compare</h5><p>Plug every solution into \(f\). The largest value is the max, the smallest is the min.</p></li>
+    </ol>
+    <div class="warn"><b>Solving tips.</b> Solve each of the first two equations for \(\lambda\) and set them equal; that links \(x\) and \(y\) without \(\lambda\). Then substitute into the constraint. Before dividing by a variable, check whether it could be zero, and handle that case separately so you don't lose a solution.</div>
+    <div class="analogy"><span class="eyebrow">Min or max?</span><p>The equations find <i>candidates</i>; comparing values decides. On a closed loop like a circle, both a max and a min exist. On an endless line, often only one does: a bowl-shaped \(f\) along a line has a lowest point but no highest.</p></div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex22-1" data-title="Example 1">
+      <div class="prob-head"><span class="pnum">Example 1</span><span class="eyebrow">Line constraint</span><span class="pts">notes p. 3</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the minimum value</b> of \(f(x,y) = x^2 + 4y^2 - 2x + 8y\) subject to the constraint \(x + 2y = 7\).</p>
+        <ol class="steps">
+          <li><h5>Name the pieces</h5><p>Objective \(f = x^2 + 4y^2 - 2x + 8y\). Constraint \(g(x,y) = x + 2y - 7 = 0\). Minimizing.</p></li>
+          <li><h5>Gradients</h5><div class="mbox">\[\nabla f = \langle 2x - 2,\; 8y + 8\rangle, \qquad \nabla g = \langle 1,\; 2\rangle\]</div></li>
+          <li><h5>The system</h5><div class="mbox">\[2x - 2 = \lambda, \qquad 8y + 8 = 2\lambda, \qquad x + 2y = 7\]</div></li>
+          <li><h5>Eliminate \(\lambda\)</h5><p>Substitute \(\lambda = 2x - 2\) into the second equation: \(8y + 8 = 4x - 4\), so \(y = \dfrac{x - 3}{2}\).</p></li>
+          <li><h5>Use the constraint</h5><p>\(x + 2\cdot\frac{x-3}{2} = 7 \Rightarrow 2x - 3 = 7 \Rightarrow x = 5\), and then \(y = 1\).</p></li>
+          <li><h5>Evaluate</h5><p>Only one candidate: compute \(f(5, 1)\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">Minimum \(= 27\) at \((5, 1)\)<small>\(f(5,1) = 25 + 4 - 10 + 8 = 27\), with \(\lambda = 8\).</small></div>
+          <p>Check another way: substitute \(x = 7 - 2y\) to get \(f = 8y^2 - 16y + 35\), a parabola whose lowest point is at \(y = 1\), value 27. It's a minimum because \(f\) is a bowl, which only has a low point along a line.</p>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="ex22-2">
+      <div class="prob-head"><span class="pnum">Example 2</span><span class="eyebrow">Circle constraint</span><span class="pts">notes p. 4</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the minimum value</b> of \(f(x,y) = 7x + 4y\) subject to the constraint \(x^2 + y^2 = 32\).</p>
+        <ol class="steps">
+          <li><h5>Gradients</h5><div class="mbox">\[\nabla f = \langle 7,\; 4\rangle, \qquad \nabla g = \langle 2x,\; 2y\rangle \quad (g = x^2+y^2-32)\]</div></li>
+          <li><h5>The system</h5><div class="mbox">\[7 = 2\lambda x, \qquad 4 = 2\lambda y, \qquad x^2 + y^2 = 32\]</div><p>Neither \(x\), \(y\) nor \(\lambda\) can be 0 (the left sides aren't 0), so dividing is safe.</p></li>
+          <li><h5>Link \(x\) and \(y\)</h5><p>Divide the second equation by the first: \(\dfrac{4}{7} = \dfrac{y}{x}\), so \(y = \dfrac{4}{7}x\).</p></li>
+          <li><h5>Use the constraint</h5><div class="mbox">\[x^2 + \tfrac{16}{49}x^2 = 32 \;\Rightarrow\; \tfrac{65}{49}x^2 = 32 \;\Rightarrow\; x = \pm\tfrac{28\sqrt{130}}{65} \approx \pm 4.91,\quad y = \tfrac47 x \approx \pm 2.81\]</div></li>
+          <li><h5>Two candidates, compare them</h5><p>\(f = 7x + 4y = 7x + \tfrac{16}{7}x = \tfrac{65}{7}x\). The negative \(x\) gives the smaller value. Compute it.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">Minimum \(= -4\sqrt{130} \approx -45.61\)<small>at \(\left(-\tfrac{28\sqrt{130}}{65},\, -\tfrac{16\sqrt{130}}{65}\right) \approx (-4.91, -2.81)\). The other candidate gives the maximum, \(+4\sqrt{130}\).</small></div>
+          <p>Picture: the level curves of \(7x + 4y\) are parallel straight lines. Slide one across the circle; the first and last lines to touch it are the min and the max.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="lag-3d" data-title="Three variables">
+    <span class="eyebrow">Topic 3</span>
+    <h3>Three variables: same recipe, one more equation</h3>
+    <p>With \(f(x,y,z)\) and a constraint surface \(g(x,y,z) = 0\), the gradients have three components, so \(\nabla f = \lambda\nabla g\) gives three equations. Add \(g = 0\) and you have four equations for four unknowns \((x, y, z, \lambda)\).</p>
+    <p>The picture is the same one level up: the level <i>surface</i> of \(f\) touches the constraint surface, so their normal vectors (the gradients) line up.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex22-3">
+      <div class="prob-head"><span class="pnum">Example 3</span><span class="eyebrow">Three variables</span><span class="pts">notes p. 5</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the minimum value</b> of \(f(x,y,z) = x^2 + y^2 + z^2\) subject to \(x + y + z = 1\).</p>
+        <ol class="steps">
+          <li><h5>Gradients</h5><div class="mbox">\[\nabla f = \langle 2x, 2y, 2z\rangle, \qquad \nabla g = \langle 1, 1, 1\rangle\]</div></li>
+          <li><h5>The system</h5><p>\(2x = \lambda,\; 2y = \lambda,\; 2z = \lambda\). All three equal the same number, so \(x = y = z\).</p></li>
+          <li><h5>Use the constraint</h5><p>\(3x = 1\), so \(x = y = z = \tfrac13\).</p></li>
+          <li><h5>Evaluate</h5><p>Compute \(f\left(\tfrac13, \tfrac13, \tfrac13\right)\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">Minimum \(= \tfrac13\) at \(\left(\tfrac13, \tfrac13, \tfrac13\right)\)<small>\(3\cdot\tfrac19 = \tfrac13\).</small></div>
+          <p>Meaning: \(x^2+y^2+z^2\) is the squared distance from the origin, so this finds the point on the plane \(x+y+z=1\) closest to the origin.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="lag-box" data-title="Applications">
+    <span class="eyebrow">Topic 4</span>
+    <h3>Applications: turning words into \(f\) and \(g\)</h3>
+    <p>Word problems hide the two functions in plain sight:</p>
+    <ul>
+      <li>The thing to make <b>biggest or smallest</b> is the objective \(f\) (volume, cost, distance…).</li>
+      <li>The thing you're <b>limited by</b> is the constraint \(g = 0\) (a fixed amount of material, a budget, a surface you must stay on).</li>
+    </ul>
+    <p>Try the classic box below. You choose the base; the 24 ft² of cardboard decides how tall the walls can be.</p>
+    <div class="panel" id="boxPanel">
+      <div class="panel-head"><span class="t">Open-top box from 24 ft² of cardboard</span><span class="status" id="boxStatus"></span></div>
+      <div class="two">
+        <div class="boxsvg" id="boxSvg"></div>
+        <div class="heat"><canvas id="boxHeat" aria-label="Map of volume for every choice of base width and depth; click to choose"></canvas><p>Volume for every base \(x \times y\) (brighter = bigger). Click to try a base.</p></div>
+      </div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="boxX"><span>Base width \(x\)</span> <b id="boxXOut"></b></label><input type="range" id="boxX" min="1" max="6" step="0.01" value="4"></div>
+        <div class="sl"><label for="boxY"><span>Base depth \(y\)</span> <b id="boxYOut"></b></label><input type="range" id="boxY" min="1" max="6" step="0.01" value="1.6"></div>
+      </div>
+      <div class="cursorbox" id="boxReads"></div>
+    </div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex22-box">
+      <div class="prob-head"><span class="pnum">Application</span><span class="eyebrow">Open-top box</span><span class="pts">notes p. 6</span></div>
+      <div class="prob-body">
+        <p class="ask">A rectangular box <b>without a top</b> is to be made from 24 ft² of cardboard. <b>Find the maximum volume</b> of such a box.</p>
+        <ol class="steps">
+          <li><h5>Name the variables</h5><p>Base \(x\) by \(y\), height \(z\) (feet).</p></li>
+          <li><h5>Objective and constraint</h5><p>Maximize \(V = xyz\). Cardboard: bottom \(xy\), two walls \(xz\), two walls \(yz\), no lid:</p><div class="mbox">\[g(x,y,z) = xy + 2xz + 2yz - 24 = 0\]</div></li>
+          <li><h5>The system</h5><div class="mbox">\[yz = \lambda(y + 2z),\quad xz = \lambda(x + 2z),\quad xy = \lambda(2x + 2y)\]</div></li>
+          <li><h5>Spot the symmetry</h5><p>Multiply the first equation by \(x\) and the second by \(y\). Both left sides become \(xyz\), so \(\lambda(xy + 2xz) = \lambda(xy + 2yz)\), which gives \(x = y\). Doing the same with the second and third equations gives \(xy = 2yz\), so \(x = 2z\).</p></li>
+          <li><h5>Use the constraint</h5><p>With \(x = y = 2z\): \(4z^2 + 4z^2 + 4z^2 = 24\), so \(z^2 = 2\). That makes \(z = \sqrt2\) and \(x = y = 2\sqrt2\).</p></li>
+          <li><h5>Evaluate</h5><p>\(V = (2\sqrt2)(2\sqrt2)(\sqrt2)\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(V_{\max} = 8\sqrt2 \approx 11.31\) ft³<small>A square base about 2.83 ft on a side, with walls about 1.41 ft tall: exactly half the base width.</small></div>
+          <p>Confirm it on the explorer above: the brightest spot on the map sits at \(x = y \approx 2.83\).</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="lag-two" data-title="Two constraints">
+    <span class="eyebrow">Topic 5</span>
+    <h3>Two constraints</h3>
+    <p>Sometimes a point must satisfy two conditions at once, \(g(x,y,z) = 0\) <b>and</b> \(h(x,y,z) = 0\). Two surfaces usually meet in a <b>curve</b>, and you optimize along that curve.</p>
+    <div class="thm"><span class="eyebrow">Lagrange multipliers · two constraints</span>
+      \[\nabla f = \lambda_1\nabla g + \lambda_2 \nabla h, \qquad g = 0, \qquad h = 0\]
+      <p>Five equations, five unknowns: \(x, y, z, \lambda_1, \lambda_2\).</p>
+    </div>
+    <p>Why a sum? At the best point, \(\nabla f\) must be perpendicular to the curve. Both \(\nabla g\) and \(\nabla h\) are perpendicular to it too, and every vector perpendicular to the curve is some combination of those two.</p>
+    <p class="note" style="padding:0">Your notes give the setup without an example, so here's one to see it in action.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex22-two">
+      <div class="prob-head"><span class="pnum">Example</span><span class="eyebrow">Two constraints</span><span class="bonus">extra, not in notes</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the maximum</b> of \(f(x,y,z) = x + 2y + 3z\) on the curve where the plane \(x - y + z = 1\) meets the cylinder \(x^2 + y^2 = 1\).</p>
+        <ol class="steps">
+          <li><h5>Gradients</h5><div class="mbox">\[\nabla f = \langle 1,2,3\rangle,\quad \nabla g = \langle 1,-1,1\rangle,\quad \nabla h = \langle 2x, 2y, 0\rangle\]</div></li>
+          <li><h5>The system</h5><div class="mbox">\[1 = \lambda_1 + 2\lambda_2 x,\quad 2 = -\lambda_1 + 2\lambda_2 y,\quad 3 = \lambda_1\]</div></li>
+          <li><h5>Use the easy equation</h5><p>\(\lambda_1 = 3\), so \(x = -\dfrac{1}{\lambda_2}\) and \(y = \dfrac{5}{2\lambda_2}\).</p></li>
+          <li><h5>Cylinder constraint</h5><p>\(\dfrac{1}{\lambda_2^2} + \dfrac{25}{4\lambda_2^2} = 1\), so \(\lambda_2 = \pm\dfrac{\sqrt{29}}{2}\), giving \(x = \mp\tfrac{2}{\sqrt{29}},\ y = \pm\tfrac{5}{\sqrt{29}}\).</p></li>
+          <li><h5>Plane constraint, then compare</h5><p>\(z = 1 - x + y = 1 \pm \tfrac{7}{\sqrt{29}}\). Evaluate \(f\) at both points.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">Maximum \(= 3 + \sqrt{29} \approx 8.39\)<small>at \(\left(-\tfrac{2}{\sqrt{29}},\ \tfrac{5}{\sqrt{29}},\ 1 + \tfrac{7}{\sqrt{29}}\right)\). The other point gives the minimum, \(3 - \sqrt{29}\).</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="lag-region" data-title="Stretch: regions">
+    <span class="eyebrow">Topic 6 · stretch</span>
+    <h3>Optimizing over a whole region</h3>
+    <p>Your practice problem uses an <b>inequality</b>, \(x^2 + y^2 \le 25\): the whole disk, not just the circle. Then the max and min can hide in two places:</p>
+    <ol>
+      <li><b>Inside</b> the region, at critical points where \(\nabla f = \mathbf{0}\) (Lesson 21's method).</li>
+      <li><b>On the boundary</b> \(x^2 + y^2 = 25\), found with Lagrange multipliers.</li>
+    </ol>
+    <p>Collect every candidate from both places and compare.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex22-region">
+      <div class="prob-head"><span class="pnum">Practice</span><span class="eyebrow">Disk region</span><span class="pts">notes p. 8</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the maximum value</b> of \(f(x,y) = -9x^2 - 4x + 3y^2 + 5\) on the region \(x^2 + y^2 \le 25\).</p>
+        <ol class="steps">
+          <li><h5>Inside: critical points</h5><p>\(f_x = -18x - 4 = 0\) and \(f_y = 6y = 0\) give \(\left(-\tfrac29, 0\right)\), where \(f = \tfrac{49}{9} \approx 5.44\).</p></li>
+          <li><h5>Boundary: Lagrange</h5><div class="mbox">\[-18x - 4 = 2\lambda x, \qquad 6y = 2\lambda y, \qquad x^2 + y^2 = 25\]</div></li>
+          <li><h5>Don't divide by \(y\)!</h5><p>The second equation is \(y(6 - 2\lambda) = 0\), so <b>either</b> \(y = 0\) <b>or</b> \(\lambda = 3\).</p>
+            <ul><li>\(y = 0\): \(x = \pm 5\), giving \(f(5,0) = -240\) and \(f(-5,0) = -200\).</li><li>\(\lambda = 3\): \(-18x - 4 = 6x\), so \(x = -\tfrac16\) and \(y^2 = 25 - \tfrac1{36} = \tfrac{899}{36}\).</li></ul></li>
+          <li><h5>Compare every candidate</h5><p>Evaluate \(f\left(-\tfrac16, \pm\tfrac{\sqrt{899}}{6}\right)\) and compare with \(\tfrac{49}{9}\), \(-240\) and \(-200\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">Maximum \(= \tfrac{241}{3} \approx 80.33\)<small>on the boundary at \(\left(-\tfrac16, \pm\tfrac{\sqrt{899}}{6}\right)\), matching the solution in your notes.</small></div>
+          <p>\(-\tfrac{9}{36} + \tfrac46 + \tfrac{3\cdot 899}{36} + 5 = \tfrac{-3 + 8 + 899 + 60}{12} = \tfrac{964}{12} = \tfrac{241}{3}\).</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= LESSON 23 ================= -->
+<section class="part" id="l23" data-title="Lesson 23 · Rectangles">
+  <div class="part-head">
+    <div class="part-letter">23</div>
+    <div class="eyebrow">Lesson 23 · volume over a rectangle</div>
+    <h2>Double integrals over rectangles</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>A single integral adds up thin rectangles to get area. A double integral adds up thin boxes to get volume. In practice you compute it as two ordinary integrals, one inside the other.</p></div>
+
+  <div class="topic" id="riemann" data-title="Volume & Riemann sums">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>Volume and Riemann sums</h3>
+    <p><b>The region.</b> A rectangle in the \(xy\)-plane is written as a Cartesian product:</p>
+    <div class="mbox">\[R = [a,b]\times[c,d] = \{(x,y) \mid a \le x \le b,\ c \le y \le d\}\]</div>
+    <p>Read it as "every point whose \(x\) is between \(a\) and \(b\) and whose \(y\) is between \(c\) and \(d\)."</p>
+    <p><b>The solid.</b> The surface \(z = f(x,y)\) floats above \(R\); \(z\) is the height at each point. We want the volume of the solid \(S\) between \(R\) and the surface.</p>
+    <p><b>Chop and stack.</b> Cut \([a,b]\) into \(m\) pieces and \([c,d]\) into \(n\) pieces, so \(R\) becomes a grid of small rectangles \(R_{ij}\):</p>
+    <div class="mbox">\[\Delta x = \frac{b-a}{m}, \qquad \Delta y = \frac{d-c}{n}, \qquad \Delta A = \Delta x\,\Delta y\]</div>
+    <p>Over each small rectangle, build a box as tall as the surface at some sample point \((x^*_{ij}, y^*_{ij})\). Its volume is height × base area, \(f(x^*_{ij}, y^*_{ij})\,\Delta A\). Add every box:</p>
+    <div class="mbox">\[V \approx \sum_{i=1}^{m}\sum_{j=1}^{n} f(x^*_{ij}, y^*_{ij})\,\Delta A\]</div>
+    <div class="panel" id="rPanel">
+      <div class="panel-head"><span class="t">Riemann box explorer</span>
+        <div class="seg" role="group" aria-label="Surface" id="rPre"><button aria-pressed="true" data-k="para">Paraboloid</button><button aria-pressed="false" data-k="wave">Signed volume</button><button aria-pressed="false" data-k="cos">Practice 3</button></div></div>
+      <div class="setup" style="border-top:0" id="rLabel"></div>
+      <canvas id="rCv" class="p3" aria-label="3D Riemann boxes under the chosen surface"></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="rM"><span>\(m\) (pieces in \(x\))</span> <b id="rMOut"></b></label><input type="range" id="rM" min="1" max="30" step="1" value="4"></div>
+        <div class="sl"><label for="rN"><span>\(n\) (pieces in \(y\))</span> <b id="rNOut"></b></label><input type="range" id="rN" min="1" max="30" step="1" value="4"></div>
+        <div class="sl"><span style="font-size:.9rem">Sample point</span><div class="seg" role="group" aria-label="Sample point" id="rSam"><button aria-pressed="true" data-k="ur" aria-label="Upper right corner">↗ corner</button><button aria-pressed="false" data-k="mid">Midpoint</button><button aria-pressed="false" data-k="ll" aria-label="Lower left corner">↙ corner</button></div></div>
+        <div class="sl"><span style="font-size:.9rem">Show</span><div class="seg" role="group" aria-label="Show" id="rMode"><button aria-pressed="true" data-k="both">Both</button><button aria-pressed="false" data-k="boxes">Boxes</button><button aria-pressed="false" data-k="surface">Surface</button></div></div>
+      </div>
+      <div class="cursorbox" id="rReads"></div>
+      <p class="note">Push \(m\) and \(n\) up and the sum closes in on the exact value. Midpoints get there much faster than corners. Red boxes hang <i>below</i> the plane where \(f\) is negative; they count as negative volume.</p>
+    </div>
+    <p><b>The limit.</b> Make the boxes infinitely thin and the approximation becomes exact. That limit is the definition of the double integral:</p>
+    <div class="thm"><span class="eyebrow">Double integral</span>
+      \[\iint_R f(x,y)\,dA = \lim_{m,n\to\infty}\ \sum_{i=1}^{m}\sum_{j=1}^{n} f(x^*_{ij}, y^*_{ij})\,\Delta A\]
+    </div>
+    <ul>
+      <li>If \(f \ge 0\), the double integral <b>is</b> the volume of the solid under the surface.</li>
+      <li>If \(f\) goes negative, it's a <b>signed volume</b>: parts below the plane subtract, just like net signed area in Calculus 1.</li>
+      <li>Since \(\Delta A = \Delta x\,\Delta y = \Delta y\,\Delta x\), you may write \(dA\) as \(dx\,dy\) or \(dy\,dx\).</li>
+    </ul>
+  </div>
+
+  <div class="topic" id="props" data-title="Properties">
+    <span class="eyebrow">Topic 2</span>
+    <h3>Properties of double integrals</h3>
+    <p>These work exactly like their single-integral cousins. Each one comes with a plain-English version.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>#</th><th>Property</th><th>In words</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>\(\displaystyle\iint_R (f \pm g)\,dA = \iint_R f\,dA \pm \iint_R g\,dA\)</td><td>Split sums and differences apart.</td></tr>
+        <tr><td>2</td><td>\(\displaystyle\iint_R cf\,dA = c\iint_R f\,dA\)</td><td>Constants pull out front.</td></tr>
+        <tr><td>3</td><td>\(\displaystyle\iint_R f\,dA = \iint_S f\,dA + \iint_T f\,dA\) when \(R = S\cup T\)</td><td>Cut the region into pieces and add (pieces may share edges).</td></tr>
+        <tr><td>4</td><td>\(f \le g\) on \(R\) \(\Rightarrow \displaystyle\iint_R f\,dA \le \iint_R g\,dA\)</td><td>A taller function has more volume under it.</td></tr>
+        <tr><td>5</td><td>\(\displaystyle\iint_R g(x)h(y)\,dA = \left(\int_a^b g(x)\,dx\right)\!\left(\int_c^d h(y)\,dy\right)\)</td><td>On a rectangle, an \(x\)-only factor times a \(y\)-only factor splits into two separate single integrals.</td></tr>
+      </tbody></table></div>
+    <details class="quick"><summary>Quick check (notes p. 6 #1): if \(\iint_R f\,dA = 5\) and \(\iint_R g\,dA = 5\), what is \(\iint_R (-9f + 5g)\,dA\)?</summary><div><p>By properties 1 and 2: \(-9(5) + 5(5) = -20\).</p></div></details>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex23-prop">
+      <div class="prob-head"><span class="pnum">Example</span><span class="eyebrow">Property 5</span><span class="pts">notes p. 6 #2</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> \(\displaystyle\iint_R 3x^2y^2\cos(6y^3)\,dA\) over \(R = \left\{(x,y)\mid -4 \le x \le 3,\ -\tfrac{\pi}{6}\le y \le \tfrac{\pi}{6}\right\}\). (Hint: use the properties.)</p>
+        <ol class="steps">
+          <li><h5>Spot the split</h5><p>The integrand is (x-only) × (y-only): \(3x^2 \cdot y^2\cos(6y^3)\). The region is a rectangle, so property 5 applies:</p><div class="mbox">\[\left(\int_{-4}^{3} 3x^2\,dx\right)\left(\int_{-\pi/6}^{\pi/6} y^2\cos(6y^3)\,dy\right)\]</div></li>
+          <li><h5>The \(x\) integral</h5><p>\(\left[x^3\right]_{-4}^{3} = 27 - (-64) = 91\).</p></li>
+          <li><h5>The \(y\) integral: \(u\)-substitution</h5><p>Let \(u = 6y^3\), so \(du = 18y^2\,dy\). The antiderivative is \(\tfrac{1}{18}\sin(6y^3)\).</p></li>
+          <li><h5>Evaluate the \(y\) part</h5><p>At \(y = \pm\tfrac{\pi}{6}\): \(6\left(\tfrac{\pi}{6}\right)^3 = \tfrac{\pi^3}{36}\), so the \(y\) integral is \(\tfrac{1}{18}\left[\sin\tfrac{\pi^3}{36} - \sin\left(-\tfrac{\pi^3}{36}\right)\right] = \tfrac19\sin\tfrac{\pi^3}{36}\).</p></li>
+          <li><h5>Multiply</h5><p>Multiply the two results.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\dfrac{91}{9}\sin\!\left(\dfrac{\pi^3}{36}\right) \approx 7.671\)<small>Without property 5 you'd still get here, just with more writing.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="fubini" data-title="Iterated integrals">
+    <span class="eyebrow">Topic 3</span>
+    <h3>Iterated integrals and Fubini's theorem</h3>
+    <p>Computing limits of double sums by hand is painful. The practical way: integrate with respect to one variable, then the other. That's an <b>iterated integral</b>:</p>
+    <div class="mbox">\[\int_a^b\!\!\int_c^d f(x,y)\,dy\,dx = \int_a^b\left[\int_c^d f(x,y)\,dy\right]dx\]</div>
+    <ul>
+      <li><b>Work inside-out.</b> The inner integral goes with the inner differential: in \(dy\,dx\), do \(y\) first.</li>
+      <li><b>Hold the other variable still.</b> While integrating in \(y\), treat \(x\) as a constant. It's partial derivatives in reverse.</li>
+      <li>The inner integral leaves a function of \(x\) alone. Integrate that normally.</li>
+    </ul>
+    <div class="thm"><span class="eyebrow">Fubini's theorem</span>
+      <p>If \(f\) is continuous on \(R = [a,b]\times[c,d]\), then</p>
+      \[\iint_R f(x,y)\,dA = \int_a^b\!\!\int_c^d f(x,y)\,dy\,dx = \int_c^d\!\!\int_a^b f(x,y)\,dx\,dy.\]
+      <p>On a rectangle, the order doesn't matter. Pick whichever is easier.</p>
+    </div>
+    <div class="analogy"><span class="eyebrow">Analogy · slicing a loaf</span><p>The inner integral is the area of one slice of bread. The outer integral adds up all the slices. Slice the loaf lengthwise or crosswise: same loaf, same total.</p></div>
+    <div class="panel" id="fPanel">
+      <div class="panel-head"><span class="t">Slice the loaf · \(z = 16 - x^2 - 2y^2\)</span>
+        <div class="seg" role="group" aria-label="Slice direction" id="fDir"><button aria-pressed="true" data-k="x">\(dy\,dx\): slice across \(x\)</button><button aria-pressed="false" data-k="y">\(dx\,dy\): slice across \(y\)</button></div>
+        <button class="btn" id="fPlay" type="button" aria-pressed="true">Pause</button></div>
+      <canvas id="fCv" class="p3" aria-label="The solid under the paraboloid cut into slabs, with one slab highlighted"></canvas>
+      <canvas id="fPlot" class="p2" style="height:150px;border-top:1px solid var(--line)" aria-label="Slice area as a function of position, with the area under it accumulating"></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="fK"><span>Slice</span> <b id="fKOut"></b></label><input type="range" id="fK" min="1" max="12" step="1" value="1"></div></div>
+      <div class="cursorbox" id="fReads"></div>
+      <p class="note">Orange is the slice being measured; its area is the inner integral. Blue slices are already added up. Run both directions: each finishes at 48.</p>
+    </div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex23-f1">
+      <div class="prob-head"><span class="pnum">Example 1</span><span class="eyebrow">Polynomial</span><span class="pts">notes p. 8</span></div>
+      <div class="prob-body">
+        <p class="ask">Use Fubini's theorem to <b>evaluate</b> \(\displaystyle\iint_R \left(2x^2 - 7x^2y + 2y\right)dy\,dx\) where \(R = [0,2]\times[3,4]\).</p>
+        <ol class="steps">
+          <li><h5>Set up</h5><p>\(dy\,dx\): \(y\) runs from 3 to 4 inside, \(x\) from 0 to 2 outside.</p><div class="mbox">\[\int_0^2\!\!\int_3^4 \left(2x^2 - 7x^2y + 2y\right)dy\,dx\]</div></li>
+          <li><h5>Inner integral (\(x\) is a constant)</h5><div class="mbox">\[\int_3^4 \left(2x^2 - 7x^2y + 2y\right)dy = \Big[\,2x^2y - \tfrac72x^2y^2 + y^2\,\Big]_{y=3}^{y=4}\]</div></li>
+          <li><h5>Plug in \(y = 4\) and \(y = 3\)</h5><p>\((8x^2 - 56x^2 + 16) - (6x^2 - 31.5x^2 + 9) = -\tfrac{45}{2}x^2 + 7\).</p></li>
+          <li><h5>Outer integral</h5><div class="mbox">\[\int_0^2 \left(-\tfrac{45}{2}x^2 + 7\right)dx = \Big[-\tfrac{15}{2}x^3 + 7x\Big]_0^2\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(-46\)<small>\(-60 + 14 = -46\).</small></div>
+          <p>Negative? The surface dips below the \(xy\)-plane over most of \(R\), so this is a signed volume. Integrating in the other order (\(dx\,dy\)) also gives \(-46\).</p>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="ex23-f2">
+      <div class="prob-head"><span class="pnum">Example 2</span><span class="eyebrow">Trig</span><span class="pts">notes p. 9</span></div>
+      <div class="prob-body">
+        <p class="ask">Use Fubini's theorem to <b>evaluate</b> \(\displaystyle\iint_R 3x^2\cos(6y)\,dy\,dx\) where \(R = \left[0, \tfrac{\pi}{2}\right]\times\left[\tfrac{\pi}{4}, 1\right]\).</p>
+        <ol class="steps">
+          <li><h5>Inner integral (\(3x^2\) is a constant)</h5><div class="mbox">\[\int_{\pi/4}^{1} 3x^2\cos(6y)\,dy = 3x^2\left[\frac{\sin 6y}{6}\right]_{\pi/4}^{1} = \frac{x^2}{2}\left(\sin 6 - \sin\tfrac{3\pi}{2}\right) = \frac{x^2}{2}\left(\sin 6 + 1\right)\]</div><p>Careful: \(\sin 6\) means 6 <b>radians</b> (about −0.279).</p></li>
+          <li><h5>Outer integral</h5><div class="mbox">\[\int_0^{\pi/2} \frac{1 + \sin 6}{2}\,x^2\,dx = \frac{1 + \sin 6}{2}\cdot\frac{(\pi/2)^3}{3}\]</div></li>
+          <li><h5>Simplify</h5><p>\(\frac{(\pi/2)^3}{3} = \frac{\pi^3}{24}\). Multiply it out.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\dfrac{\pi^3(1 + \sin 6)}{48} \approx 0.4655\)<small>The integrand splits as \(3x^2 \cdot \cos 6y\), so property 5 would have worked here too.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="rect-apps" data-title="Area & average value">
+    <span class="eyebrow">Topic 4</span>
+    <h3>Area and average value</h3>
+    <div class="grid2">
+      <div class="card"><h4>Area</h4><p>Integrate the constant function 1. A solid of height 1 has volume equal to its base area:</p>\[A(R) = \iint_R 1\,dA\]</div>
+      <div class="card"><h4>Average value</h4><p>Total ÷ size, like Calculus 1, but you divide by an area instead of a length:</p>\[f_{\text{avg}} = \frac{1}{\text{Area of } R}\iint_R f(x,y)\,dA\]</div>
+    </div>
+    <details class="quick"><summary>Quick check (notes p. 10): use a double integral to find the area of \(R = [0,3]\times[0,2]\).</summary><div><p>\(\int_0^3\!\int_0^2 1\,dy\,dx = \int_0^3 2\,dx = 6\). Same as length × width.</p></div></details>
+    <div class="analogy"><span class="eyebrow">Analogy · leveling a sandbox</span><p>Pour sand into a sandbox in a bumpy pile shaped like \(f\). Now rake it perfectly flat. The amount of sand (the volume) hasn't changed, and the flat height you end up with is the average value of \(f\).</p></div>
+    <div class="panel" id="aPanel">
+      <div class="panel-head"><span class="t">Level it out · \(z = 16 - x^2 - 2y^2\) on \([0,2]^2\)</span><button class="btn" id="aPlay" type="button" aria-pressed="false">▶ Animate</button></div>
+      <canvas id="aCv" class="p3" aria-label="Boxes under the paraboloid melting into a flat slab of equal volume"></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="aT"><span>Level the sand</span> <b id="aTOut"></b></label><input type="range" id="aT" min="0" max="1" step="0.01" value="0"></div></div>
+      <div class="cursorbox" id="aReads"></div>
+    </div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex23-avg">
+      <div class="prob-head"><span class="pnum">Example</span><span class="eyebrow">Average value</span><span class="pts">notes p. 11</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the average value</b> of \(f(x,y) = 4x + 2x^2y^2 - 9y^3\) over the rectangle \(R = [-4,0]\times[1,2]\).</p>
+        <ol class="steps">
+          <li><h5>Area of \(R\)</h5><p>Width 4, height 1: area \(= 4\).</p></li>
+          <li><h5>Inner integral in \(y\)</h5><div class="mbox">\[\int_1^2\left(4x + 2x^2y^2 - 9y^3\right)dy = \Big[4xy + \tfrac23x^2y^3 - \tfrac94y^4\Big]_1^2 = 4x + \tfrac{14}{3}x^2 - \tfrac{135}{4}\]</div></li>
+          <li><h5>Outer integral in \(x\)</h5><div class="mbox">\[\int_{-4}^{0}\left(4x + \tfrac{14}{3}x^2 - \tfrac{135}{4}\right)dx = \Big[2x^2 + \tfrac{14}{9}x^3 - \tfrac{135}{4}x\Big]_{-4}^{0} = 0 - \left(32 - \tfrac{896}{9} + 135\right) = -\tfrac{607}{9}\]</div></li>
+          <li><h5>Divide by the area</h5><p>\(f_{\text{avg}} = \dfrac{1}{4}\cdot\left(-\dfrac{607}{9}\right)\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(f_{\text{avg}} = -\dfrac{607}{36} \approx -16.86\)<small>The \(-9y^3\) term dominates, so the "leveled sand" sits below the plane.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= LESSON 24 ================= -->
+<section class="part" id="l24" data-title="Lesson 24 · General regions">
+  <div class="part-head">
+    <div class="part-letter">24</div>
+    <div class="eyebrow">Lesson 24 · beyond rectangles</div>
+    <h2>Double integrals over general regions</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Same iterated integrals, one change: the <b>inner</b> limits become functions. Draw the region, sweep a line across it, and read off where the line enters and leaves. Those curves are your inner limits.</p></div>
+
+  <div class="topic" id="gen-idea" data-title="Any shape">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>From rectangles to any shape</h3>
+    <p>Here's the trick that lets everything from Lesson 23 carry over. Any bounded region \(D\) fits inside some rectangle \(R\). Define a new function that equals \(f\) on \(D\) and zero elsewhere:</p>
+    <div class="mbox">\[g(x,y) = \begin{cases} f(x,y) & \text{if } (x,y) \text{ is in } D\\ 0 & \text{if } (x,y) \text{ is in } R \text{ but not in } D\end{cases}\qquad \iint_D f\,dA = \iint_R g\,dA\]</div>
+    <p>Points outside \(D\) contribute zero height, so they add nothing. In practice you never build \(g\): describing \(D\) as Type I or Type II lets you skip straight to the iterated integral.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a cookie cutter</span><p>Roll the dough over the whole rectangle, then cut out your shape. Everything outside the cutter gets thrown away (height 0). The cookie's volume is what's left.</p></div>
+  </div>
+
+  <div class="topic" id="types" data-title="Type I & Type II">
+    <span class="eyebrow">Topic 2</span>
+    <h3>Type I and Type II regions</h3>
+    <div class="grid2">
+      <div class="thm"><span class="eyebrow">Type I · vertical sweep</span><p>Between two vertical lines, bottom curve to top curve:</p>\[D = \{a \le x \le b,\ g_1(x) \le y \le g_2(x)\}\]\[\iint_D f\,dA = \int_a^b\!\!\int_{g_1(x)}^{g_2(x)} f\,dy\,dx\]</div>
+      <div class="thm"><span class="eyebrow">Type II · horizontal sweep</span><p>Between two horizontal lines, left curve to right curve:</p>\[D = \{c \le y \le d,\ h_1(y) \le x \le h_2(y)\}\]\[\iint_D f\,dA = \int_c^d\!\!\int_{h_1(y)}^{h_2(y)} f\,dx\,dy\]</div>
+    </div>
+    <p><b>How to read the limits:</b> drag a vertical line across the region (Type I). It enters through the bottom curve and leaves through the top curve, and those are the inner limits. The outer limits are the first and last \(x\) the line touches: constants. Type II is the same with a horizontal line, reading left curve to right curve.</p>
+    <p class="key">Outer limits are always constants. Inner limits may depend on the outer variable.</p>
+    <div class="panel" id="gPanel">
+      <div class="panel-head"><span class="t">Sweep-line explorer</span>
+        <div class="seg" role="group" aria-label="Type" id="gType"><button aria-pressed="true" data-k="I">Type I</button><button aria-pressed="false" data-k="II">Type II</button></div></div>
+      <div class="stepnav" style="display:flex;flex-wrap:wrap;gap:6px;padding:12px 14px 0" role="group" aria-label="Region" id="gReg"></div>
+      <canvas id="gCv" class="p2" style="height:330px;margin-top:10px" aria-label="The region with an animated sweep line showing where it enters and leaves"></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="gS"><span>Sweep line position</span> <b id="gSOut"></b></label><input type="range" id="gS" min="0" max="1000" step="1" value="300"></div></div>
+      <div class="setup" id="gSetup"></div>
+    </div>
+    <div class="warn"><b>Choose the order that needs the fewest pieces.</b> If the sweep line's entry or exit curve changes partway across, you must split the integral at that point. Try the parabola region: Type II takes one integral, Type I needs two.</div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex24-1">
+      <div class="prob-head"><span class="pnum">Example 1</span><span class="eyebrow">Both orders</span><span class="pts">notes p. 5</span></div>
+      <div class="prob-body">
+        <p class="ask">Find the volume of the prism whose base is the triangle bounded by the \(x\)-axis and the lines \(y = x\) and \(x = 1\), and whose top lies in the plane \(f(x,y) = 3 - x - y\). <b>Evaluate it as both Type I and Type II.</b></p>
+        <ol class="steps">
+          <li><h5>Sketch</h5><p>The triangle has corners \((0,0)\), \((1,0)\) and \((1,1)\). Try it in the explorer above ("Triangle").</p></li>
+          <li><h5>Type I (vertical lines)</h5><p>\(x\) runs from 0 to 1. A vertical line enters at \(y = 0\) and exits at \(y = x\).</p><div class="mbox">\[\int_0^1\!\!\int_0^{x}(3 - x - y)\,dy\,dx = \int_0^1\Big[3y - xy - \tfrac{y^2}{2}\Big]_0^{x}dx = \int_0^1\left(3x - \tfrac32x^2\right)dx\]</div></li>
+          <li><h5>Type II (horizontal lines)</h5><p>\(y\) runs from 0 to 1. A horizontal line enters at \(x = y\) and exits at \(x = 1\).</p><div class="mbox">\[\int_0^1\!\!\int_y^{1}(3 - x - y)\,dx\,dy = \int_0^1\Big[3x - \tfrac{x^2}{2} - xy\Big]_y^{1}dy = \int_0^1\left(\tfrac52 - 4y + \tfrac32y^2\right)dy\]</div></li>
+          <li><h5>Finish both</h5><p>Integrate each last line from 0 to 1. They must agree.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(V = 1\) cubic unit, both ways<small>Type I: \(\tfrac32 - \tfrac12 = 1\). Type II: \(\tfrac52 - 2 + \tfrac12 = 1\).</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="limits" data-title="Setting up limits">
+    <span class="eyebrow">Topic 3</span>
+    <h3>A recipe for setting up the limits</h3>
+    <ol class="steps">
+      <li><h5>Draw the region</h5><p>Sketch every boundary curve. Shade the region.</p></li>
+      <li><h5>Find where the curves meet</h5><p>Set the equations equal. Intersections become the outer limits (or the places to split).</p></li>
+      <li><h5>Pick a sweep direction</h5><p>Choose the one where the line always enters through the same curve and leaves through the same curve.</p></li>
+      <li><h5>Read the limits off the sweep line</h5><p>Inner: entry curve to exit curve (functions). Outer: first to last position of the line (numbers).</p></li>
+    </ol>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex24-2">
+      <div class="prob-head"><span class="pnum">Example 2</span><span class="eyebrow">Type II region</span><span class="pts">notes p. 6</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> \(\displaystyle\iint_D (3x^2 + y^2)\,dA\) where \(D = \{(x,y)\mid -2 \le y \le 3,\ y^2 - 3 \le x \le y + 3\}\).</p>
+        <ol class="steps">
+          <li><h5>Draw it</h5><p>\(x = y^2 - 3\) is a parabola opening right with its vertex at \((-3, 0)\). \(x = y + 3\) is a line. They meet where \(y^2 - 3 = y + 3\), so \(y = -2\) and \(y = 3\), at the points \((1,-2)\) and \((6,3)\). See "Parabola" in the explorer.</p></li>
+          <li><h5>Recognize Type II</h5><p>The description already says \(y\) is outer and \(x\) runs from the parabola (left) to the line (right):</p><div class="mbox">\[\int_{-2}^{3}\!\!\int_{y^2-3}^{y+3}(3x^2 + y^2)\,dx\,dy\]</div></li>
+          <li><h5>Inner integral in \(x\)</h5><div class="mbox">\[\Big[x^3 + y^2x\Big]_{x=y^2-3}^{x=y+3} = \left[(y+3)^3 + y^2(y+3)\right] - \left[(y^2-3)^3 + y^2(y^2-3)\right]\]</div><p>Expand and simplify:</p><div class="mbox">\[-y^6 + 8y^4 + 2y^3 - 12y^2 + 27y + 54\]</div></li>
+          <li><h5>Outer integral in \(y\)</h5><div class="mbox">\[\int_{-2}^{3}\left(-y^6 + 8y^4 + 2y^3 - 12y^2 + 27y + 54\right)dy\]</div><p>Term by term: \(-\tfrac{2315}{7} + 440 + \tfrac{65}{2} - 140 + \tfrac{135}{2} + 270\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\dfrac{2375}{7} \approx 339.29\)<small>The non-\(\frac{1}{7}\) terms add to 670, and \(670 - \tfrac{2315}{7} = \tfrac{4690 - 2315}{7}\).</small></div>
+          <p>As Type I this would need two integrals (split at \(x = 1\)). Type II was the right call.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="gen-apps" data-title="Volume, area, average">
+    <span class="eyebrow">Topic 4</span>
+    <h3>Volume, area and average value</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>Want</th><th>Integrate</th><th>Tip</th></tr></thead>
+      <tbody>
+        <tr><td><b>Volume</b> under \(z = f\)</td><td>\(\displaystyle\iint_D f\,dA\)</td><td>For "first octant under a plane", set \(z = 0\) to find the triangle \(D\) on the floor. Between two surfaces, integrate top − bottom.</td></tr>
+        <tr><td><b>Area</b> of \(D\)</td><td>\(\displaystyle\iint_D 1\,dA\)</td><td>The inner integral gives (top − bottom), which is Calc 1 "area between curves".</td></tr>
+        <tr><td><b>Average value</b></td><td>\(\displaystyle\frac{1}{A(D)}\iint_D f\,dA\)</td><td>Two integrals: one for \(\iint f\), one for the area.</td></tr>
+      </tbody></table></div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex24-vol">
+      <div class="prob-head"><span class="pnum">Example</span><span class="eyebrow">Volume</span><span class="pts">notes p. 7</span></div>
+      <div class="prob-body">
+        <p class="ask">Let \(S\) be the solid in the first octant under the plane \(8x + 2y + 2z = 32\). <b>Find the volume</b> of \(S\).</p>
+        <ol class="steps">
+          <li><h5>Solve for the height</h5><p>\(z = 16 - 4x - y\).</p></li>
+          <li><h5>Find the floor region</h5><p>"First octant" means \(x, y, z \ge 0\). The plane hits the floor (\(z = 0\)) along \(4x + y = 16\), so \(D\) is the triangle with corners \((0,0)\), \((4,0)\), \((0,16)\).</p></li>
+          <li><h5>Set up (Type I)</h5><div class="mbox">\[V = \int_0^4\!\!\int_0^{16-4x}(16 - 4x - y)\,dy\,dx\]</div></li>
+          <li><h5>Inner integral</h5><p>\(\left[(16-4x)y - \tfrac{y^2}{2}\right]_0^{16-4x} = \tfrac12(16-4x)^2\).</p></li>
+          <li><h5>Outer integral</h5><p>\(\int_0^4 \tfrac12(16-4x)^2\,dx\). Use \(u = 16 - 4x\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(V = \dfrac{512}{3} \approx 170.67\) units³<small>\(\tfrac18\int_0^{16}u^2\,du = \tfrac{16^3}{24}\). Check: a tetrahedron with legs 4, 16, 16 has volume \(\tfrac16\cdot4\cdot16\cdot16 = \tfrac{512}{3}\).</small></div>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="ex24-area">
+      <div class="prob-head"><span class="pnum">Example</span><span class="eyebrow">Area</span><span class="pts">notes p. 8</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the area</b> of the region bounded by \(y = \dfrac{1}{2x}\), \(y = 2e^x\), and the lines \(x = 1\) and \(x = 7\).</p>
+        <ol class="steps">
+          <li><h5>Which curve is on top?</h5><p>At \(x = 1\): \(2e \approx 5.4\) versus \(0.5\). \(2e^x\) grows and \(\tfrac{1}{2x}\) shrinks, so \(2e^x\) stays on top.</p></li>
+          <li><h5>Set up (Type I)</h5><div class="mbox">\[A = \int_1^7\!\!\int_{1/(2x)}^{2e^x} 1\,dy\,dx = \int_1^7\left(2e^x - \frac{1}{2x}\right)dx\]</div></li>
+          <li><h5>Integrate</h5><p>\(\left[2e^x - \tfrac12\ln x\right]_1^7\). Remember \(\ln 1 = 0\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(A = 2e^7 - 2e - \tfrac12\ln 7 \approx 2186.86\) units²<small>The \(2e^7\) term does almost all the work: the top curve shoots up fast.</small></div>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="ex24-avg">
+      <div class="prob-head"><span class="pnum">Example</span><span class="eyebrow">Average value</span><span class="pts">notes p. 9</span></div>
+      <div class="prob-body">
+        <p class="ask">The region \(D\) is bounded by \(y = 0\), \(x = y - 7\), and \(x = 7 - y\). <b>Find the average value</b> of \(f(x,y) = 9x + 5y\) on \(D\).</p>
+        <ol class="steps">
+          <li><h5>Sketch</h5><p>A triangle with corners \((-7,0)\), \((7,0)\), \((0,7)\). Horizontal lines go from \(x = y - 7\) to \(x = 7 - y\): Type II, one piece. ("Wide triangle" in the explorer.)</p></li>
+          <li><h5>Area</h5><p>\(\int_0^7\left[(7-y) - (y-7)\right]dy = \int_0^7 (14 - 2y)\,dy = 49\).</p></li>
+          <li><h5>Inner integral of \(f\)</h5><p>\(\int_{y-7}^{7-y}(9x + 5y)\,dx = \left[\tfrac92x^2 + 5xy\right]_{y-7}^{7-y} = 0 + 5y(14 - 2y)\). The \(9x\) part cancels because the triangle is symmetric about the \(y\)-axis.</p></li>
+          <li><h5>Outer integral</h5><p>\(\int_0^7 (70y - 10y^2)\,dy = 1715 - \tfrac{3430}{3} = \tfrac{1715}{3}\).</p></li>
+          <li><h5>Divide</h5><p>\(f_{\text{avg}} = \dfrac{1715/3}{49}\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(f_{\text{avg}} = \dfrac{35}{3} \approx 11.67\)<small>Shortcut insight: the average of \(y\) over this triangle is \(\tfrac73\) (one-third of its height), so the average of \(5y\) is \(\tfrac{35}{3}\).</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= CHEAT SHEET ================= -->
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">Lagrange · 1 constraint</span><div class="eqs">\(\nabla f = \lambda\nabla g,\ \ g = 0\)</div><p>Solve, list candidates, compare \(f\).</p></div>
+    <div class="card"><span class="eyebrow">Lagrange · 2 constraints</span><div class="eqs">\(\nabla f = \lambda_1\nabla g + \lambda_2\nabla h\)</div><p>Plus \(g = 0\) and \(h = 0\).</p></div>
+    <div class="card"><span class="eyebrow">Regions with ≤</span><p>Interior: \(\nabla f = \mathbf 0\). Boundary: Lagrange. Compare all.</p></div>
+    <div class="card"><span class="eyebrow">Double integral</span><div class="eqs">\(\displaystyle\iint_R f\,dA = \lim\sum\sum f(x^*_{ij},y^*_{ij})\Delta A\)</div></div>
+    <div class="card"><span class="eyebrow">Fubini (rectangles)</span><div class="eqs">\(\displaystyle\int_a^b\!\!\int_c^d f\,dy\,dx = \int_c^d\!\!\int_a^b f\,dx\,dy\)</div></div>
+    <div class="card"><span class="eyebrow">Splits (property 5)</span><div class="eqs">\(\displaystyle\iint_R g(x)h(y)\,dA = \int_a^b g\,dx \cdot \int_c^d h\,dy\)</div></div>
+    <div class="card"><span class="eyebrow">Type I</span><div class="eqs">\(\displaystyle\int_a^b\!\!\int_{g_1(x)}^{g_2(x)} f\,dy\,dx\)</div><p>Vertical sweep: bottom to top.</p></div>
+    <div class="card"><span class="eyebrow">Type II</span><div class="eqs">\(\displaystyle\int_c^d\!\!\int_{h_1(y)}^{h_2(y)} f\,dx\,dy\)</div><p>Horizontal sweep: left to right.</p></div>
+    <div class="card"><span class="eyebrow">Area &amp; average</span><div class="eqs">\(\displaystyle A = \iint_D 1\,dA,\quad f_{\text{avg}} = \tfrac{1}{A}\iint_D f\,dA\)</div></div>
+  </div>
+  <div class="topic" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Dividing by a variable in a Lagrange system without checking whether it could be 0.</li>
+      <li>Forgetting to compare <i>all</i> candidates (and the interior, for ≤ regions).</li>
+      <li>Integrating the wrong variable first: the inner differential goes with the inner limits.</li>
+      <li>Putting a variable in an <b>outer</b> limit. Outer limits are always numbers.</li>
+      <li>Forgetting to treat the other variable as a constant in the inner integral.</li>
+      <li>Using degrees: \(\sin 6\) means 6 radians.</li>
+      <li>Forgetting to divide by the area for an average value.</li>
+    </ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal every answer on this page</summary>
+      <div class="ans">
+        <div class="tbl"><table>
+          <thead><tr><th>Lesson</th><th>Problem</th><th>Answer</th></tr></thead>
+          <tbody>
+            <tr><td>22</td><td>Example 1: min \(x^2+4y^2-2x+8y\), \(x+2y=7\)</td><td>\(27\) at \((5,1)\)</td></tr>
+            <tr><td>22</td><td>Example 2: min \(7x+4y\), \(x^2+y^2=32\)</td><td>\(-4\sqrt{130}\approx-45.61\)</td></tr>
+            <tr><td>22</td><td>Example 3: min \(x^2+y^2+z^2\), \(x+y+z=1\)</td><td>\(\tfrac13\)</td></tr>
+            <tr><td>22</td><td>Open-top box, 24 ft²</td><td>\(8\sqrt2\approx11.31\) ft³</td></tr>
+            <tr><td>22</td><td>Two constraints (extra)</td><td>\(3+\sqrt{29}\)</td></tr>
+            <tr><td>22</td><td>Practice: max on the disk</td><td>\(\tfrac{241}{3}\)</td></tr>
+            <tr><td>23</td><td>Property 5 example</td><td>\(\tfrac{91}{9}\sin\tfrac{\pi^3}{36}\approx7.671\)</td></tr>
+            <tr><td>23</td><td>Fubini Example 1</td><td>\(-46\)</td></tr>
+            <tr><td>23</td><td>Fubini Example 2</td><td>\(\tfrac{\pi^3(1+\sin6)}{48}\approx0.4655\)</td></tr>
+            <tr><td>23</td><td>Average value</td><td>\(-\tfrac{607}{36}\approx-16.86\)</td></tr>
+            <tr><td>24</td><td>Example 1: prism</td><td>\(1\)</td></tr>
+            <tr><td>24</td><td>Example 2: Type II</td><td>\(\tfrac{2375}{7}\approx339.29\)</td></tr>
+            <tr><td>24</td><td>Volume, first octant</td><td>\(\tfrac{512}{3}\)</td></tr>
+            <tr><td>24</td><td>Area between curves</td><td>\(2e^7-2e-\tfrac12\ln7\approx2186.86\)</td></tr>
+            <tr><td>24</td><td>Average value</td><td>\(\tfrac{35}{3}\)</td></tr>
+          </tbody></table></div>
+      </div></details>
+  </div>
+  <footer>
+    <p>Examples follow your Math 215 guided notes (Lessons 22–24); every answer was checked with a computer algebra system. The two-constraint example is extra; it's a standard textbook problem, added because the notes give the method without an example.</p>
+  </footer>
+</section>
+
+</main>
