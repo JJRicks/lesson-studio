@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Assemble a lesson into one standalone HTML file.
 
-usage: python3 tools/build.py <slug>        writes dist/<slug>.html, and lesson.json's "output" path if its folder exists
+usage: python3 tools/build.py <slug>        writes dist/<slug>.html, then copies it to lesson.json's "output" path if its folder exists
+
+This is the only tool that touches a delivered page. check.py, sheets.py and shot.py build to dist/ only.
 """
 import base64, html, json, pathlib, re, shutil, sys
 from common import DIST, ENGINE, lesson_dir
@@ -24,7 +26,7 @@ def script(src, name):
     return "<script>" + src + "</script>"
 
 
-def build(slug):
+def build(slug, deliver=True):
     d = lesson_dir(slug)
     cfg = json.loads((d / "lesson.json").read_text())
     libs = cfg.get("libs", [])
@@ -65,7 +67,7 @@ def build(slug):
     out.write_text(page)
     print(f"built {out} ({len(page) // 1024} KB)")
     target = cfg.get("output")
-    if target:
+    if target and deliver:
         t = pathlib.Path(target)
         if t.parent.is_dir():
             shutil.copy(out, t)

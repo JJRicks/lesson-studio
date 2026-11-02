@@ -53,7 +53,7 @@ class Plot3D {
     const c = this.ctx, W = this.W, H = this.H, T = this.T, B = sc.bounds;
     c.clearRect(0, 0, W, H); c.fillStyle = rgbS(T.plot); c.fillRect(0, 0, W, H);
     const L = Math.max(B.b - B.a, B.d - B.c), mx = (B.a + B.b) / 2, my = (B.c + B.d) / 2;
-    const zs = 1.15 / Math.max(1e-9, B.zhi - B.zlo), mz = (B.zlo + B.zhi) / 2;
+    const zs = B.iso ? 2 / L : 1.15 / Math.max(1e-9, B.zhi - B.zlo), mz = (B.zlo + B.zhi) / 2;   // bounds.iso keeps true proportions, for scenes where angles matter
     const cy = Math.cos(this.yaw), sy = Math.sin(this.yaw), cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
     const s = Math.min(0.29 * W, 0.33 * H), ox = W / 2, oy = H / 2 - 0.01 * H;
     const P = (x, y, z) => {

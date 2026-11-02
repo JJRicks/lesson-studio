@@ -20,6 +20,7 @@ def main():
     cfg = json.loads((d / "lesson.json").read_text())
     cfg["title"] = cfg["brand"] = title
     (d / "lesson.json").write_text(json.dumps(cfg, indent=2) + "\n")
+    print("the starter's demo content and scenes/example.js are placeholders: replace them, don't add alongside them")
     print(f"created {d}\nnext: python3 tools/check.py {slug}")
 
 

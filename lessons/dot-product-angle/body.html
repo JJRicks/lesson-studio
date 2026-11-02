@@ -1,0 +1,178 @@
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#part1">Part 1 · The dot product</a>
+      <ol>
+        <li><a href="#topic1">Two arrows, one number</a></li>
+        <li class="prob"><a href="#ex1">Example 1</a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Vectors in 3D · Guided notes</div>
+  <h1>Dot Product &amp; <span>the Angle</span></h1>
+  <p class="lede">Two arrows in space, and one number that says how much they agree. This page builds the dot product from nothing, shows why the angle between two arrows is hiding inside it, then finds that angle for a real pair of vectors.</p>
+  <div class="chips"><span class="chip">Vectors and length</span><span class="chip">The dot product</span><span class="chip">Finding the angle</span></div>
+  <div class="panel">
+    <div class="panel-head"><span class="t">Swing one arrow · live</span><button class="btn ghost" id="heroPlay" type="button" aria-pressed="true">Pause</button></div>
+    <canvas id="heroCv" class="p3" tabindex="0" role="img" aria-label="3D view of two arrows from the origin. Arrow b swings around arrow a. The shadow of b on the line of a shrinks to nothing at 90 degrees, then points backward."></canvas>
+    <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>\(\mathbf a\)</span><span><span class="sw" style="background:var(--glow)"></span>\(\mathbf b\)</span><span><span class="sw" style="background:var(--s2)"></span>shadow of \(\mathbf b\) on \(\mathbf a\)</span><span><span class="sw" style="background:var(--bad)"></span>the same shadow, pointing backward</span><span><span class="sw" style="background:var(--s3)"></span>the angle \(\theta\)</span></div>
+    <div class="ctlgrid">
+      <div class="sl"><label for="hTh"><span>Angle between the arrows</span> <b id="hThOut"></b></label><input type="range" id="hTh" min="0" max="180" step="1" value="40"></div>
+    </div>
+    <div class="reads">
+      <div class="read"><div class="k">Angle</div><div class="v" id="hAngle">–</div></div>
+      <div class="read"><div class="k">Cosine</div><div class="v" id="hCos">–</div></div>
+      <div class="read"><div class="k">Dot product</div><div class="v" id="hDot">–</div></div>
+      <div class="read"><div class="k">Arrows are</div><div class="v" id="hWord">–</div></div>
+    </div>
+    <p class="note">The lengths stay fixed. Only the angle changes, and the dot product follows it. Watch the shadow that \(\mathbf b\) casts on the line of \(\mathbf a\). It shrinks to nothing at 90° and turns red when it points backward. Drag the picture to rotate it.</p>
+  </div>
+</section>
+
+<section class="part" id="part1" data-title="Part 1">
+  <div class="part-head">
+    <div class="part-letter">1</div>
+    <div class="eyebrow">Part 1 · the dot product</div>
+    <h2>Two arrows, one number</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>The dot product takes two arrows and gives back one number that measures how much they point the same way. Divide out their lengths and what's left is the cosine of the angle between them.</p></div>
+
+  <div class="topic" id="topic1" data-title="Two arrows, one number">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>The dot product and the angle</h3>
+
+    <h4>What a vector is</h4>
+    <p>A <b>vector</b> is an arrow with a direction and a length. In 3D we write it as three numbers in angle brackets, like \(\langle 1,2,2\rangle\). Those numbers are its <b>components</b>, and you can read them as walking directions.</p>
+    <p>Start at the <b>origin</b>, the point \((0,0,0)\) where the three axes meet. Walk 1 along \(x\), then 2 along \(y\), then 2 up along \(z\). The arrow runs straight from where you started to where you ended.</p>
+    <p>We name vectors with bold letters like \(\mathbf a\), and write its components as \(a_1\), \(a_2\), \(a_3\). Your notes may draw a small arrow on top instead, as \(\vec a\). Both mean the same thing.</p>
+
+    <h4>How long an arrow is</h4>
+    <p>The <b>length</b> of a vector, also called its magnitude, is written \(|\mathbf a|\). You find it with the Pythagorean theorem, which says that in a right triangle the longest side squared equals the other two sides squared, added together.</p>
+    <p>Walking along the floor makes one right triangle, so the floor distance squared is \(a_1^2 + a_2^2\). Climbing \(a_3\) from there makes a second right triangle standing on the first. Using the theorem twice gives the length in one line.</p>
+    <div class="mbox">\[|\mathbf a| = \sqrt{a_1^2 + a_2^2 + a_3^2}\]</div>
+
+    <h4>The dot product</h4>
+    <p>The <b>dot product</b> is a short recipe. Multiply the matching components, then add the three results.</p>
+    <div class="mbox">\[\mathbf a \cdot \mathbf b = a_1 b_1 + a_2 b_2 + a_3 b_3\]</div>
+    <p>The result is one plain number, called a <b>scalar</b>. It has no direction.</p>
+
+    <h4>What that number means</h4>
+    <p>Put the two tails at the same point. The <b>angle</b> \(\theta\) (the Greek letter theta) is how far you'd turn one arrow to line it up with the other. It's always between 0° and 180°.</p>
+    <p>Now drop a straight line from the tip of \(\mathbf b\) onto the line that \(\mathbf a\) lies on, meeting it at a right angle. The part of that line from the tail to where you landed is the <b>shadow</b> of \(\mathbf b\) on \(\mathbf a\). This makes a right triangle, with \(\mathbf b\) as its longest side and the shadow next to the angle.</p>
+    <p>The <b>cosine</b> of an angle in a right triangle is the side next to the angle divided by the longest side. So the shadow's length is \(|\mathbf b|\cos\theta\). The dot product equals the length of \(\mathbf a\) times the length of that shadow.</p>
+    <div class="mbox">\[\mathbf a \cdot \mathbf b = |\mathbf a|\,|\mathbf b|\cos\theta\]</div>
+    <details class="deeper"><summary>Go deeper: why the recipe and the shadow give the same number</summary><div>
+      <p>Draw the triangle with sides \(\mathbf a\), \(\mathbf b\), and the third side joining their tips, whose length is \(|\mathbf a - \mathbf b|\). The law of cosines is the Pythagorean theorem with a correction for triangles that have no right angle.</p>
+      <div class="mbox">\[|\mathbf a - \mathbf b|^2 = |\mathbf a|^2 + |\mathbf b|^2 - 2|\mathbf a|\,|\mathbf b|\cos\theta\]</div>
+      <p>Now work out the left side from components, using the length formula.</p>
+      <div class="mbox">\[\begin{aligned}|\mathbf a - \mathbf b|^2 &amp;= (a_1-b_1)^2 + (a_2-b_2)^2 + (a_3-b_3)^2\\ &amp;= |\mathbf a|^2 + |\mathbf b|^2 - 2(a_1b_1 + a_2b_2 + a_3b_3)\end{aligned}\]</div>
+      <p>The two lines describe the same length. Cancel \(|\mathbf a|^2 + |\mathbf b|^2\) and the \(-2\) from both, and the recipe equals \(|\mathbf a|\,|\mathbf b|\cos\theta\).</p>
+    </div></details>
+
+    <div class="analogy"><span class="eyebrow">Analogy · pulling a wagon</span><p>Picture a wagon that can only roll straight ahead, with you pulling on its handle. \(\mathbf a\) is the way it rolls, and \(\mathbf b\) is your pull. Pull straight ahead and all of your effort counts. Pull at a slant and only the part along the track counts, which is the shadow. Pull straight up and none of it counts, so the dot product is zero. Lean backward and you're fighting the wagon, so the dot product goes negative.</p></div>
+
+    <div class="thm"><span class="eyebrow">Definition and angle formula</span>
+      <p>For \(\mathbf a = \langle a_1,a_2,a_3\rangle\) and \(\mathbf b = \langle b_1,b_2,b_3\rangle\), neither one the zero vector:</p>
+      \[\mathbf a \cdot \mathbf b = a_1 b_1 + a_2 b_2 + a_3 b_3 = |\mathbf a|\,|\mathbf b|\cos\theta\]
+      \[\cos\theta = \frac{\mathbf a \cdot \mathbf b}{|\mathbf a|\,|\mathbf b|}, \qquad 0^\circ \le \theta \le 180^\circ\]
+    </div>
+    <p class="key">Dot product, divided by both lengths, gives the cosine of the angle.</p>
+
+    <div class="tbl"><table>
+      <thead><tr><th>Dot product</th><th>Cosine</th><th>Angle</th><th>The arrows are</th></tr></thead>
+      <tbody>
+        <tr><td>positive</td><td>positive</td><td>\(\theta \lt 90^\circ\)</td><td>acute, leaning the same way</td></tr>
+        <tr><td>zero</td><td>zero</td><td>\(\theta = 90^\circ\)</td><td>perpendicular, at a right angle</td></tr>
+        <tr><td>negative</td><td>negative</td><td>\(\theta \gt 90^\circ\)</td><td>obtuse, leaning opposite ways</td></tr>
+      </tbody>
+    </table></div>
+
+    <div class="panel" id="xPanel">
+      <div class="panel-head"><span class="t">Vector explorer</span><span class="badge" id="xWord">–</span></div>
+      <canvas id="xCv" class="p3" tabindex="0" role="img" aria-label="3D view of the two vectors you set with the sliders, with the angle between them and the shadow of b on the line of a."></canvas>
+      <div class="legend"><span><span class="sw" style="background:var(--accent)"></span>\(\mathbf a\)</span><span><span class="sw" style="background:var(--glow)"></span>\(\mathbf b\)</span><span><span class="sw" style="background:var(--s2)"></span>shadow of \(\mathbf b\) on \(\mathbf a\)</span><span><span class="sw" style="background:var(--bad)"></span>the same shadow, pointing backward</span><span><span class="sw" style="background:var(--s3)"></span>the angle \(\theta\)</span></div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="xa1"><span>\(a_1\)</span> <b id="xa1Out"></b></label><input type="range" id="xa1" min="-3" max="3" step="1" value="2"></div>
+        <div class="sl"><label for="xa2"><span>\(a_2\)</span> <b id="xa2Out"></b></label><input type="range" id="xa2" min="-3" max="3" step="1" value="-1"></div>
+        <div class="sl"><label for="xa3"><span>\(a_3\)</span> <b id="xa3Out"></b></label><input type="range" id="xa3" min="-3" max="3" step="1" value="2"></div>
+        <div class="sl"><label for="xb1"><span>\(b_1\)</span> <b id="xb1Out"></b></label><input type="range" id="xb1" min="-3" max="3" step="1" value="1"></div>
+        <div class="sl"><label for="xb2"><span>\(b_2\)</span> <b id="xb2Out"></b></label><input type="range" id="xb2" min="-3" max="3" step="1" value="2"></div>
+        <div class="sl"><label for="xb3"><span>\(b_3\)</span> <b id="xb3Out"></b></label><input type="range" id="xb3" min="-3" max="3" step="1" value="2"></div>
+      </div>
+      <div class="setup"><div id="xDot"></div><div id="xCos"></div></div>
+      <div class="reads" style="margin-top:0">
+        <div class="read"><div class="k">Length of a</div><div class="v" id="xLa">–</div></div>
+        <div class="read"><div class="k">Length of b</div><div class="v" id="xLb">–</div></div>
+        <div class="read"><div class="k">Cosine</div><div class="v" id="xC">–</div></div>
+        <div class="read"><div class="k">Angle</div><div class="v" id="xTh">–</div></div>
+      </div>
+      <p class="note">Set any two whole-number vectors and every line of the method updates. Try this: leave \(\mathbf a\) alone and change \(\mathbf b\) until the dot product is exactly 0. Then rotate the picture until you can see the right angle.</p>
+    </div>
+
+    <div class="warn"><b>Watch out.</b> Put your calculator in degree mode before you press \(\cos^{-1}\). In radian mode the same button gives a number like 1.2, which is an angle measured in radians. It's correct, but it isn't in degrees.</div>
+    <details class="quick"><summary>Quick check: are \(\langle 1,2,3\rangle\) and \(\langle 3,0,-1\rangle\) perpendicular?</summary><div><p>Yes. The dot product is \(3 + 0 - 3 = 0\), so \(\cos\theta = 0\) and \(\theta = 90^\circ\).</p></div></details>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex1" data-title="Example 1">
+      <div class="prob-head"><span class="pnum">Example 1</span><span class="eyebrow">Angle between two vectors</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the angle</b> between \(\mathbf a = \langle 1,2,2\rangle\) and \(\mathbf b = \langle 2,0,1\rangle\).</p>
+        <ol class="steps">
+          <li><h5>Draw the two arrows</h5><p>Put both tails at the origin. \(\mathbf a\) walks 1, 2, 2 along \(x\), \(y\), \(z\). \(\mathbf b\) walks 2, 0, 1. The angle \(\theta\) we want sits between them at the origin.</p></li>
+          <li><h5>Multiply matching components, then add</h5><div class="mbox">\[\mathbf a \cdot \mathbf b = (1)(2) + (2)(0) + (2)(1) = 2 + 0 + 2 = 4\]</div><p>It's positive, so expect an angle smaller than 90°.</p></li>
+          <li><h5>Find the length of \(\mathbf a\)</h5><div class="mbox">\[|\mathbf a| = \sqrt{1^2 + 2^2 + 2^2} = \sqrt{9} = 3\]</div></li>
+          <li><h5>Find the length of \(\mathbf b\)</h5><div class="mbox">\[|\mathbf b| = \sqrt{2^2 + 0^2 + 1^2} = \sqrt{5} \approx 2.236\]</div></li>
+          <li><h5>Put the three numbers into the formula</h5><div class="mbox">\[\cos\theta = \frac{\mathbf a \cdot \mathbf b}{|\mathbf a|\,|\mathbf b|} = \frac{4}{3\sqrt5} \approx 0.5963\]</div></li>
+          <li><h5>Undo the cosine</h5><p>Inverse cosine, written \(\cos^{-1}\) or arccos, answers the question "which angle has this cosine?" Set your calculator to degrees and compute \(\theta = \cos^{-1}\!\left(\dfrac{4}{3\sqrt5}\right)\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\theta \approx 53.4^\circ\)<small>That's about 0.93 radians. The exact value is \(\cos^{-1}\frac{4}{3\sqrt5}\). It's under 90°, which matches the positive dot product.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">Dot product</span><div class="eqs">\(\mathbf a \cdot \mathbf b = a_1b_1 + a_2b_2 + a_3b_3\)</div><p>Multiply matching components and add. The result is a number.</p></div>
+    <div class="card"><span class="eyebrow">Length</span><div class="eqs">\(|\mathbf a| = \sqrt{a_1^2 + a_2^2 + a_3^2}\)</div><p>The Pythagorean theorem, used twice.</p></div>
+    <div class="card"><span class="eyebrow">Angle</span><div class="eqs">\(\cos\theta = \dfrac{\mathbf a \cdot \mathbf b}{|\mathbf a|\,|\mathbf b|}\)</div><p>Then take \(\cos^{-1}\), in degree mode. The result is from 0° to 180°.</p></div>
+    <div class="card"><span class="eyebrow">Sign test</span><div class="eqs">\(\mathbf a \cdot \mathbf b = 0\)</div><p>Zero means perpendicular. Positive means under 90°. Negative means over 90°.</p></div>
+  </div>
+  <div class="topic" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Dividing by only one length. The formula divides by both.</li>
+      <li>Forgetting the square root, so \(\langle 1,2,2\rangle\) gets a length of 9 instead of 3.</li>
+      <li>Leaving the calculator in radian mode, then writing the result with a degree sign.</li>
+      <li>Stopping at the cosine. \(\cos\theta\) is a ratio, and the question asks for \(\theta\).</li>
+      <li>Measuring the angle with the arrows tip to tail. Both tails must start at the same point.</li>
+    </ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal every answer on this page</summary>
+      <div class="ans"><div class="tbl"><table>
+        <thead><tr><th>Problem</th><th>Answer</th></tr></thead>
+        <tbody><tr><td>Example 1</td><td>\(\theta = \cos^{-1}\frac{4}{3\sqrt5} \approx 53.4^\circ\) (about 0.93 radians)</td></tr></tbody>
+      </table></div></div></details>
+  </div>
+  <footer><p>The worked example was given with the request for this lesson, and no course document was used. Every number was computed in <code>lessons/dot-product-angle/verify.py</code> with SymPy. The angle was checked four separate ways: the inverse cosine, the cross product, the law of cosines, and plain floating-point arithmetic. All four agree. The answer is rounded to one decimal place, and the angle in the 3D scene is drawn at true size.</p></footer>
+</section>
+
+</main>

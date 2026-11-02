@@ -19,11 +19,11 @@ The tools use only the Python standard library, and KaTeX and three.js are commi
 
 ```sh
 python3 tools/new_lesson.py wk9-triple-integrals "Triple Integrals"   # scaffold from lessons/_starter
-python3 tools/check.py wk9-triple-integrals                           # rebuild and run the automated QA
+python3 tools/check.py wk9-triple-integrals                           # build to dist/ and run the automated QA
 python3 tools/sheets.py wk9-triple-integrals                          # picture of every 3D step, to review by eye
+python3 tools/shot.py wk9-triple-integrals "#top" --width 500         # screenshot one part of the real page
+python3 tools/build.py wk9-triple-integrals                           # deliver to the output path in lesson.json
 ```
-
-The finished page lands in `dist/<slug>.html`, and in the `output` path from the lesson's `lesson.json` if that folder exists on this computer.
 
 ## Layout
 
@@ -34,8 +34,8 @@ The finished page lands in `dist/<slug>.html`, and in the `output` path from the
 | `engine/css/` | the design system (`base.css`) and 3D viewer styles |
 | `engine/js/` | page shell, `Plot3D` canvas renderer, 3D stepper engine |
 | `engine/vendor/` | KaTeX 0.16.9 and three.js r128, both MIT licensed |
-| `lessons/_starter/` | the scaffold: one of every common component, and it passes QA as is |
+| `lessons/_starter/` | the scaffold: a working example of every component, and it passes QA as is |
 | `lessons/<slug>/` | lesson sources: `lesson.json`, `body.html`, `page.js`, `scenes/`, `verify.py`, `spoilers.json` |
 | `gallery/` | finished pages from before the kit, kept as references for their interactives |
-| `tools/` | build, scaffold, QA and contact sheets |
+| `tools/` | scaffold, build, QA, contact sheets and screenshots |
 | `sources/` | git-ignored: put course PDFs and docx files here |

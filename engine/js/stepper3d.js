@@ -1,5 +1,5 @@
 /* 3D steppers for the worked examples: one shared WebGL renderer, blitted into each example's canvas */
-const T3 = THREE, { sin, cos, sqrt, hypot, exp, min, max, abs, atan2, floor, round, PI } = Math, TAU = 2 * PI, tx = String.raw;
+const T3 = THREE, { sin, cos, tan, acos, sqrt, hypot, exp, min, max, abs, atan2, floor, round, PI } = Math, TAU = 2 * PI, tx = String.raw;
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const col = n => new T3.Color(css("--" + n));
 const clamp01 = v => max(0, min(1, v));
@@ -118,7 +118,7 @@ class Kit {
     });
   }
   arrow(n, o = {}) {
-    const rad = o.r ?? .017, hl = rad * 5.2, m = this.mat({ emi: .3, ...o }), G = new T3.Group(), k = this, Y = new T3.Vector3(0, 1, 0);
+    const rad = o.r ?? .017, hl = rad * 5.2, m = this.mat({ emi: .08, ...o }), G = new T3.Group(), k = this, Y = new T3.Vector3(0, 1, 0);
     const sg = new T3.CylinderGeometry(rad, rad, 1, 12, 1); sg.translate(0, .5, 0);
     const shaft = new T3.Mesh(sg, m), head = new T3.Mesh(new T3.ConeGeometry(rad * 2.7, hl, 16), m); G.add(shaft, head);
     return this.reg(n, G, [m], {
@@ -132,9 +132,17 @@ class Kit {
     });
   }
   dot(n, o = {}) {
-    const m = this.mat({ emi: .35, ...o }), mesh = new T3.Mesh(new T3.SphereGeometry(o.r ?? .042, 20, 14), m), k = this;
+    const m = this.mat({ emi: .15, ...o }), mesh = new T3.Mesh(new T3.SphereGeometry(o.r ?? .042, 20, 14), m), k = this;
     const q = this.reg(n, mesh, [m], { at(p) { this.p = p; mesh.position.copy(k.W(p)); return this; } });
     if (o.p) q.at(o.p); return q;
+  }
+  wedge(n, o = {}) {             // a filled angle marker: set(apex, a, b, radius) spans directions a and b, in maths units
+    const q = this.surf(n, () => [0, 0, 0], [0, 1, 1], [0, 1, 28], o), dot = (u, v) => u[0] * v[0] + u[1] * v[1] + u[2] * v[2], unit = u => { const m = hypot(u[0], u[1], u[2]) || 1; return u.map(c => c / m); };
+    q.set = (O, a, b, R) => {
+      const e1 = unit(a), d = dot(e1, unit(b)), th = acos(max(-1, min(1, d))), bb = unit(b), e2 = unit(bb.map((c, i) => c - d * e1[i]));
+      q.map((u, v) => O.map((c, i) => c + u * R * (cos(v * th) * e1[i] + sin(v * th) * e2[i]))); return q;
+    };
+    return q;
   }
   ball(n, o = {}) {
     const m = this.mat(o), mesh = new T3.Mesh(new T3.SphereGeometry(1, 48, 32), m), k = this;
@@ -241,9 +249,9 @@ class Viz {
   }
   build() {
     const s = this.scene = new T3.Scene();
-    s.add(new T3.AmbientLight(0xffffff, .74));
-    const d1 = new T3.DirectionalLight(0xffffff, .5); d1.position.set(-2, -3, 5); s.add(d1);
-    const d2 = new T3.DirectionalLight(0xffffff, .18); d2.position.set(3, 2, 1); s.add(d2);
+    s.add(new T3.AmbientLight(0xffffff, .66));
+    const d1 = new T3.DirectionalLight(0xffffff, .42); d1.position.set(-2, -3, 5); s.add(d1);
+    const d2 = new T3.DirectionalLight(0xffffff, .14); d2.position.set(3, 2, 1); s.add(d2);
     this.cam3 = new T3.PerspectiveCamera(26, 2, .1, 80); this.cam3.up.set(0, 0, 1);
     for (const key in this.P) delete this.P[key];
     Object.assign(this.P, this.def.P || {});
@@ -252,7 +260,7 @@ class Viz {
     const k = this.k, ex = l => l.flatMap(n => k.al[n] ? ex(k.al[n]) : [n]), vis = new Set(), P = { ...this.def.P }; let cam = { ...this.def.cam };
     this.states = this.def.steps.map(st => {
       ex(words(st.drop)).forEach(n => vis.delete(n));
-      ex(words(st.add)).forEach(n => { if (!k.o[n]) (window.__v3warn = window.__v3warn || []).push(this.prob.id + ":" + n); vis.add(n); });
+      ex(words(st.add)).forEach(n => { if (!k.o[n]) (window.__v3warn = window.__v3warn || []).push(`${this.prob.id}: a step names an unknown object, "${n}"`); vis.add(n); });
       Object.assign(P, st.set || {}); if (st.cam) cam = { ...cam, ...st.cam };
       return { vis: new Set(vis), P: { ...P }, cam: { ...cam } };
     });
@@ -262,6 +270,7 @@ class Viz {
     if (this.built || this.dead) return;
     if (!GL.get()) { this.dead = true; this.stage.insertAdjacentHTML("beforeend", `<p class="v3no">This browser couldn't start WebGL, so the 3D view is off. The steps below still work.</p>`); return; }
     this.build(); this.jump(this.i);
+    if (this.i === 0 && this.def.steps[0].from && !reduceMotion) this.go(0, "again");
   }
   rebuild() {
     if (!this.built) return;
@@ -354,7 +363,7 @@ class Viz {
 }
 
 /* scenes register themselves here, keyed by the worked example's article id */
-const S = {};
+const S = new Proxy({}, { set(t, id, def) { if (id in t) (window.__v3warn = window.__v3warn || []).push("scene registered twice: " + id); t[id] = def; return true; } });
 
 /* a solid over a rectangle: floor, surface, four walls, a see-through ghost of the surface, and a moving slice */
 function rectSolid(k, f, X, Y, ramp, axis = "x") {

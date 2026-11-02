@@ -32,12 +32,12 @@ function ramp(T, t) { t = clamp(t, 0, 1); return t < 0.5 ? lerpC(T.s1, T.s2, t *
 const themeBtn = $("#themebtn");
 const effectiveDark = () => { const t = document.documentElement.dataset.theme; return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
 const labelTheme = () => { themeBtn.textContent = effectiveDark() ? "Light mode" : "Dark mode"; };
-const savedTheme = store.get("bjt-theme");
+const savedTheme = store.get("lesson-theme");
 if (savedTheme === "dark" || savedTheme === "light") document.documentElement.dataset.theme = savedTheme;
 labelTheme();
 themeBtn.addEventListener("click", () => {
   const next = effectiveDark() ? "light" : "dark";
-  document.documentElement.dataset.theme = next; store.set("bjt-theme", next); labelTheme();
+  document.documentElement.dataset.theme = next; store.set("lesson-theme", next); labelTheme();
   themeListeners.forEach(f => f());
 });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { labelTheme(); themeListeners.forEach(f => f()); });
@@ -89,3 +89,15 @@ function whenVisible(el, frame) {
     else if (!e.isIntersecting) on = false;
   })).observe(el);
 }
+
+/* multiple choice: .mcq[data-answer] holding buttons with data-k and data-fb, plus a p.mcq-fb for the feedback */
+$$(".mcq").forEach(q => {
+  const fb = $(".mcq-fb", q);
+  q.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    const ok = b.dataset.k === q.dataset.answer;
+    $$("button", q).forEach(x => x.classList.remove("right", "wrong"));
+    b.classList.add(ok ? "right" : "wrong");
+    fb.className = "mcq-fb " + (ok ? "right" : "wrong"); fb.textContent = b.dataset.fb;
+  });
+});

@@ -254,7 +254,7 @@ pre.code .on{background:var(--cursor-soft);color:var(--ink);border-radius:3px;bo
 .problems{display:grid;gap:22px;padding-top:34px}
 .problems-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .problems-head h3{font-size:1.75rem}
-.prob{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
+article.prob{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}
 .prob-head{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line)}
 .pnum{font-family:var(--f-display);font-weight:800;font-size:1.25rem}
 .pts{margin-left:auto;font-family:var(--f-mono);font-size:.75rem;padding:3px 9px;border-radius:999px;background:var(--cursor-soft);color:var(--cursor);font-weight:600;white-space:nowrap}

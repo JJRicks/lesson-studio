@@ -2,7 +2,7 @@
 (() => {
 const CFG = __CONFIG__, wait = ms => new Promise(r => setTimeout(r, ms));
 setTimeout(async () => {
-  const R = { errors: [], katexErrors: 0, unrendered: [], overflow: [], steppers: 0, steps: 0, stepCounts: [], warnings: [], leaks: [], noReveal: [], flow: [], viewport: [innerWidth, innerHeight], sticky: null };
+  const R = { errors: [], katexErrors: 0, unrendered: [], overflow: [], steppers: 0, steps: 0, orphans: [], noScene: [], stepCounts: [], warnings: [], leaks: [], noReveal: [], flow: [], viewport: [innerWidth, innerHeight], sticky: null };
   try {
     document.documentElement.style.scrollBehavior = "auto";
     R.katexErrors = document.querySelectorAll(".katex-error").length;
@@ -13,15 +13,24 @@ setTimeout(async () => {
     R.overflow.push(...[...document.querySelectorAll("main *")].filter(e => e.getBoundingClientRect().right > W + 1 && !e.closest(".tbl,.mbox,.katex-display,.eqs,.katex,.schem-scroll,pre,.v3ls"))
       .slice(0, 8).map(e => e.tagName + "." + (e.getAttribute("class") || "") + "#" + e.id));
     R.noReveal = [...document.querySelectorAll("article.prob")].filter(p => !p.querySelector("details.reveal")).map(p => p.id);
+    R.noScene = [...document.querySelectorAll("article.prob")].filter(p => !p.querySelector(".v3")).map(p => p.id);
+    const visibleText = root => { const c = root.cloneNode(true); c.querySelectorAll("details.reveal,.v3ls,.v3cap,script,style").forEach(n => n.remove()); return c.textContent; };
+    for (const [id, list] of Object.entries(CFG.spoilers)) {
+      const root = id === "_page" ? document.querySelector("main") : document.getElementById(id); if (!root) continue;
+      const t = visibleText(root);
+      for (const s of list) { const m = t.match(new RegExp(s)); if (m) R.leaks.push((id === "_page" ? "page" : id + " written text") + ` shows ${JSON.stringify(s)}: ...${t.slice(Math.max(0, m.index - 30), m.index + 30)}...`); }
+    }
     const api = window.__V3;
     if (api) {
-      const { V3 } = api; R.steppers = V3.list.length;
+      const { V3 } = api; R.steppers = V3.list.length; R.orphans = api.orphans || [];
       for (const v of V3.list) {
         const id = v.prob.id;
         if (v.def.steps.length !== v.n + 1) R.stepCounts.push(`${id}: ${v.def.steps.length} scene steps, expected ${v.n} written steps + 1 answer step`);
-        v.ensure(); if (!v.built) { R.warnings.push(id + ": scene did not build (no WebGL?)"); continue; }
-        for (let i = 0; i <= v.n; i++) v.jump(i);
-        v.jump(0); R.steps += v.n + 1;
+        try {
+          v.ensure(); if (!v.built) { R.warnings.push(id + ": scene did not build (no WebGL?)"); continue; }
+          for (let i = 0; i <= v.n; i++) v.jump(i);
+          v.jump(0); R.steps += v.n + 1;
+        } catch (e) { R.errors.push(`scene ${id} crashed: ${e.message}`); continue; }
         const res = (CFG.spoilers[id] || []).map(s => new RegExp(s));
         if (!res.length) R.leaks.push(id + ": no spoiler patterns listed in spoilers.json");
         v.def.steps.slice(0, -1).forEach((st, i) => {
@@ -29,7 +38,7 @@ setTimeout(async () => {
           for (const n of v.states[i].vis) { const q = v.k.o[n]; if (q && q.lab) for (const re of res) if (re.test(q.el.textContent)) R.leaks.push(`${id} step ${i + 1} label ${n} matches ${re}: ${q.el.textContent.slice(0, 40)}`); }
         });
       }
-      R.warnings.push(...(window.__v3warn || []).map(w => "unknown object in a step: " + w));
+      R.warnings.push(...(window.__v3warn || []));
       if (CFG.flow && V3.list.length) {
         const v = V3.list[0], ok = (c, m) => R.flow.push((c ? "ok   " : "FAIL ") + m), next = v.root.querySelector(".v3next");
         v.prob.scrollIntoView(); await wait(150);

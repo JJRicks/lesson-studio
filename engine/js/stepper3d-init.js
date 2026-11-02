@@ -8,4 +8,4 @@ V3.list.forEach(v => { v.root.__v3 = v; io.observe(v.root); });
 const retheme = () => V3.list.forEach(v => v.rebuild());
 new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", retheme);
-window.__V3 = { S, Viz, V3 };
+window.__V3 = { S, Viz, V3, orphans: Object.keys(S).filter(id => !document.getElementById(id)) };

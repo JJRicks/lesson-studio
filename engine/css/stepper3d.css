@@ -1,5 +1,5 @@
 /* ---------- 3D worked-example steppers ---------- */
-.prob{overflow:clip}
+article.prob{overflow:clip}
 .v3wrap>ol.steps{margin-top:18px}
 .v3wrap>details.reveal{margin-top:18px}
 .v3{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}

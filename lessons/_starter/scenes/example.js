@@ -1,9 +1,10 @@
-/* One S["<article id>"] per worked example. steps has one entry per written step, plus a final answer step. */
+/* One S["<article id>"] per worked example. steps has one entry per written step, plus a final answer step.
+   Replace this file: if it stays alongside your own scenes, its S["ex1"] collides with yours and check.py fails. */
 S["ex1"] = {
-  cam: { y: -1.05, p: .42, d: 6.4, at: [.5, .5, .6] },
+  cam: { y: -1.05, p: .42, d: 6.8, at: [.5, .5, .85] },
   P: { s: 1 },
   build(k) {
-    k.scale(1.5, 1.5, 1.1, [.5, .5, .6]);
+    k.scale(1, 1, 1, [.5, .5, .85]);   // equal scales keep angles true; pick values that fit the scene within about ±1.5
     const f = (x, y) => x + y;
     k.f = f;
     k.axes("axes", [0, 1.35], [0, 1.35], [0, 2.4]);

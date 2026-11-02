@@ -3,9 +3,11 @@
 
 usage: python3 tools/check.py <slug>
 
+Builds to dist/ only: it never touches a delivered page.
+
 Checks: script errors, KaTeX failures, unrendered math, sideways overflow at 500px, a reveal on every worked example,
-and for 3D steppers: step counts, unknown object names, answer leaks before the reveal, and the stepping and lock flow.
-This cannot judge whether a picture is right. Look at tools/sheets.py output for that.
+answers showing outside reveals, and for 3D steppers: scenes matched to examples, step counts, object names and the
+stepping and lock flow. This cannot judge whether a picture is right. Use tools/sheets.py and tools/shot.py for that.
 """
 import json, pathlib, sys
 from build import build
@@ -21,7 +23,8 @@ def run(page, cfg, name, width, height):
 
 def main(slug):
     d = lesson_dir(slug)
-    page = build(slug).read_text()
+    page = build(slug, deliver=False).read_text()
+    cfg = json.loads((d / "lesson.json").read_text())
     sp = d / "spoilers.json"
     spoilers = json.loads(sp.read_text()) if sp.exists() else {}
     narrow = run(page, {"spoilers": spoilers, "flow": False}, "check-narrow", 500, 900)
@@ -38,10 +41,15 @@ def main(slug):
     need(not wide["unrendered"], "no raw TeX left on the page", wide["unrendered"])
     need(not narrow["overflow"], "no sideways overflow at 500px", narrow["overflow"])
     need(not wide["noReveal"], "every worked example has a reveal", wide["noReveal"])
+    if "stepper3d" in cfg.get("libs", []):
+        missing = [i for i in wide["noScene"] if i not in cfg.get("no_scene", [])]
+        need(wide["steppers"] > 0, "lesson has 3D steppers (it lists stepper3d in libs)")
+        need(not wide["orphans"], "every scene matches a worked example", [f"S[{i!r}] has no matching <article id>" for i in wide["orphans"]])
+        need(not missing, "every worked example has a scene", [f"article #{i} has no scene (list it in lesson.json no_scene if that's deliberate)" for i in missing])
+    need(not wide["leaks"], "no answers showing before the reveal", wide["leaks"])
     if wide["steppers"]:
         need(not wide["stepCounts"], f'{wide["steppers"]} steppers, {wide["steps"]} steps: counts match the written steps', wide["stepCounts"])
         need(not wide["warnings"], "every step names real objects", wide["warnings"])
-        need(not wide["leaks"], "no answers leak before the reveal", wide["leaks"])
         bad = [l for l in wide["flow"] if l.startswith("FAIL")]
         need(bool(wide["flow"]) and not bad, f'stepping and answer lock work ({len(wide["flow"])} checks)', bad)
         s = wide["sticky"] or {}

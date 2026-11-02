@@ -41,6 +41,25 @@
     <div class="thm"><span class="eyebrow">Definition or theorem</span><p>The formal statement from the source.</p>\[\iint_R f(x,y)\,dA\]</div>
     <p class="key">The one sentence to remember.</p>
     <div class="warn"><b>Watch out.</b> The mistake people actually make here.</div>
+    <!-- PANEL: frames any interactive. The demo code is in page.js. -->
+    <div class="panel" id="demo">
+      <div class="panel-head"><span class="t">Try it · a live readout</span><span class="status" id="demoStatus"></span></div>
+      <canvas id="demoCv" class="p2" style="height:170px" aria-label="A sine wave whose height follows the slider"></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="demoA"><span>Amplitude</span> <b id="demoAOut"></b></label><input type="range" id="demoA" min="0" max="2" step="0.01" value="1"></div>
+      </div>
+      <div class="reads">
+        <div class="read"><div class="k">Peak</div><div class="v" id="demoPk">–</div></div>
+        <div class="read"><div class="k">Area of one hump</div><div class="v" id="demoArea">–</div></div>
+      </div>
+      <p class="note">Say what to try, and what it shows.</p>
+    </div>
+    <!-- MCQ: handled by engine/js/shell.js. data-answer names the right button's data-k. -->
+    <div class="mcq" data-answer="b">
+      <button type="button" data-k="a" data-fb="Say why this one is wrong."><b>a.</b><span>A tempting wrong option.</span></button>
+      <button type="button" data-k="b" data-fb="Say why this one is right."><b>b.</b><span>The right option.</span></button>
+      <p class="mcq-fb" aria-live="polite"></p>
+    </div>
     <details class="deeper"><summary>Go deeper: an optional detail</summary><div><p>Extra detail that would interrupt the main path.</p></div></details>
     <details class="quick"><summary>Quick check: a one-line question?</summary><div><p>The one-line answer.</p></div></details>
   </div>
