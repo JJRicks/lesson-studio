@@ -37,7 +37,7 @@ S["ex1"] = {
     k.seg("dr", { c: "muted", r: .012 }).set(B, foot);
     const m = .15, F = u => foot.map((v, i) => v + u[0] * ah[i] + u[1] * wh[i]);
     k.poly("ra", [F([0, 0]), F([-m, 0]), F([-m, m]), F([0, m])], { c: "muted", o: .55, lit: false });
-    k.surf("wd", (u, v) => O, [0, 1, 2], [0, 1, 36], { c: "s3", o: .5, lit: false });
+    k.wedge("wd", { c: "s3", o: .5, lit: false });
     k.surf("wa", (u, v) => O, [0, 1, 1], [0, 1, 36], { c: "s3", lit: false });
 
     k.label("La", A, tx`\mathbf a=\langle1,2,2\rangle`, { c: "accent", dx: -72, dy: -8 });
@@ -78,7 +78,7 @@ S["ex1"] = {
     k.o.lb1.set(O, [2 * g[0], 0, 0]); k.o.lb3.set([2, 0, 0], [2, 0, g[1]]);
 
     const t = th * P.w;
-    k.o.wd.map((a, b) => polar(.85 * a, t * b));
+    k.o.wd.set(O, A, B, .85, P.w);
     k.o.wa.map((a, b) => polar(.85 + .03 * a, t * b));
   },
   steps: [

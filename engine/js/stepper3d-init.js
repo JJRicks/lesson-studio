@@ -5,6 +5,8 @@ const io = new IntersectionObserver(es => es.forEach(e => {
   if (e.isIntersecting) { V3.vis.add(v); v.ensure(); v.dirty = true; V3.kick(); } else V3.vis.delete(v);
 }), { rootMargin: "160px" });
 V3.list.forEach(v => { v.root.__v3 = v; io.observe(v.root); });
+const seen = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.__v3.intro(); seen.unobserve(e.target); } }), { threshold: .5 });
+V3.list.forEach(v => seen.observe(v.root));
 const retheme = () => V3.list.forEach(v => v.rebuild());
 new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", retheme);

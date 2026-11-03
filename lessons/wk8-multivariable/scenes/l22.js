@@ -119,7 +119,7 @@ S["ex22-3"] = {
     k.label("LgG", () => k.o.gG.b, tx`\nabla g`, { c: "accent", dx: -4, dy: -14, line: false });
     k.label("Lr", [-.12, -.12, -.12], tx`x=y=z`, { c: "good", dx: -46, dy: 14 });
     k.label("Ls", [c, c, c], tx`(\tfrac13,\tfrac13,\tfrac13)`, { c: "ink", dx: -72, dy: -26 });
-    k.label("Lq", () => { const a = k.P.rad / sqrt(2); return [a, -a * .2, a * .9]; }, tx`x^2+y^2+z^2=c`, { c: "s3", dx: -70, dy: -40 });
+    k.label("Lq", () => { const a = k.P.rad / sqrt(2); return [a, -a * .2, a * .9]; }, tx`x^2+y^2+z^2=c`, { c: "cursor", dx: -70, dy: -40 });
     k.label("La", [c, c, c], tx`c=\tfrac13`, { c: "glow", dx: -50, dy: -30 });
   },
   update(P, k) {
@@ -268,7 +268,7 @@ S["ex22-region"] = {
     for (const n in pts) { k.dot("d" + n, { c: "glow", p: pts[n], r: .05 }); k.seg("p" + n, { c: "ink", r: .01 }).set([pts[n][0], pts[n][1], 0], pts[n]); }
     k.seg("pz", { c: "ink", r: .01 }).set([X0, 0, 0], [X0, 0, Z0]);
     k.label("Lc", [X0, 0, Z0], tx`\left(-\tfrac29,\,0\right):\ f=\tfrac{49}{9}`, { c: "ink", dx: 40, dy: -44 });
-    k.label("Lf", [X0 + 1.2, -.9, Z0], tx`\text{flat: }\nabla f=\mathbf 0`, { c: "s3", dx: 70, dy: 22 });
+    k.label("Lf", [X0 + 1.2, -.9, Z0], tx`\text{flat: }\nabla f=\mathbf 0`, { c: "cursor", dx: 70, dy: 22 });
     k.label("Ld", [-3.5, 3.57, 0], tx`\text{disk }x^2+y^2\le25`, { c: "accent", dx: -62, dy: -20 });
     k.label("Lr", [-3.5, -3.57, f(-3.5, -3.57)], tx`\text{the rim}`, { c: "glow", dx: -36, dy: 24 });
     k.label("LA", pts.a, tx`(5,0):\ f=-240`, { c: "ink", dx: 40, dy: 22 });

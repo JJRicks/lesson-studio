@@ -17,7 +17,7 @@ S["ex23-prop"] = {
     k.curt("sl", 31, { c: "s3", o: .92 });
     k.label("Lg", [-3.4, yw, g(-3.4) * kx], tx`\text{x-part: }3x^2`, { c: "glow", dx: 54, dy: -22 });
     k.label("Lh", [xw, -.3, h(.3) * ky], tx`\text{y-part: }y^2\cos(6y^3)`, { c: "s2", dx: 46, dy: 44 });
-    k.label("Ls", () => [k.P.s, -.45, f(k.P.s, -.45)], tx`\text{same curve, rescaled}`, { c: "s3", dx: -96, dy: 34 });
+    k.label("Ls", () => [k.P.s, -.45, f(k.P.s, -.45)], tx`\text{same curve, rescaled}`, { c: "cursor", dx: -96, dy: 34 });
     k.label("Lx", [-.5, yw, 3.6], tx`\int_{-4}^{3}3x^2\,dx=91`, { c: "glow", dy: -26, line: false });
     k.label("Ly", [xw, 0, 3.4], tx`\int y^2\cos(6y^3)\,dy=\tfrac{1}{18}\sin(6y^3)`, { c: "s2", dx: -36, dy: -56 });
     k.label("Lv", [xw, 0, 2.2], tx`\text{area}=\tfrac19\sin\tfrac{\pi^3}{36}`, { c: "s2", dx: -8, dy: -46 });

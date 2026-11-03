@@ -58,7 +58,7 @@ If the source teaches a method without an example, add one from a standard textb
 
 ## 5. Page anatomy and writing
 
-Copy the markup from `lessons/_starter/body.html`, which has a working example of every component below.
+Copy the markup from `lessons/_starter/body.html`, which has working examples of the common components. `lessons/wk8-multivariable/body.html` shows the rest: `.seg`, `.btn`, `canvas.p3`, `.cursorbox`, `.legend`, `.sw`, `.badge` and `.setup`.
 
 Every topic runs: **big idea → first principles → analogy → formal statement → interactive → worked examples**. Worked examples sit right after the topic they belong to.
 
@@ -118,7 +118,7 @@ Maths is KaTeX, written as `\(inline\)` and `\[display\]` in `body.html`. Use `\
 | name | what |
 |---|---|
 | `$`, `$$` | query one, query all as an array |
-| `css("--x")`, `tokens(TOK)` | read a token / read all tokens as RGB arrays: `T = tokens(TOK); rgbS(T.accent, .5)`. Hyphens become underscores: `T.surface_2` |
+| `css("--x")`, `tokens(TOK)` | read a token / read the palette in section 6 as RGB arrays: `T = tokens(TOK); rgbS(T.accent, .5)`. Hyphens become underscores: `T.surface_2`. For a soft token, use `css()` or add it to `TOK` |
 | `rgbS`, `lerpC`, `ramp(T, t)` | RGB array to CSS colour, mix two, the height colour ramp |
 | `clamp`, `fx(v, digits)`, `minus` | clamp, format with a real minus sign, swap hyphens for minus signs |
 | `tex(el, "x^2", display)` | render TeX into an element |
@@ -132,11 +132,11 @@ Maths is KaTeX, written as `\(inline\)` and `\[display\]` in `body.html`. Use `\
 
 **Important limits:**
 - `page.js` runs before three.js loads, in a separate closure, so a hero can't use the 3D stepper kit. Use `Plot3D` or a hand-written canvas.
-- `Plot3D` squeezes z to fit, which distorts angles. Pass `iso: true` in a scene's `bounds` for true proportions, or copy the small projected renderer in `lessons/dot-product-angle/page.js`.
+- `Plot3D` is for boxes and height surfaces. It squeezes z to fit, which distorts angles, unless you pass `iso: true` in `bounds`. It has no arrowheads, keeps its axes at a corner, and spins by default. For vectors, copy the small projected renderer in `lessons/dot-product-angle/page.js`.
 - Never preset an interactive to a worked example's numbers. It shows the answer.
 
 Where to find things:
-- **`Plot3D`** (`engine/js/plot3d.js`, add `"plot3d"` to `libs`): a dependency-free canvas 3D renderer for box and surface scenes, with drag to rotate. Helpers: `boxFaces`, `surfaceGroups`, `surfaceWire`.
+- **`Plot3D`** (`engine/js/plot3d.js`, add `"plot3d"` to `libs`): a dependency-free canvas 3D renderer for box and surface scenes, with drag to rotate. `new Plot3D(canvas, { build, tick, yaw, pitch, spin })`, then `.rebuild()`. `build(T)` returns `{ bounds: { a, b, c, d, zlo, zhi, iso }, groups: [{ at, faces: [{ p, col, n, a, two, st, sa, lw }] }], lines: [{ p, col, a, w }], labels: { b, d, o, z } }`. Helpers `boxFaces`, `surfaceGroups` and `surfaceWire` make those parts, and `riemannScene` in `lessons/wk8-multivariable/page.js` shows them in use.
 - **`lessons/wk8-multivariable/page.js`**: Riemann box explorers, a gradient explorer with contours by marching squares and a draggable point, an optimization builder with a heat map, a Fubini slicer with a live plot, and a sweep-line region explorer.
 - **`lessons/dot-product-angle/`**: a live hand-written 3D vector hero, and a topic-sized lesson to copy the shape of.
 - **`gallery/6v6-tetrode-lesson.html`**: **`class TubeSim`**, the particle engine Joel loved, where particles spawn at a rate set by a physical model. Also a live scope, Web Audio playing the model's waveform, a plate-curve load line, and an animated schematic.
@@ -169,7 +169,7 @@ S["ex1"] = {                       // the <article class="prob"> id
 };
 ```
 
-Visibility, numbers and camera accumulate from step to step, so Back and jumping both work. Step 1's `from` plays when the scene first appears. `tx` is `String.raw`, so captions use single backslashes. Captions set the height of the sticky viewer, which is why they stay short.
+Visibility, numbers and camera accumulate from step to step, so Back and jumping both work. Step 1's `from` plays once, the first time half of the viewer is on screen. `tx` is `String.raw`, so captions use single backslashes. Captions set the height of the sticky viewer, which is why they stay short.
 
 Available in scene files: `sin cos tan acos atan2 sqrt hypot exp min max abs floor round PI TAU rng(a, b, n) lerp clamp01 ease tx`, plus `rectSolid`. Reach objects with `k.o.<name>`, and stash your own helpers on `k` in `build`.
 
@@ -177,24 +177,24 @@ Available in scene files: `sin cos tan acos atan2 sqrt hypot exp min max abs flo
 
 | call | makes |
 |---|---|
-| `k.surf(name, (u,v)=>[x,y,z], [u0,u1,nu], [v0,v1,nv], opts)` | any parametric surface; `.map(fn)` re-shapes it |
+| `k.surf(name, (u,v)=>[x,y,z], [u0,u1,nu], [v0,v1,nv], opts)` | any parametric surface; `.map(fn)` re-shapes it. Only surfaces accept `ramp: [zlo, zhi]`, which colours by height |
 | `k.poly(name, pts, opts)` / `k.flat(name, pts2D, z, opts)` | convex polygon; `.set(pts)` moves it |
 | `k.curt(name, n, opts)` | wall on a polyline; `.set([[x,y,zTop,zBottom],...])` with exactly n points |
 | `k.tube(name, pts, opts)` / `k.tubes(name, [pts...], opts)` | thick curves; opts `r` is the radius |
 | `k.seg(name, opts)` | line; `.set(a, b)` |
 | `k.arrow(name, opts)` | arrow; `.set(a, b)`, tip stored in `.b` |
-| `k.wedge(name, opts)` | filled angle marker; `.set(apex, dirA, dirB, radius)` |
+| `k.wedge(name, opts)` | filled angle marker; `.set(apex, dirA, dirB, radius, fraction)`, where `fraction` opens it part-way for a sweep |
 | `k.dot(name, {r, p})` | point; `.at(p)`, position stored in `.p` |
 | `k.ball(name, opts)` / `k.block(name, opts)` | sphere `.at(p, worldRadius)` / box `.set(a, b)` |
 | `k.grid(name, [x0,x1,dx], [y0,y1,dy], z)` / `k.axes(name, X, Y, Z, {at})` | floor grid / labeled axes; pass `null` to skip an axis |
 | `k.label(name, pos or ()=>pos, tex, opts)` | math label pinned to a point |
 | `k.alias(name, "a b c")` | a group name for `add` and `drop` |
 | `k.cut("x")` | clip plane keeping everything below a value; pass `.pl` in `clip: [...]`, move with `.set(v)` |
-| `rectSolid(k, f, X, Y, ramp, axis)` | a solid over a rectangle: objects `R Re top w1 w2 w3 w4 ghost slice`, alias `solid`, methods `.cut .set(g) .slice(s)` |
+| `rectSolid(k, f, X, Y, ramp)` | a solid over a rectangle that sweeps along x: objects `R Re top w1 w2 w3 w4 ghost slice`, alias `solid`, methods `.cut .set(g) .slice(s)` |
 
-Shared options: `c` (any token name without `--`), `o` (opacity), `ramp: [zlo, zhi]` (colour by height), `clip`, `lit: false`, `emi` (self-glow; keep it low, because dark-theme colours overexpose), `sh` (shininess), `po` (draw behind coplanar lines).
+Shared options: `c` (any token name without `--`), `o` (opacity), `clip`, `lit: false`, `emi` (self-glow; keep it low, because dark-theme colours overexpose), `sh` (shininess), `po` (draw behind coplanar lines).
 
-Label options: `c`, `dx`, `dy` (offset in pixels, which draws a leader line unless `line: false`), `when: () => bool`, `sm`, `plain`. Labels can't change after they're built, so make two and swap them with `add` and `drop`.
+Label options: `c`, `dx`, `dy` (offset in pixels, which draws a leader line unless `line: false`), `when: () => bool`, `sm`, `plain`. Labels can't change after they're built, so make two and swap them with `add` and `drop`. For label text, use `cursor` rather than `s3`, which is too pale on the light theme.
 
 **What makes a good scene.** Joel asked for "simple". Each step shows one new idea, and the picture does what the written step does:
 - Show what the algebra means. "Eliminate λ" drew the whole line of points where the gradients can line up, and "use the constraint" lit up where that line crosses the constraint.
@@ -210,18 +210,18 @@ python3 lessons/<slug>/verify.py                       # answers
 python3 tools/check.py <slug>                          # must exit 0
 python3 tools/sheets.py <slug>                         # every step, dark
 python3 tools/sheets.py <slug> --light                 # every step, light
-python3 tools/shot.py <slug> "#top"                    # the real page, one section at a time
+python3 tools/shot.py <slug> "#top"                    # the real page, one whole section at a time
 python3 tools/shot.py <slug> "#topic1" --width 500     # phone width, which reveals layout problems check.py can't see
-python3 tools/shot.py <slug> "#ex1" --step 2 --mid     # a sweep part-way through
+python3 tools/shot.py <slug> "#ex1" --step 3 --mid     # dot 3 with its numbers halfway through a sweep
 ```
 
 These all build to `dist/` and never touch a delivered page.
 
 **`check.py`** covers script errors, KaTeX failures, leftover raw TeX, sideways overflow, a reveal on every example, scenes matched to examples, step counts, unknown object names, answers showing too early, and the real stepping and lock flow in real-time Chrome.
 
-**`spoilers.json`** drives the early-answer scan. Each example id lists regexes checked against its scene's pre-answer captions and labels and its card outside the reveal. `_page` lists regexes checked across the whole page outside reveals, so put each answer's distinctive form there, like `"53\\.4"`. Captions are scanned as raw TeX, and other text as rendered text plus TeX source. Keep patterns specific, or they'll match real step content.
+**`spoilers.json`** drives the early-answer scan. Each example id lists regexes checked against its scene's pre-answer captions and labels and its card outside the reveal. `_page` is required: it lists regexes checked across the whole page outside reveals, so put each answer's distinctive form there, like `"53\\.4"`. Captions are scanned as raw TeX, and other text as rendered text plus TeX source. Keep patterns specific, or they'll match real step content.
 
-**A passing `check.py` doesn't mean the page is right.** Open every contact sheet and read it like a student, step by step. Sheets show each step's end state at real size. Fix these on sight: labels colliding, objects cropped by the frame, a plane seen edge-on when its face matters, a scene too small in its frame, a caption describing something the picture doesn't show, and a colour named in a caption that doesn't match what's drawn. The test agent made about a dozen fixes on a one-example lesson after `check.py` had already passed, so expect that.
+**A passing `check.py` doesn't mean the page is right.** Open every contact sheet and read it like a student, step by step. Sheets show each step's end state at real size. Fix these on sight: labels colliding, objects cropped by the frame, a plane seen edge-on when its face matters, a scene too small in its frame, a caption describing something the picture doesn't show, a colour named in a caption that doesn't match what's drawn, and a label too pale to read. The test agent made about a dozen fixes on a one-example lesson after `check.py` had already passed, so expect that.
 
 Then look at every section of the page itself with `shot.py`, in both themes and at 500px. Report honestly what you couldn't test: audio you couldn't hear, touch on a real phone, real GPUs (headless Chrome uses software rendering), and motion you only saw as stills.
 

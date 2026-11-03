@@ -357,3 +357,11 @@ canvas.p2{display:block;width:100%;background:var(--plot)}
 .cheat .card .eqs{overflow-x:auto}
 .stepnav button{appearance:none;font:inherit;font-size:.86rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:6px 10px;cursor:pointer}
 .stepnav button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+
+/* readout tiles draw their own hairlines, so an unfilled last row never shows a solid block */
+.reads,.cursorbox{gap:0;background:var(--surface)}
+.read,.cursorbox>div{box-shadow:0 0 0 .5px var(--line)}
+@media (max-width:560px){.reads{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* four cards sit two by two instead of leaving one alone on a row */
+.cheat:has(>:nth-child(4):last-child){grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:560px){.cheat:has(>:nth-child(4):last-child){grid-template-columns:minmax(0,1fr)}}

@@ -67,7 +67,7 @@ S["ex24-2"] = {
     k.label("Le", () => [L(k.P.s), k.P.s, 0], tx`\text{enters}`, { c: "glow", dx: -36, dy: -14 });
     k.label("Lq", () => [Rr(k.P.s), k.P.s, 0], tx`\text{leaves}`, { c: "glow", dx: 36, dy: 12 });
     k.label("Lw", () => { const y = k.P.s, x = (L(y) + Rr(y)) / 2; return [x, y, f(x, y)]; }, tx`\text{wall area}=-y^6+8y^4+\cdots`, { c: "glow", dx: -40, dy: -44 });
-    k.label("Lz", [5, 1.6, 90], tx`z=3x^2+y^2`, { c: "s3", dx: 30, dy: -18 });
+    k.label("Lz", [5, 1.6, 90], tx`z=3x^2+y^2`, { c: "cursor", dx: 30, dy: -18 });
     k.label("La", [2, .5, 60], tx`\tfrac{2375}{7}\approx339.29`, { c: "glow", dx: 0, dy: -70 });
   },
   update(P, k) {
@@ -200,7 +200,7 @@ S["ex24-avg"] = {
     k.label("Ls", () => [7 - k.P.s, k.P.s, 0], tx`\text{length }14-2y`, { c: "glow", dx: 62, dy: -6 });
     k.label("Lar", [0, 2.4, 0], tx`\text{area}=49`, { c: "ink", dy: 30, line: false });
     k.label("Lr1", [-3.5, 1.6, -28], tx`\text{left side below}`, { c: "s1", dx: -46, dy: 34 });
-    k.label("Lr2", [3.8, 1.6, 40], tx`\text{right side above}`, { c: "s3", dx: 40, dy: -34 });
+    k.label("Lr2", [3.8, 1.6, 40], tx`\text{right side above}`, { c: "cursor", dx: 40, dy: -34 });
     k.label("L5", [0, 3, 15], tx`z=5y`, { c: "s2", dx: 42, dy: -34 });
     k.label("Lv", [0, 2, 12], tx`\text{volume}=\tfrac{1715}{3}`, { c: "ink", dx: 52, dy: -48 });
     k.label("Lq", [0, 2.4, AV], tx`f_{\text{avg}}=\,?`, { c: "glow", dx: 50, dy: -36 });

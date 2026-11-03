@@ -136,10 +136,10 @@ class Kit {
     const q = this.reg(n, mesh, [m], { at(p) { this.p = p; mesh.position.copy(k.W(p)); return this; } });
     if (o.p) q.at(o.p); return q;
   }
-  wedge(n, o = {}) {             // a filled angle marker: set(apex, a, b, radius) spans directions a and b, in maths units
+  wedge(n, o = {}) {             // a filled angle marker: set(apex, a, b, radius, fraction = 1) opens from direction a toward b, in maths units
     const q = this.surf(n, () => [0, 0, 0], [0, 1, 1], [0, 1, 28], o), dot = (u, v) => u[0] * v[0] + u[1] * v[1] + u[2] * v[2], unit = u => { const m = hypot(u[0], u[1], u[2]) || 1; return u.map(c => c / m); };
-    q.set = (O, a, b, R) => {
-      const e1 = unit(a), d = dot(e1, unit(b)), th = acos(max(-1, min(1, d))), bb = unit(b), e2 = unit(bb.map((c, i) => c - d * e1[i]));
+    q.set = (O, a, b, R, f = 1) => {
+      const e1 = unit(a), d = dot(e1, unit(b)), th = acos(max(-1, min(1, d))) * f, bb = unit(b), e2 = unit(bb.map((c, i) => c - d * e1[i]));
       q.map((u, v) => O.map((c, i) => c + u * R * (cos(v * th) * e1[i] + sin(v * th) * e2[i]))); return q;
     };
     return q;
@@ -270,7 +270,10 @@ class Viz {
     if (this.built || this.dead) return;
     if (!GL.get()) { this.dead = true; this.stage.insertAdjacentHTML("beforeend", `<p class="v3no">This browser couldn't start WebGL, so the 3D view is off. The steps below still work.</p>`); return; }
     this.build(); this.jump(this.i);
-    if (this.i === 0 && this.def.steps[0].from && !reduceMotion) this.go(0, "again");
+  }
+  intro() {                      // the first time an example is really on screen, play step 1's sweep if it has one
+    if (this.played) return; this.played = true;
+    if (this.built && this.i === 0 && this.def.steps[0].from && !reduceMotion) this.go(0, "again");
   }
   rebuild() {
     if (!this.built) return;

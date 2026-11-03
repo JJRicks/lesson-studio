@@ -36,6 +36,7 @@ def main(slug):
             fails.append(msg)
             for line in (detail or [])[:10]:
                 print("          " + str(line))
+    need(not wide["warnings"], "scene files are consistent", wide["warnings"])
     need(not narrow["errors"] and not wide["errors"], "no script errors", narrow["errors"] + wide["errors"])
     need(wide["katexErrors"] == 0, "all math typeset", [f'{wide["katexErrors"]} KaTeX errors'])
     need(not wide["unrendered"], "no raw TeX left on the page", wide["unrendered"])
@@ -46,10 +47,10 @@ def main(slug):
         need(wide["steppers"] > 0, "lesson has 3D steppers (it lists stepper3d in libs)")
         need(not wide["orphans"], "every scene matches a worked example", [f"S[{i!r}] has no matching <article id>" for i in wide["orphans"]])
         need(not missing, "every worked example has a scene", [f"article #{i} has no scene (list it in lesson.json no_scene if that's deliberate)" for i in missing])
+    need(bool(spoilers.get("_page")) or not wide["articles"], "spoilers.json has a _page list of answers", ["add each answer's distinctive form, e.g. \"_page\": [\"53\\\\.4\"]"])
     need(not wide["leaks"], "no answers showing before the reveal", wide["leaks"])
     if wide["steppers"]:
         need(not wide["stepCounts"], f'{wide["steppers"]} steppers, {wide["steps"]} steps: counts match the written steps', wide["stepCounts"])
-        need(not wide["warnings"], "every step names real objects", wide["warnings"])
         bad = [l for l in wide["flow"] if l.startswith("FAIL")]
         need(bool(wide["flow"]) and not bad, f'stepping and answer lock work ({len(wide["flow"])} checks)', bad)
         s = wide["sticky"] or {}

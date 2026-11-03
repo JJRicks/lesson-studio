@@ -34,7 +34,7 @@ python3 tools/build.py wk9-triple-integrals                           # deliver 
 | `engine/css/` | the design system (`base.css`) and 3D viewer styles |
 | `engine/js/` | page shell, `Plot3D` canvas renderer, 3D stepper engine |
 | `engine/vendor/` | KaTeX 0.16.9 and three.js r128, both MIT licensed |
-| `lessons/_starter/` | the scaffold: a working example of every component, and it passes QA as is |
+| `lessons/_starter/` | the scaffold: working examples of the common components, and it passes QA as is |
 | `lessons/<slug>/` | lesson sources: `lesson.json`, `body.html`, `page.js`, `scenes/`, `verify.py`, `spoilers.json` |
 | `gallery/` | finished pages from before the kit, kept as references for their interactives |
 | `tools/` | scaffold, build, QA, contact sheets and screenshots |

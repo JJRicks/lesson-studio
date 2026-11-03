@@ -1,7 +1,3 @@
 /* Page-specific styles only. Reusable styles belong in engine/css. */
-/* Four cheat cards sit two by two. The default track width leaves the fourth alone on its own row. */
-.cheat{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
 /* Keep the a sliders and b sliders in matching columns at every width. */
 #xPanel .ctlgrid{grid-template-columns:repeat(3,minmax(0,1fr))}
-/* Four readouts in three columns would leave a block of the grid's line colour showing. */
-@media (max-width:560px){.reads{grid-template-columns:repeat(2,minmax(0,1fr))}}

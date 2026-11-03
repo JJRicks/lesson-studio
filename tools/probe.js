@@ -2,7 +2,7 @@
 (() => {
 const CFG = __CONFIG__, wait = ms => new Promise(r => setTimeout(r, ms));
 setTimeout(async () => {
-  const R = { errors: [], katexErrors: 0, unrendered: [], overflow: [], steppers: 0, steps: 0, orphans: [], noScene: [], stepCounts: [], warnings: [], leaks: [], noReveal: [], flow: [], viewport: [innerWidth, innerHeight], sticky: null };
+  const R = { errors: [], katexErrors: 0, unrendered: [], overflow: [], steppers: 0, steps: 0, articles: 0, orphans: [], noScene: [], stepCounts: [], warnings: [], leaks: [], noReveal: [], flow: [], viewport: [innerWidth, innerHeight], sticky: null };
   try {
     document.documentElement.style.scrollBehavior = "auto";
     R.katexErrors = document.querySelectorAll(".katex-error").length;
@@ -13,6 +13,7 @@ setTimeout(async () => {
     R.overflow.push(...[...document.querySelectorAll("main *")].filter(e => e.getBoundingClientRect().right > W + 1 && !e.closest(".tbl,.mbox,.katex-display,.eqs,.katex,.schem-scroll,pre,.v3ls"))
       .slice(0, 8).map(e => e.tagName + "." + (e.getAttribute("class") || "") + "#" + e.id));
     R.noReveal = [...document.querySelectorAll("article.prob")].filter(p => !p.querySelector("details.reveal")).map(p => p.id);
+    R.articles = document.querySelectorAll("article.prob").length;
     R.noScene = [...document.querySelectorAll("article.prob")].filter(p => !p.querySelector(".v3")).map(p => p.id);
     const visibleText = root => { const c = root.cloneNode(true); c.querySelectorAll("details.reveal,.v3ls,.v3cap,script,style").forEach(n => n.remove()); return c.textContent; };
     for (const [id, list] of Object.entries(CFG.spoilers)) {

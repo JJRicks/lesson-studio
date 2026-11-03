@@ -25,7 +25,7 @@ function hexRgb(h) {
 const rgbS = (c, a = 1) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
 const lerpC = (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t];
 const tokens = names => { const o = {}; names.forEach(n => { o[n.replace("-", "_")] = hexRgb(css("--" + n)); }); return o; };
-const TOK = ["s1", "s2", "s3", "bad", "ink", "muted", "line", "plot", "grid", "accent", "glow", "surface-2", "good"];
+const TOK = ["bg", "surface", "surface-2", "ink", "muted", "line", "accent", "glow", "cursor", "good", "bad", "plot", "grid", "s1", "s2", "s3", "t1", "t2", "t3", "t4"];
 function ramp(T, t) { t = clamp(t, 0, 1); return t < 0.5 ? lerpC(T.s1, T.s2, t * 2) : lerpC(T.s2, T.s3, (t - 0.5) * 2); }
 
 /* ---------- theme ---------- */
