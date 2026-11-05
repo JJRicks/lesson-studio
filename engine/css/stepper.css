@@ -1,4 +1,4 @@
-/* ---------- 3D worked-example steppers ---------- */
+/* ---------- worked-example steppers (engine/js/stepper.js), shared by the 3D and 2D backends ---------- */
 article.prob{overflow:clip}
 .v3wrap>ol.steps{margin-top:18px}
 .v3wrap>details.reveal{margin-top:18px}
@@ -35,3 +35,11 @@ article.prob{overflow:clip}
 .v3wrap ol.steps>li.v3on::before{background:var(--accent);color:var(--accent-ink)}
 .v3wrap ol.steps>li .mbox{cursor:auto}
 @media (max-width:560px){.v3l{font-size:.72rem;padding:0 6px}.v3pips button{width:24px;height:24px}.v3next{padding:6px 10px}.v3cap{min-height:7.6em}}
+/* 2D backend: an SVG schematic fills the stage, and a second SVG draws label leader lines in pixels */
+.v2 .v3stage{cursor:default;touch-action:auto}
+.v2svg,.v2lines{position:absolute;inset:0;width:100%;height:100%}
+.v2svg.v2split{overflow:hidden}
+.v2lines{pointer-events:none;overflow:visible}
+.v2lines line{stroke:currentColor;stroke-width:1.3}
+.v2lines circle{fill:currentColor}
+@media (max-width:720px){.v2 .v3stage{height:clamp(220px,62vw,360px)}}

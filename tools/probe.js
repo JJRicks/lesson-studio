@@ -34,9 +34,13 @@ setTimeout(async () => {
         } catch (e) { R.errors.push(`scene ${id} crashed: ${e.message}`); continue; }
         const res = (CFG.spoilers[id] || []).map(s => new RegExp(s));
         if (!res.length) R.leaks.push(id + ": no spoiler patterns listed in spoilers.json");
+        if (v.base) for (const re of res) if (re.test(v.base.textContent)) R.leaks.push(`${id}: always-visible drawing matches ${re}`);
         v.def.steps.slice(0, -1).forEach((st, i) => {
           for (const re of res) if (re.test(st.cap)) R.leaks.push(`${id} step ${i + 1} caption matches ${re}`);
-          for (const n of v.states[i].vis) { const q = v.k.o[n]; if (q && q.lab) for (const re of res) if (re.test(q.el.textContent)) R.leaks.push(`${id} step ${i + 1} label ${n} matches ${re}: ${q.el.textContent.slice(0, 40)}`); }
+          for (const n of v.states[i].vis) {
+            const q = v.k.o[n], t = q && q.el ? q.el.textContent : "";   // labels, and text inside 2D groups
+            if (t) for (const re of res) if (re.test(t)) R.leaks.push(`${id} step ${i + 1} ${q.lab ? "label" : "group"} ${n} matches ${re}: ${t.slice(0, 40)}`);
+          }
         });
       }
       R.warnings.push(...(window.__v3warn || []));

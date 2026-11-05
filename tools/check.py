@@ -6,7 +6,7 @@ usage: python3 tools/check.py <slug>
 Builds to dist/ only: it never touches a delivered page.
 
 Checks: script errors, KaTeX failures, unrendered math, sideways overflow at 500px, a reveal on every worked example,
-answers showing outside reveals, and for 3D steppers: scenes matched to examples, step counts, object names and the
+answers showing outside reveals, and for steppers (3D or 2D): scenes matched to examples, step counts, object names and the
 stepping and lock flow. This cannot judge whether a picture is right. Use tools/sheets.py and tools/shot.py for that.
 """
 import json, pathlib, sys
@@ -42,9 +42,9 @@ def main(slug):
     need(not wide["unrendered"], "no raw TeX left on the page", wide["unrendered"])
     need(not narrow["overflow"], "no sideways overflow at 500px", narrow["overflow"])
     need(not wide["noReveal"], "every worked example has a reveal", wide["noReveal"])
-    if "stepper3d" in cfg.get("libs", []):
+    if {"stepper3d", "stepper2d"} & set(cfg.get("libs", [])):
         missing = [i for i in wide["noScene"] if i not in cfg.get("no_scene", [])]
-        need(wide["steppers"] > 0, "lesson has 3D steppers (it lists stepper3d in libs)")
+        need(wide["steppers"] > 0, "lesson has steppers (it lists stepper3d or stepper2d in libs)")
         need(not wide["orphans"], "every scene matches a worked example", [f"S[{i!r}] has no matching <article id>" for i in wide["orphans"]])
         need(not missing, "every worked example has a scene", [f"article #{i} has no scene (list it in lesson.json no_scene if that's deliberate)" for i in missing])
     need(bool(spoilers.get("_page")) or not wide["articles"], "spoilers.json has a _page list of answers", ["add each answer's distinctive form, e.g. \"_page\": [\"53\\\\.4\"]"])

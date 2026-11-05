@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild, then render a contact sheet of every step of every 3D stepper at real size, labels and captions included.
+"""Rebuild, then render a contact sheet of every step of every stepper (3D or 2D) at real size, labels and captions included.
 
 usage: python3 tools/sheets.py <slug> [example-id ...] [--light]
 Writes dist/sheets/<slug>/<example-id>-dark.png (or -light). Open each one and look at it: this is the only check that
@@ -32,7 +32,7 @@ def main(argv):
     page = build(slug, deliver=False).read_text()
     info = probe(page, "sheet-index", 'setTimeout(()=>__report(window.__V3?__V3.V3.list.map(v=>[v.prob.id,v.def.steps.length]):[]),800)', 800, 800)
     if not info:
-        sys.exit("This lesson has no 3D steppers.")
+        sys.exit("This lesson has no steppers.")
     out = DIST / "sheets" / slug
     out.mkdir(parents=True, exist_ok=True)
     for id_, n in info:

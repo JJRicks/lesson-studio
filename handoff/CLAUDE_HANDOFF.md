@@ -50,7 +50,7 @@ If the source teaches a method without an example, add one from a standard textb
 
 **6. Build the interactives** in `page.js`. See section 7. Open the hero with the single most striking live thing.
 
-**7. Build a 3D stepper for every worked example** when the maths or physics has real geometry. See section 8. For circuits, a steppable animated 2D schematic is usually clearer than forced 3D, so ask Joel if unsure.
+**7. Build a stepper for every worked example.** Use 3D when the maths or physics has real geometry. For circuits, use the 2D schematic stepper: Joel said "probably no need for 3D when it comes to circuits, but animated interactive diagrams for sure." See section 8.
 
 **8. QA.** See section 9.
 
@@ -142,12 +142,16 @@ Where to find things:
 - **`gallery/6v6-tetrode-lesson.html`**: **`class TubeSim`**, the particle engine Joel loved, where particles spawn at a rate set by a physical model. Also a live scope, Web Audio playing the model's waveform, a plate-curve load line, and an animated schematic.
 - **`gallery/bjt-characterization-lesson.html`**: **`class Plot`**, LTspice-style plots with draggable cursors, the electron-flow canvas, `.dc` command decoders, and "run the sweep" animations.
 - **`gallery/bjt-calculation-lesson.html`**: **`playground()`**, a live circuit with sliders, animated current flow and a load-line chart.
+- **`lessons/wk7-bjt-led-relay-drivers/`**: the circuits reference. Live SVG schematics with current dots in `page.js` (a pin-flip hero, a pnp sweep, a relay cutaway with hysteresis, a flyback scope), Gummel-Poon BJT and LED solvers in `shared.js`, and six 2D steppers.
+- **Schematic kit** (`engine/js/schematic.js`, add `"schematic"` to `libs`): `new Schem(svgGroup)` draws parts in viewBox units, y down: `res`, `diode`, `led(a, k, {c})` with `.set(brightness)`, `bjt(B, {pnp})` returning pins `{B, C, E}`, `vsrc` returning `{top, bot}`, `gnd`, `net(p, {w, left})` (an LTspice net flag), `coil`, `lever(pivot, len)` with `.set(deg)`, `lamp` with `.set`, `rect`, `text`, `wire`, `node`, `arrow`. `flow(pts, {c, gap})` makes moving current dots: set `.speed`, then call `Schem.tick(flows, dt)` each frame. Classes `w`, `tint` (colour from `--c`), `fillc`, `soft`, `sm`.
+- **`shared.js`** in a lesson folder is copied into both the `page.js` closure and the stepper closure. Put circuit drawings and solvers there so the hero and the worked examples draw the same circuit.
 
 Gallery pages are plain HTML, so read their source and copy what you need into `page.js`. Repeated code worth keeping belongs in `engine/`.
 
-## 8. 3D steppers
+## 8. Steppers
 
-Add `"stepper3d"` to `libs`. Files in `lessons/<slug>/scenes/` are concatenated in sort order, and each registers scenes under the worked example's article id. The engine moves the card's steps into a viewer with Back, Replay, Next and numbered dots, sticks it to the top of tall screens, lights up the written step, and lets a click on a written step jump the scene.
+Add `"stepper3d"` to `libs`, or `"stepper2d"` and `"schematic"` for circuits (section 8b).
+Both use the same viewer, step contract and QA. Files in `lessons/<slug>/scenes/` are concatenated in sort order, and each registers scenes under the worked example's article id. The engine moves the card's steps into a viewer with Back, Replay, Next and numbered dots, sticks it to the top of tall screens, lights up the written step, and lets a click on a written step jump the scene.
 
 **The contract.** `steps` has exactly one entry per `<li>` in `ol.steps`, plus one final answer step. That answer step stays locked until the card's reveal is opened. Every `article.prob` needs a scene, unless its id is listed in `no_scene` in `lesson.json`. `check.py` fails on a scene with no article, an article with no scene, or a scene registered twice.
 
@@ -203,6 +207,30 @@ Label options: `c`, `dx`, `dy` (offset in pixels, which draws a leader line unle
 - Keep labels few, and drop old ones as new ones arrive.
 - Translucent surfaces go at opacity .2 to .4 for context, and .7 to .95 for the subject.
 
+### 8b. 2D circuit steppers
+
+A scene with `view: "2d"` draws an SVG inside `box: [x0, y0, w, h]` (viewBox units, y down). The step fields (`add drop set from win dur cap`) work the same, and there's no camera. `update(P, k, t)` also gets the time, for flicker and AC.
+
+| call | makes |
+|---|---|
+| `k.sch` | the always-visible `Schem` layer: draw the circuit here in `build` |
+| `k.group(name, s => {...}, {under, side})` | a named layer that steps add and drop; `s` is a `Schem` |
+| `k.flow(name, pts, {c, gap})` | current dots; set `k.o.name.speed` in `update` |
+| `k.loop(name, pts, {c})` | a soft highlight under a KVL loop |
+| `k.text(name, p, str)` | text with `.set(str)` |
+| `k.rect(name, x, y, w, h, {c})` | a bar with `.set(x, y, w, h)` |
+| `k.plot(name, {c})` | a trace with `.set(pts)`, for a scope |
+| `k.label(name, p, tex, {c, dx, dy, line, when})` | an HTML KaTeX tag, offset in pixels. `line: false` places it right on `p` |
+
+`update` runs after the step fades, so it can override a group's opacity, for example to crossfade two drawings with `P.m`.
+
+**What worked for circuits:**
+- Dots show conventional current. Make their speed follow the current, like `speedOf(I)` in the wk7 `shared.js`, and use one colour per loop: base `t1`, collector `t3`, AC `cursor`.
+- Light the loop being solved with `k.loop`, and put the numbers in **side cards** at the right of the box. These are a voltage-budget bar, an E24 ruler with an arrow at the calculated value, and an LTspice `.op` printout whose values say `?` until the answer step. Copy `SC` from `lessons/wk7-bjt-led-relay-drivers/scenes/00-kit.js`.
+- Declare the column the cards use as `side: [x, y, w, h]`, and draw the cards with `{ side: true }` (the `SC` helpers already do). Under 600px the engine then draws the circuit full width and moves the cards below it, scaled up. Otherwise a 740-wide scene shrinks its text to about 6px on a phone. Leave `side` out if the circuit itself reaches into that column.
+- Write labels with inline division, `1.8\text{ V}/20\text{ mA}`. A `\frac` in a label renders too small to read.
+- Demos in `page.js` use example part values. When the homework fixes a part (an 800 Ω relay), the demo uses a different one (400 Ω) and says so, or it shows the answer.
+
 ## 9. QA
 
 ```sh
@@ -240,12 +268,16 @@ Then look at every section of the page itself with `shot.py`, in both themes and
 - **Start animated history full.** A scrolling scope should be seeded with more history than its window, or its first frame is part empty.
 - **Grid and flex children need `min-width:0`,** or a long equation widens the page.
 - **Scratch folders get wiped between sessions.** Everything that matters lives in this repo.
+- **Check a drawing's moving parts in both states.** The wk7 relay cutaway's armature rotated the wrong way, so "released" drew the contacts touching. Only a screenshot showed it.
+- **Monospace fonts lack `½`** and draw something like `%`. Write `LI²/2`.
 
 If you edit `engine/` or `tools/`:
 - Under `--virtual-time-budget` Chrome fires almost no animation frames, so animations look broken when they aren't. `tools/common.py probe()` runs in real time and reports over a local POST for this reason. Headless viewports are also about 143px shorter than `--window-size`, with a 500px minimum width.
 - `overflow:hidden` on a card disables `position:sticky` inside it, hence `overflow:clip` on `article.prob`. Sticky also can't escape a grid item's row, hence `.v3wrap`.
 - Browsers cap WebGL contexts at about 16, so the stepper shares one renderer and copies frames into each example's canvas.
 - After any engine change, run `check.py` on every folder in `lessons/`.
+- `Object.assign` copies a getter's current value, not the getter. Use `Object.defineProperty` to forward a setter, as `Kit2.flow` does for `speed`.
+- An SVG `<use>` copy doesn't get the page's CSS, so its cards render black. That's why the 2D split layout moves one layer instead of mirroring it.
 
 ## 12. Repo rules
 

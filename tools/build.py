@@ -32,9 +32,12 @@ def build(slug, deliver=True):
     libs = cfg.get("libs", [])
     read = lambda p, default="": p.read_text() if p.exists() else default
 
+    step3, step2, sch = "stepper3d" in libs, "stepper2d" in libs, "schematic" in libs
     css = (ENGINE / "css/base.css").read_text()
-    if "stepper3d" in libs:
-        css += "\n" + (ENGINE / "css/stepper3d.css").read_text()
+    if step3 or step2:
+        css += "\n" + (ENGINE / "css/stepper.css").read_text()
+    if sch or step2:
+        css += "\n" + (ENGINE / "css/schematic.css").read_text()
     css += "\n" + read(d / "lesson.css")
 
     scripts = []
@@ -44,13 +47,19 @@ def build(slug, deliver=True):
     main = (ENGINE / "js/shell.js").read_text()
     if "plot3d" in libs:
         main += "\n" + (ENGINE / "js/plot3d.js").read_text()
-    main += "\n" + read(d / "page.js")
+    if sch:
+        main += "\n" + (ENGINE / "js/schematic.js").read_text()
+    shared = read(d / "shared.js")                     # code both page.js and the scenes need, copied into each closure
+    main += "\n" + shared + "\n" + read(d / "page.js")
     scripts.append(script('(() => {\n"use strict";\n' + main + "})();\n", "page script"))
-    if "stepper3d" in libs:
+    if step3:
         scripts.append(script((ENGINE / "vendor/three/three.min.js").read_text(), "three"))
+    if step3 or step2:
+        js = lambda name: (ENGINE / "js" / name).read_text() + "\n"
         scenes = "".join(p.read_text() + "\n" for p in sorted((d / "scenes").glob("*.js")))
-        own = (ENGINE / "js/stepper3d.js").read_text() + "\n" + scenes + (ENGINE / "js/stepper3d-init.js").read_text()
-        scripts.append(script('(() => {\n"use strict";\nif (!window.THREE) return;\n' + own + "})();\n", "stepper script"))
+        own = js("stepper.js") + (js("stepper3d.js") if step3 else "") + (js("schematic.js") + js("stepper2d.js") if step2 else "") + shared + "\n" + scenes + js("stepper-init.js")
+        guard = "if (!window.THREE) return;\n" if step3 else ""
+        scripts.append(script('(() => {\n"use strict";\n' + guard + own + "})();\n", "stepper script"))
 
     parts = {
         "TITLE": html.escape(cfg["title"], quote=False),

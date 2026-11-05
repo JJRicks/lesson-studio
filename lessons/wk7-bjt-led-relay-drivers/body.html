@@ -1,0 +1,599 @@
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#top">Start here</a>
+      <ol>
+        <li><a href="#top">One pin, three jobs</a></li>
+        <li><a href="#pins">Why a pin needs help</a></li>
+      </ol></li>
+    <li><a class="grp" href="#partA">Part A · npn LED driver</a>
+      <ol>
+        <li><a href="#bjt">The BJT as a switch</a></li>
+        <li><a href="#led">LEDs need a resistor</a></li>
+        <li><a href="#sat">Saturation &amp; β<sub>min</sub></a></li>
+        <li><a href="#e24">Standard resistor values</a></li>
+        <li><a href="#recipe">The design recipe</a></li>
+        <li class="prob"><a href="#p1">Problem 1 · R1, R2</a></li>
+        <li><a href="#spice">LTspice &amp; .op</a></li>
+        <li class="prob"><a href="#p2">Problem 2 · Table 1</a></li>
+      </ol></li>
+    <li><a class="grp" href="#partB">Part B · pnp LED driver</a>
+      <ol>
+        <li><a href="#pnp">The pnp flip</a></li>
+        <li><a href="#pnpdesign">Designing it, and ties</a></li>
+        <li class="prob"><a href="#p3">Problem 3 · R1, R2</a></li>
+        <li><a href="#signs">Reading pnp results</a></li>
+        <li class="prob"><a href="#p4">Problem 4 · Table 2</a></li>
+      </ol></li>
+    <li><a class="grp" href="#partC">Part C · relay driver</a>
+      <ol>
+        <li><a href="#relay">What a relay is</a></li>
+        <li><a href="#coil">The coil at DC</a></li>
+        <li class="prob"><a href="#p5">Problem 5 · I<sub>C,sat</sub>, R1</a></li>
+        <li><a href="#relaysim">Simulating the relay</a></li>
+        <li class="prob"><a href="#p6">Problem 6 · Table 3</a></li>
+        <li><a href="#flyback">The flyback kick</a></li>
+        <li class="prob"><a href="#ec">Extra credit · D1</a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<!-- ================= HERO ================= -->
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Week 7 · BJT LED &amp; relay driver homework · 35 + 3 pts</div>
+  <h1>BJT <span>LED &amp; Relay</span> Drivers</h1>
+  <p class="lede">A microcontroller pin is a tiny switch that can only push a little current at a low voltage. Put a transistor after it and that pin can light an LED, or click a relay that runs a 120 V lamp. This page builds every idea you need from scratch, then works all seven problems step by step, with each final answer hidden until you click.</p>
+  <div class="chips"><span class="chip">Part A · npn + white LED</span><span class="chip">Part B · pnp + green LED</span><span class="chip">Part C · npn + relay</span><span class="chip">LTspice .op</span></div>
+  <div class="panel" id="hero">
+    <div class="panel-head"><span class="t">One pin, three jobs · live</span><span class="status" id="heroStatus"></span></div>
+    <div class="heroseg"><div class="seg" id="heroSeg" role="group" aria-label="Which circuit"><button type="button" data-k="npn" aria-pressed="true">npn · white LED</button><button type="button" data-k="pnp" aria-pressed="false">pnp · green LED</button><button type="button" data-k="relay" aria-pressed="false">npn · relay + lamp</button></div></div>
+    <div class="duo">
+      <div class="schbox" id="heroSch"></div>
+      <div class="side">
+        <button type="button" class="pinbtn" id="heroPin" aria-pressed="true"><span class="knob"></span><span class="pt"><small>Microcontroller pin · click to flip</small><b>HIGH</b></span></button>
+        <div class="cursorbox" id="heroReads"></div>
+        <p class="note" id="heroWhy"></p>
+      </div>
+    </div>
+    <div class="legend"><span><span class="dotsw" style="--c:var(--t1)"></span>base current, from the pin</span><span><span class="dotsw" style="--c:var(--t3)"></span>collector current, through the load</span><span><span class="dotsw" style="--c:var(--cursor)"></span>AC current in the lamp</span></div>
+    <p class="note">Flip the pin and watch the dots. They show conventional current, and their speed follows the current. The resistor values here are examples for the demo, so they aren't the homework answers. The relay demo uses an example 400 Ω relay.</p>
+  </div>
+</section>
+
+<section class="topic" id="pins" data-title="Why a pin needs help">
+  <span class="eyebrow">Start here · no prior knowledge needed</span>
+  <h3>Why a pin can't do the job alone</h3>
+  <p>A microcontroller, like an Arduino or an ESP32, talks to the world through <b>digital output pins</b>. Each pin has two states:</p>
+  <ul>
+    <li><b>HIGH</b>: the pin is connected inside the chip to its supply, usually <b>3.3 V</b> or 5 V.</li>
+    <li><b>LOW</b>: the pin is connected to ground, <b>0 V</b>.</li>
+  </ul>
+  <p>Two limits make a bare pin a poor driver:</p>
+  <ul>
+    <li><b>Current.</b> A pin is rated for a few milliamps, often 4 to 20 mA at most. Pull more and its voltage sags, it heats up, and eventually it fails. A bright LED wants 20 mA. A relay coil can want more.</li>
+    <li><b>Voltage.</b> A pin can never give more than its own supply. A 12 V relay won't move on 3.3 V.</li>
+  </ul>
+  <p>The fix is a <b>transistor used as a switch</b>. The pin supplies a small control current. The transistor then lets a much bigger current flow from a separate, stronger supply through the load. The pin only ever sees the small current.</p>
+  <div class="analogy"><span class="eyebrow">Analogy · the doorbell button</span><p>A doorbell button can't power the bell, but it can tell something else to. Your finger (the pin) does very little work, and the house wiring (the 5 V or 12 V supply) does the heavy lifting. The transistor is the part that listens to your finger and connects the house wiring.</p></div>
+  <p class="key">The pin decides <i>when</i>. The supply provides <i>how much</i>. The transistor connects the two.</p>
+</section>
+
+<!-- ================= PART A ================= -->
+<section class="part" id="partA" data-title="Part A · npn LED driver">
+  <div class="part-head">
+    <div class="part-letter">A</div>
+    <div class="eyebrow">Part A · Problems 1–2 · 16 pts</div>
+    <h2>The npn LED driver</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>A 3.3 V pin pushes a small base current into an npn transistor through R<sub>1</sub>, which switches it fully on. Then 5 V drives 20 mA through R<sub>2</sub> and the white LED, with R<sub>2</sub> setting that current.</p></div>
+
+  <div class="topic" id="bjt" data-title="The BJT as a switch">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>The BJT as a switch</h3>
+    <p>A <b>bipolar junction transistor</b> (BJT) has three legs:</p>
+    <ul>
+      <li><b>Base (B)</b>: the control input. The pin connects here, through a resistor.</li>
+      <li><b>Collector (C)</b>: where the load's current comes in, for an npn.</li>
+      <li><b>Emitter (E)</b>: where everything leaves, to ground for an npn. The arrow on the symbol sits on the emitter and points the way current flows.</li>
+    </ul>
+    <p>The base-to-emitter path behaves like a <b>diode</b>. Below about 0.6 V almost nothing flows. Once current does flow, the voltage across it, \(V_{BE}\), stays close to <b>0.7 V</b>. That's the "usual 0.7 V approximation" the homework asks for.</p>
+    <p>Here's the useful part. A small base current \(I_B\) lets a much larger collector current \(I_C\) flow. When nothing else limits it, the ratio is the transistor's <b>current gain</b>, β (also written h<sub>FE</sub>):</p>
+    <div class="mbox">\[I_C = \beta\, I_B \qquad I_E = I_B + I_C\]</div>
+    <p>A transistor in a circuit sits in one of three <b>regions</b>:</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Region</th><th>What the base gets</th><th>What you see</th><th>Used as</th></tr></thead>
+      <tbody>
+        <tr><td><span class="badge cut">cutoff</span></td><td>No base current (pin LOW)</td><td>\(I_C \approx 0\). The transistor is an open switch.</td><td>switch OFF</td></tr>
+        <tr><td><span class="badge act">active</span></td><td>Some base current</td><td>\(I_C = \beta I_B\), with volts left over across C–E.</td><td>amplifier</td></tr>
+        <tr><td><span class="badge sat">saturation</span></td><td>More than enough base current</td><td>\(V_{CE}\) drops to almost 0. The load sets \(I_C\), and \(I_C \lt \beta I_B\).</td><td>switch ON</td></tr>
+      </tbody></table></div>
+    <div class="analogy"><span class="eyebrow">Analogy · a valve on a water main</span><p>The base current is your hand on a valve, and the collector current is the water. A small turn lets a lot of water through (active). Crank it all the way open and the valve stops mattering, because the pipe after it decides how much water flows (saturation). Let go and it shuts (cutoff).</p></div>
+    <p class="key">A switch lives at the two ends: cutoff for OFF, saturation for ON. Never in the middle.</p>
+    <details class="quick"><summary>Quick check: in which region does an npn have \(V_{CE} \approx 0\)?</summary><div><p>Saturation. The transistor is fully on, like a closed switch, so almost no voltage is left across it.</p></div></details>
+  </div>
+
+  <div class="topic" id="led" data-title="LEDs need a resistor">
+    <span class="eyebrow">Topic 2 · the load</span>
+    <h3>An LED needs a resistor to set its current</h3>
+    <p>An <b>LED</b> (light-emitting diode) is a diode that gives off light when current flows forward through it, from its <b>anode</b> (the triangle's flat side) to its <b>cathode</b> (the bar). Two facts matter here:</p>
+    <ul>
+      <li><b>Forward voltage \(V_F\).</b> An LED only conducts once it has roughly its forward voltage across it. The colour sets it: red is about 2 V, green about 2–3 V, and white or blue about 3–3.4 V. The homework uses 3.2 V for white and 2.7 V for green.</li>
+      <li><b>Exponential current.</b> Above \(V_F\), a tiny extra voltage makes the current shoot up. 0.2 V too much can mean ten times the current.</li>
+    </ul>
+    <p>So you can't set an LED's current by picking its voltage. The fix is a series resistor. The supply's extra voltage lands on the resistor, and Ohm's law then sets the current:</p>
+    <div class="mbox">\[I = \frac{V_S - V_F}{R}\]</div>
+    <div class="analogy"><span class="eyebrow">Analogy · a ledge and a ramp</span><p>The LED is a ledge with a cliff: nothing happens until you reach the edge, then everything at once. The resistor is a gentle ramp before it, which controls how fast you arrive.</p></div>
+    <div class="panel" id="ledPanel">
+      <div class="panel-head"><span class="t">An LED and its resistor · live</span><span class="status" id="ledStatus"></span></div>
+      <div class="setup" style="border-top:0"><div class="seg" id="ledSeg" role="group" aria-label="LED model"><button type="button" data-k="w" aria-pressed="true">White LED model</button><button type="button" data-k="g" aria-pressed="false">Green LED model</button></div></div>
+      <canvas id="ledCv" class="p2" style="height:300px" aria-label="The LED's current against its voltage, an exponential curve, with a straight dashed line for the resistor. The dot where they cross is the operating point."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="ledV"><span>Supply voltage</span> <b id="ledVOut"></b></label><input type="range" id="ledV" min="0" max="6" step="0.1" value="5"></div>
+        <div class="sl"><label for="ledR"><span>Series resistor</span> <b id="ledROut"></b></label><input type="range" id="ledR" min="0" max="13" step="1" value="8"></div>
+      </div>
+      <div class="cursorbox" id="ledReads"></div>
+      <p class="note">The solid curve is the LED model from the homework. The dashed line is every current the resistor allows, \(I = (V_S - V)/R\). The circuit sits where they cross. Shrink the resistor and the dot climbs the steep part. Drag it to 0 Ω and the model says the LED would try to pull amps, so a real one burns out.</p>
+    </div>
+    <p class="key">The resistor sets the current. The LED just takes about \(V_F\) off the top.</p>
+  </div>
+
+  <div class="topic" id="sat" data-title="Saturation &amp; β_min">
+    <span class="eyebrow">Topic 3 · the key idea of a switch</span>
+    <h3>Saturation, and why we design with β<sub>min</sub> = 10</h3>
+    <p>Once the LED and R<sub>2</sub> are chosen, they cap the current at roughly \((5 - 3.2)/R_2\), even with the transistor fully on. Call it what the load allows.</p>
+    <ul>
+      <li>If \(\beta I_B\) is <b>less</b> than what the load allows, the transistor is the bottleneck. It sits in the active region, half on, with volts across C–E, and the LED is dim.</li>
+      <li>If \(\beta I_B\) is <b>more</b> than what the load allows, the transistor can't pass all it is "allowed" to. It turns fully on, \(V_{CE}\) collapses to tens of millivolts, and the load sets \(I_C\). That's <b>saturation</b>.</li>
+    </ul>
+    <p>In saturation \(I_C/I_B\) comes out <i>smaller</i> than β, because \(I_C\) is capped while \(I_B\) is whatever you supply. That ratio is called the <b>forced beta</b>.</p>
+    <div class="thm"><span class="eyebrow">The rule of thumb</span><p>To make sure of saturation, choose the base current from a <b>forced beta of 10</b>, whatever the datasheet's β is:</p>\[I_B = \frac{I_{C}}{\beta_{min}} = \frac{I_C}{10}\]</div>
+    <p>Why 10, when a 2N3904 has a β of 100 to 300? Because β varies a lot from part to part and with temperature, and a switch must work with the weakest part on its worst day. Datasheets also quote their saturation voltage at \(I_C/I_B = 10\). For the 2N3904, \(V_{CE(sat)}\) is at most 0.2 V at 10 mA and 1 mA.</p>
+    <div class="panel" id="satPanel">
+      <div class="panel-head"><span class="t">Saturation explorer · 3.3 V pin, 5 V supply, white LED</span><span class="badge" id="satBadge"></span></div>
+      <canvas id="satCv" class="p2" style="height:300px" aria-label="Transistor collector curves for this base current, a dashed curve for the LED and resistor load, and a dot where they meet. A shaded band at the left marks saturation."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="satR1"><span>Base resistor R<sub>1</sub></span> <b id="satR1Out"></b></label><input type="range" id="satR1" min="0" max="13" step="1" value="9"></div>
+        <div class="sl"><label for="satB"><span>This transistor's β</span> <b id="satBOut"></b></label><input type="range" id="satB" min="30" max="300" step="5" value="150"></div>
+        <div class="sl"><label for="satR2"><span>LED resistor R<sub>2</sub></span> <b id="satR2Out"></b></label><input type="range" id="satR2" min="0" max="6" step="1" value="3"></div>
+      </div>
+      <div class="cursorbox" id="satReads"></div>
+      <p class="note" id="satWhy"></p>
+      <p class="note">The solid curve is every \((V_{CE}, I_C)\) the transistor allows for your base current, from a Gummel-Poon model of the 2N3904. The faint curves are ¼, ½ and 2 times that current. The dashed curve is what the LED and R<sub>2</sub> allow. It starts saturated. Drag β down to 60 and the same circuit drops out of saturation. Then shrink R<sub>1</sub> until it's saturated again.</p>
+    </div>
+    <p class="key">Give the base 1/10 of the collector current, and the switch works with any transistor.</p>
+    <div class="mcq" data-answer="c">
+      <button type="button" data-k="a" data-fb="That's the active-region relation. In saturation the load caps IC, so IC is less than β·IB."><b>a.</b><span>\(I_C = \beta I_B\) exactly</span></button>
+      <button type="button" data-k="b" data-fb="Saturation means more base current than β·IB needs, so IC/IB drops below β."><b>b.</b><span>\(I_C/I_B\) is bigger than β</span></button>
+      <button type="button" data-k="c" data-fb="Right. The load sets IC, the base gets extra current, and the ratio falls well below β."><b>c.</b><span>\(I_C/I_B\) is smaller than β, and \(V_{CE}\) is nearly 0</span></button>
+      <p class="mcq-fb" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="topic" id="e24" data-title="Standard resistor values">
+    <span class="eyebrow">Topic 4 · real parts</span>
+    <h3>Standard ±5% resistor values (the E24 series)</h3>
+    <p>You can't buy a 1234 Ω resistor. Manufacturers make a fixed menu of values. ±5% resistors come in the <b>E24 series</b>: 24 values per decade, each about 10% above the last.</p>
+    <div class="mbox e24list"><span>1.0</span><span>1.1</span><span>1.2</span><span>1.3</span><span>1.5</span><span>1.6</span><span>1.8</span><span>2.0</span><span>2.2</span><span>2.4</span><span>2.7</span><span>3.0</span><span>3.3</span><span>3.6</span><span>3.9</span><span>4.3</span><span>4.7</span><span>5.1</span><span>5.6</span><span>6.2</span><span>6.8</span><span>7.5</span><span>8.2</span><span>9.1</span></div>
+    <p>Multiply any of them by 1, 10, 100, 1 k and so on. So 2.2 gives 2.2 Ω, 22 Ω, 220 Ω, 2.2 kΩ, 22 kΩ and up.</p>
+    <p><b>Why 24, spaced like that?</b> A "5%" part can really be anywhere within ±5% of its label. Values about 10% apart mean the tolerance bands just about touch, so every resistance is covered with no waste.</p>
+    <p><b>How to round</b>, as the homework does:</p>
+    <ol class="checklist">
+      <li>Write your value as a number from 1 to 10 times a power of ten: 2100 Ω = 2.1 × 1 kΩ.</li>
+      <li>Find the E24 values just below and just above: 2.0 kΩ and 2.2 kΩ.</li>
+      <li>Pick the one with the smaller difference. If it's exactly in the middle, it's a tie, covered in Part B.</li>
+    </ol>
+    <div class="panel" id="e24Panel">
+      <div class="panel-head"><span class="t">E24 finder · type any value</span></div>
+      <div class="setup" style="border-top:0"><label class="numrow" for="e24In"><span>Calculated resistance</span> <input class="numin" type="number" id="e24In" value="2100" min="1" step="1"> <span>Ω</span></label></div>
+      <canvas id="e24Cv" class="p2" style="height:150px" aria-label="A log ruler across one decade with every E24 value marked and its ±5% band shaded, and an arrow at your value"></canvas>
+      <div class="cursorbox" id="e24Reads"></div>
+      <p class="note">This ruler is logarithmic: equal steps mean equal <i>ratios</i>, which is why the E24 marks look evenly spaced here. The shaded strips are each value's ±5% range.</p>
+    </div>
+  </div>
+
+  <div class="topic" id="recipe" data-title="The design recipe">
+    <span class="eyebrow">Topic 5 · putting it together</span>
+    <h3>The design recipe: two loops, two resistors</h3>
+    <p>The tool is <b>Kirchhoff's voltage law</b> (KVL): around any closed loop, the voltage rises equal the voltage drops. Think of the supply's volts as a budget that each part spends.</p>
+    <p>The driver has two loops. Each loop has one unknown resistor.</p>
+    <div class="grid2">
+      <div class="card"><span class="eyebrow">Collector loop → R<sub>2</sub></span><p>5 V supply → R<sub>2</sub> → LED → collector to emitter → ground.</p>\[V_{CC} = I_C R_2 + V_{LED} + V_{CE}\]\[R_2 = \frac{V_{CC} - V_{LED} - V_{CE}}{I_C}\]</div>
+      <div class="card"><span class="eyebrow">Base loop → R<sub>1</sub></span><p>Pin → R<sub>1</sub> → base to emitter → ground.</p>\[V_{in} = I_B R_1 + V_{BE}\]\[R_1 = \frac{V_{in} - V_{BE}}{I_B}, \quad I_B = \frac{I_C}{\beta_{min}}\]</div>
+    </div>
+    <p>The homework's approximations make these one-liners: \(V_{CE} = 0\) (saturated), \(V_{BE} = 0.7\) V, \(\beta_{min} = 10\), \(I_C = 20\) mA, and the LED's \(V_F\).</p>
+    <div class="warn"><b>Watch out.</b> \(I_B\) comes from \(\beta_{min} = 10\), never from the datasheet β. Using β = 300 gives a base resistor about 30 times too big, and the LED barely glows.</div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p1" data-title="Problem 1">
+      <div class="prob-head"><span class="pnum">Problem 1</span><span class="eyebrow">npn LED driver · hand design</span><span class="pts">6 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Choose standard ±5% values for R<sub>1</sub> and R<sub>2</sub></b> in Figure 1 so a 3.3 V pin turns on the white LED from a 5 V supply. Design for \(I_C = 20\) mA at \(V_{LED} = 3.2\) V, with \(V_{CE} = 0\) V, \(V_{BE} = 0.7\) V and \(\beta_{min} = 10\).</p>
+        <ol class="steps">
+          <li><h5>Write the collector loop</h5><p>Follow the current from 5 V through R<sub>2</sub>, the LED and Q1 to ground: \(5 = I_C R_2 + V_{LED} + V_{CE}\).</p></li>
+          <li><h5>Solve for R<sub>2</sub></h5><div class="mbox">\[R_2 = \frac{5 - 3.2 - 0}{0.020\text{ A}} = \frac{1.8\text{ V}}{0.020\text{ A}} = 90\ \Omega\]</div></li>
+          <li><h5>Round R<sub>2</sub> to E24</h5><p>90 Ω is 9.0 × 10 Ω, and 9.0 isn't on the list. Find the E24 values on each side of 9.0 and take the closer one.</p></li>
+          <li><h5>Pick the base current</h5><div class="mbox">\[I_B = \frac{I_C}{\beta_{min}} = \frac{20\text{ mA}}{10} = 2\text{ mA}\]</div></li>
+          <li><h5>Write the base loop</h5><p>From the 3.3 V pin through R<sub>1</sub> and the base-emitter diode to ground: \(3.3 = I_B R_1 + 0.7\).</p></li>
+          <li><h5>Solve for R<sub>1</sub></h5><div class="mbox">\[R_1 = \frac{3.3 - 0.7}{0.002\text{ A}} = \frac{2.6\text{ V}}{0.002\text{ A}} = 1300\ \Omega\]</div></li>
+          <li><h5>Round R<sub>1</sub> to E24</h5><p>1300 Ω is 1.3 × 1000 Ω. Check the multiplier list for 1.3.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">R1_Actual = 1.3 kΩ · R2_Actual = 91 Ω<small>1.3 is in the E24 list, so 1300 Ω is exact. 90 Ω sits between 82 Ω (8.9% low) and 91 Ω (1.1% high), so 91 Ω is closer.</small></div>
+          <p>Check: with 91 Ω the hand estimate gives \(I_C = 1.8/91 = 19.8\) mA, inside the 18–22 mA window Problem 2 asks for.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="spice" data-title="LTspice &amp; .op">
+    <span class="eyebrow">Topic 6 · simulation</span>
+    <h3>LTspice, model cards and the DC operating point</h3>
+    <p><b>LTspice</b> is a free circuit simulator. You draw a schematic, tell it which analysis to run, and it solves the circuit with detailed device models instead of 0.7 V rules. Three ideas cover this homework.</p>
+    <p><b>1. Models.</b> A generic "NPN" or "LED" symbol has no real behaviour until you name a model. Changing the transistor's value to <code>2N3904</code> picks a model from LTspice's built-in library. The White LED isn't built in, so you paste its <b>model card</b> as a <b>SPICE directive</b> (the <code>.op</code> button on the toolbar opens that window) and change the LED's value from <code>D</code> to <code>WhiteLED</code> so it uses the card.</p>
+    <div class="panel" id="modelPanel">
+      <div class="panel-head"><span class="t">Decode the White LED model card · click a piece</span></div>
+      <div class="tokens" id="modelToks"></div>
+      <p class="tokexp" id="modelExp"></p>
+      <p class="note">Solid pieces shape the DC answer. Dashed ones only matter when signals change quickly. From IS and N alone, \(V_F = N V_T \ln(I/I_S) = 6.45 \times 0.0259 \times \ln\!\big(0.02/93.1\text{p}\big) \approx 3.20\) V at 20 mA, where \(V_T \approx 25.9\) mV is the thermal voltage at 27 °C. That's where the homework's 3.2 V comes from.</p>
+    </div>
+    <p><b>2. The DC operating point (<code>.op</code>).</b> Under Simulate › Configure Analysis (older versions: Edit Simulation Cmd), choose <b>DC op pnt</b>. LTspice then finds every steady DC voltage and current, with inductors treated as wires and capacitors as gaps. It prints a list like this:</p>
+<pre class="op"><span class="c">--- Operating Point ---</span>
+V(vce):      <i>volts</i>       voltage   <span class="c">← your net label</span>
+V(n001):     <i>volts</i>       voltage   <span class="c">← unnamed nodes get numbers</span>
+Ic(Q1):      <i>amps</i>        device_current
+Ib(Q1):      <i>amps</i>        device_current
+Ie(Q1):      <i>amps</i>        device_current
+I(R1):       <i>amps</i>        device_current</pre>
+    <p><b>3. Net labels.</b> A net label names a wire. Label Q1's collector <code>Vce</code> and the printout shows <code>V(vce)</code>, its voltage to ground. Since the emitter is grounded, that <i>is</i> \(V_{CE}\).</p>
+    <p><b>Why won't the simulation match your hand numbers exactly?</b> The model is more honest than the rules of thumb:</p>
+    <ul>
+      <li>\(V_{BE}\) comes out near 0.78 V, a bit above 0.7 V. 2 mA is a lot of base current for a small transistor.</li>
+      <li>\(V_{CE}\) is a few tens of millivolts, close to 0 V without being exactly 0.</li>
+      <li>The LED's voltage is set by its exponential curve, very close to 3.2 V at 20 mA.</li>
+    </ul>
+    <p>So expect \(I_C\) near your design value, \(I_B\) a little under 2 mA, and \(I_C/I_B\) near 10, the forced beta you designed in. That's far below the 2N3904's β of about 300.</p>
+    <details class="deeper"><summary>Go deeper: SPICE number suffixes</summary><div>
+      <p>SPICE ignores case and reads these suffixes: f = 10⁻¹⁵, p = 10⁻¹², n = 10⁻⁹, u = 10⁻⁶, <b>m = 10⁻³</b>, k = 10³, <b>meg = 10⁶</b>, g = 10⁹. So <code>RS=42M</code> is 42 milliohms. To write 42 megohms you'd type <code>42meg</code>. It's the most common SPICE surprise.</p>
+    </div></details>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p2" data-title="Problem 2">
+      <div class="prob-head"><span class="pnum">Problem 2</span><span class="eyebrow">npn LED driver · LTspice .op</span><span class="pts">6 + 4 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Build Figure 1 in LTspice</b> with your R<sub>1</sub> and R<sub>2</sub>, a 2N3904 and the White LED model, plus your name. Run a DC operating point at \(V_{in} = 3.3\) V and fill in <b>Table 1</b>: \(V_{CE}\), \(I_B\), \(I_C\) and \(\beta = I_C/I_B\).</p>
+        <ol class="steps">
+          <li><h5>Place the parts</h5><p>An npn with its value changed to 2N3904, an LED with its value changed to WhiteLED, your two resistors, a 5 V source, a 3.3 V source for Vin, and grounds.</p></li>
+          <li><h5>Add the model card</h5><p>Open a SPICE directive and paste both lines of <code>.model WhiteLED D (...)</code>. The <code>+</code> continues the first line.</p></li>
+          <li><h5>Set up the analysis</h5><p>Choose DC op pnt. Label the collector net <code>Vce</code>, and add your name with the text tool.</p></li>
+          <li><h5>Run and read</h5><p>From the printout, copy <code>V(vce)</code>, <code>Ib(Q1)</code> and <code>Ic(Q1)</code>.</p></li>
+          <li><h5>Check, then find β</h5><p>Confirm that \(I_C\) is between 18 and 22 mA, so the LED is visibly on. Then divide \(I_C\) by \(I_B\). Compute it.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(V_{CE} \approx 40.7\) mV · \(I_B \approx 1.94\) mA · \(I_C \approx 19.4\) mA · \(\beta \approx 10.0\)<small>With R1 = 1.3 kΩ and R2 = 91 Ω. Your LTspice may differ in the last digit.</small></div>
+          <div class="tbl"><table>
+            <thead><tr><th>Vin</th><th>VCE</th><th>IB</th><th>IC</th><th>β = IC/IB</th></tr></thead>
+            <tbody><tr><td>3.3 V</td><td>0.0407 V (40.7 mV)</td><td>1.935 mA</td><td>19.38 mA</td><td>10.0</td></tr></tbody></table></div>
+          <p>\(I_C\) is inside 18–22 mA. β is about 10 because you forced it there: the LED and R2 cap \(I_C\) at 19.4 mA, while the pin supplies 1.94 mA. The 2N3904 could manage about 300 times its base current, so it is deep in saturation. The model also gives \(V_{BE} \approx 0.784\) V and \(V_{LED} \approx 3.196\) V.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= PART B ================= -->
+<section class="part" id="partB" data-title="Part B · pnp LED driver">
+  <div class="part-head">
+    <div class="part-letter">B</div>
+    <div class="eyebrow">Part B · Problems 3–4 · 10 pts</div>
+    <h2>The pnp LED driver</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>A pnp is an npn turned upside down. Its emitter sits on +5 V, a LOW pin pulls current out of its base to turn it on, and the LED hangs below it on the way to ground.</p></div>
+
+  <div class="topic" id="pnp" data-title="The pnp flip">
+    <span class="eyebrow">Topic 7 · mirror image</span>
+    <h3>The pnp transistor: everything flipped</h3>
+    <p>A <b>pnp</b> works like an npn with every voltage and current reversed:</p>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>npn (Part A)</th><th>pnp (Part B)</th></tr></thead>
+      <tbody>
+        <tr><td>Emitter goes to</td><td>ground</td><td>the positive supply, +5 V</td></tr>
+        <tr><td>Turns on when the base is</td><td>0.7 V <i>above</i> the emitter</td><td>0.7 V <i>below</i> the emitter</td></tr>
+        <tr><td>Base current</td><td>flows <i>into</i> the base</td><td>flows <i>out of</i> the base</td></tr>
+        <tr><td>Collector current</td><td>flows <i>in</i>, from the load</td><td>flows <i>out</i>, into the load</td></tr>
+        <tr><td>Key voltages</td><td>\(V_{BE}\), \(V_{CE}\)</td><td>\(V_{EB}\), \(V_{EC}\)</td></tr>
+        <tr><td>Symbol's arrow</td><td>points out of the emitter</td><td>points into the emitter</td></tr>
+        <tr><td>Pin logic</td><td>HIGH = LED on</td><td>LOW = LED on ("active low")</td></tr>
+      </tbody></table></div>
+    <p>Writing \(V_{EB}\) and \(V_{EC}\) keeps the numbers positive, since the emitter is the high side.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a high-side switch</span><p>The npn is a switch on the ground side of the load: it connects the bottom of the LED to ground. The pnp is a switch on the supply side: it connects the top of the LED to +5 V. Same job, opposite end of the load.</p></div>
+    <div class="panel" id="pnpPanel">
+      <div class="panel-head"><span class="t">pnp driver · sweep the pin · example values</span><span class="status" id="pnpStatus"></span></div>
+      <div class="duo">
+        <div class="schbox" id="pnpSch"></div>
+        <div class="side"><canvas id="pnpCv" class="p2" aria-label="LED current against pin voltage. Full current up to about 4 volts, then it falls to zero as the pin approaches 5 volts."></canvas></div>
+      </div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="pnpVin"><span>Pin voltage V<sub>in</sub></span> <b id="pnpVinOut"></b></label><input type="range" id="pnpVin" min="0" max="5" step="0.05" value="0"></div>
+      </div>
+      <div class="cursorbox" id="pnpReads"></div>
+      <p class="note">Sweep the pin from 0 V up to 5 V. The LED only goes dark once the pin gets within about 0.6 V of the emitter. <span class="bonus">beyond the homework</span> Look at the 3.3 V marker. A 3.3 V microcontroller's HIGH can't turn this pnp off, because 5 − 3.3 = 1.7 V still forward-biases its base. That's why the homework drives it with a 5 V signal.</p>
+    </div>
+    <p class="key">pnp: emitter to +V, pull the base LOW to turn it on, and the pin must reach the full supply to turn it off.</p>
+  </div>
+
+  <div class="topic" id="pnpdesign" data-title="Designing it, and ties">
+    <span class="eyebrow">Topic 8 · same recipe, flipped loops</span>
+    <h3>Designing the pnp driver, and what to do with a tie</h3>
+    <p>The same two loops, each starting at +5 V:</p>
+    <div class="grid2">
+      <div class="card"><span class="eyebrow">Collector loop → R<sub>2</sub></span><p>+5 V → emitter → collector → LED → R<sub>2</sub> → ground.</p>\[V_{CC} = V_{EC} + V_{LED} + I_C R_2\]</div>
+      <div class="card"><span class="eyebrow">Base loop → R<sub>1</sub></span><p>+5 V → emitter → base → R<sub>1</sub> → pin at 0 V.</p>\[V_{CC} = V_{EB} + I_B R_1 + V_{in}\]</div>
+    </div>
+    <p><b>A tie in rounding.</b> Sometimes your value lands exactly halfway between two E24 values by plain subtraction. The homework doesn't say what to do, so here are three sensible ways to break it:</p>
+    <ul>
+      <li><b>Round half up</b>, the usual school rule, picks the larger value.</li>
+      <li><b>Compare ratios.</b> E24 is spaced by ratio, so compare the percentage error to each side. A value halfway by subtraction is slightly closer to the <i>upper</i> neighbour by ratio.</li>
+      <li><b>Pick the safe side.</b> A larger LED resistor gives slightly less current, which is gentler on the LED and on the pin.</li>
+    </ul>
+    <p>All three pick the larger one. Either neighbour should be accepted, though. Problem 4's reveal shows the simulation for both.</p>
+    <div class="warn"><b>Watch out.</b> The base loop starts at the 5 V emitter. The pin's 0 V is the <i>end</i> of the loop, so R<sub>1</sub> drops 5 − 0.7 − 0 = 4.3 V. Using 3.3 V or forgetting the supply is the common slip.</div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p3" data-title="Problem 3">
+      <div class="prob-head"><span class="pnum">Problem 3</span><span class="eyebrow">pnp LED driver · hand design</span><span class="pts">6 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Choose standard ±5% values for R<sub>1</sub> and R<sub>2</sub></b> in Figure 3 so a 0 V pin turns on the green LED from a 5 V supply. Design for \(I_C = 20\) mA at \(V_{LED} = 2.7\) V, with \(V_{EC} = 0\) V, \(V_{EB} = 0.7\) V and \(\beta_{min} = 10\).</p>
+        <ol class="steps">
+          <li><h5>Write the collector loop</h5><p>From +5 V through Q1, the LED and R<sub>2</sub> to ground: \(5 = V_{EC} + V_{LED} + I_C R_2\).</p></li>
+          <li><h5>Solve for R<sub>2</sub></h5><div class="mbox">\[R_2 = \frac{5 - 0 - 2.7}{0.020\text{ A}} = \frac{2.3\text{ V}}{0.020\text{ A}} = 115\ \Omega\]</div></li>
+          <li><h5>Round R<sub>2</sub>: a tie</h5><p>115 Ω is 1.15 × 100 Ω. Find the E24 values on either side of 1.15 and compare the differences. They're equal, so break the tie as Topic 8 describes.</p></li>
+          <li><h5>Pick the base current</h5><p>Same as Part A: \(I_B = 20\text{ mA}/10 = 2\) mA, now flowing <i>out</i> of the base.</p></li>
+          <li><h5>Write the base loop and solve</h5><div class="mbox">\[5 = 0.7 + I_B R_1 + 0 \;\Rightarrow\; R_1 = \frac{4.3\text{ V}}{0.002\text{ A}} = 2150\ \Omega\]</div></li>
+          <li><h5>Round R<sub>1</sub> to E24</h5><p>2150 Ω is 2.15 × 1000 Ω. Find its E24 neighbours and take the closer one.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">R1_Actual = 2.2 kΩ · R2_Actual = 120 Ω (110 Ω ties)<small>R1: 2150 Ω sits between 2.0 kΩ (150 Ω away) and 2.2 kΩ (50 Ω away). R2: 115 Ω is exactly 5 Ω from both 110 Ω and 120 Ω.</small></div>
+          <p>This page uses 120 Ω for R2. Half-up rounding, the ratio comparison (115 is 4.5% above 110 and 4.2% below 120) and LED safety all agree. 110 Ω is just as close by subtraction and also simulates inside 18–22 mA, so if your instructor rounds down, use it. Say which you chose.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="signs" data-title="Reading pnp results">
+    <span class="eyebrow">Topic 9 · LTspice signs</span>
+    <h3>Reading a pnp operating point</h3>
+    <p>LTspice counts every device current as <b>positive flowing into</b> the terminal. In a pnp, base and collector current flow <i>out</i>, so they print as <b>negative</b> numbers. That's expected.</p>
+    <ul>
+      <li><b>Currents:</b> write \(I_B\) and \(I_C\) as they print, negative, and know what the sign means.</li>
+      <li><b>β:</b> \(\beta = I_C/I_B\). Two negatives divide to a positive number.</li>
+      <li><b>\(V_{EC}\):</b> the printout gives node voltages to ground. Label the collector <code>Vc</code>, then \(V_{EC} = 5.0\text{ V} - V_C\).</li>
+    </ul>
+    <div class="warn"><b>Typos in the handout.</b> Part B's LTspice paragraph says "include an external <span class="typo">White</span> LED model" and "the net label Vc to the collector of the <span class="typo">2N3904</span>". It means the <b>Green</b> LED model and the <b>2N3906</b>. Table 2's title also says <span class="typo">npn</span> where it means pnp.</div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p4" data-title="Problem 4">
+      <div class="prob-head"><span class="pnum">Problem 4</span><span class="eyebrow">pnp LED driver · LTspice .op</span><span class="pts">4 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Simulate Figure 3 in LTspice</b> with your R<sub>1</sub> and R<sub>2</sub>, a 2N3906 and the Green LED model. Run a DC operating point at \(V_{in} = 0.0\) V and fill in <b>Table 2</b>: \(V_{EC}\), \(I_B\), \(I_C\) and \(\beta = I_C/I_B\).</p>
+        <ol class="steps">
+          <li><h5>Swap the parts</h5><p>A pnp with value 2N3906, an LED with value GreenLED, and the GreenLED model card. Set VCC to 5 V and Vin to 0 V, and label the collector <code>Vc</code>.</p></li>
+          <li><h5>Run and read</h5><p>Copy <code>V(vc)</code>, <code>Ib(Q1)</code> and <code>Ic(Q1)</code>. Both currents print negative, because they flow out of the transistor.</p></li>
+          <li><h5>Find V<sub>EC</sub></h5><p>\(V_{EC} = 5.0\text{ V} - V(vc)\). Subtract.</p></li>
+          <li><h5>Check, then find β</h5><p>Confirm that \(|I_C|\) is between 18 and 22 mA, then divide \(I_C\) by \(I_B\). The signs cancel. Compute it.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(V_{EC} \approx 40.8\) mV · \(I_B \approx -1.92\) mA · \(I_C \approx -18.9\) mA · \(\beta \approx 9.88\)<small>With R1 = 2.2 kΩ and R2 = 120 Ω, V(vc) ≈ 4.959 V. Your LTspice may differ in the last digit.</small></div>
+          <div class="tbl"><table>
+            <thead><tr><th>R2</th><th>Vin</th><th>VEC</th><th>IB</th><th>IC</th><th>β = IC/IB</th></tr></thead>
+            <tbody>
+              <tr><td>120 Ω (this page)</td><td>0.0 V</td><td>0.0408 V</td><td>−1.917 mA</td><td>−18.93 mA</td><td>9.88</td></tr>
+              <tr><td>110 Ω (the other tie)</td><td>0.0 V</td><td>0.0427 V</td><td>−1.916 mA</td><td>−20.53 mA</td><td>10.7</td></tr>
+            </tbody></table></div>
+          <p>Both keep \(|I_C|\) inside 18–22 mA. The minus signs mean current flows out of the base (into the 0 V pin) and out of the collector (into the LED). The model gives \(V_{EB} \approx 0.783\) V and \(V_{LED} \approx 2.69\) V.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= PART C ================= -->
+<section class="part" id="partC" data-title="Part C · relay driver">
+  <div class="part-head">
+    <div class="part-letter">C</div>
+    <div class="eyebrow">Part C · Problems 5–6 + extra credit · 9 + 3 pts</div>
+    <h2>The npn relay driver</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Swap the LED for a relay coil on 12 V. The transistor switches the coil, the coil's magnet flips a separate switch, and that switch runs a 120 V lamp the microcontroller never touches. A diode across the coil catches the voltage spike when it turns off.</p></div>
+
+  <div class="topic" id="relay" data-title="What a relay is">
+    <span class="eyebrow">Topic 10 · from first principles</span>
+    <h3>What a relay is</h3>
+    <p>A <b>relay</b> is a switch flipped by a magnet. Inside:</p>
+    <ul>
+      <li>A <b>coil</b> of fine copper wire around an iron core. Current through it makes an electromagnet.</li>
+      <li>A hinged iron <b>armature</b> that the magnet pulls down.</li>
+      <li>A <b>spring</b> that pulls the armature back when the coil lets go.</li>
+      <li><b>Contacts</b> on the armature that close (or open) a completely separate circuit.</li>
+    </ul>
+    <p>The coil side and the contact side share no wire. That <b>isolation</b> is the point: 3.3 V logic on one side, 120 V mains on the other.</p>
+    <div class="panel" id="relPanel">
+      <div class="panel-head"><span class="t">Inside a relay · an example 12 V relay</span><span class="status" id="relStatus"></span></div>
+      <canvas id="relCv" class="p2" style="height:320px" aria-label="Cutaway of a relay: a copper coil on an iron core, a hinged armature held up by a spring, contacts at its tip, and a lamp on a separate 120 volt circuit. Dashed field lines appear around the iron as coil current flows."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="relV"><span>Coil voltage</span> <b id="relVOut"></b></label><input type="range" id="relV" min="0" max="12" step="0.1" value="0"></div>
+        <div class="row"><button class="btn" type="button" id="relOn">Full 12 V</button><button class="btn ghost" type="button" id="relOff">0 V</button></div>
+      </div>
+      <div class="meterrow"><span>magnet pull vs spring</span><div class="meter" id="relMeter"><i></i><b></b></div></div>
+      <div class="cursorbox" id="relReads"></div>
+      <p class="note">Raise the voltage slowly. Nothing happens until about 8 V, the <b>pull-in</b> voltage, when the magnet beats the spring and the armature snaps shut. Now lower it. The contacts stay closed down to about 2.5 V, the <b>drop-out</b> voltage, because the closed gap makes the magnet much stronger. This example relay has a 400 Ω coil. The homework's has 800 Ω.</p>
+    </div>
+    <div class="analogy"><span class="eyebrow">Analogy · a fridge magnet</span><p>Hold a magnet near the fridge and you feel a weak pull. Once it touches, it holds on hard. A relay's armature is the same: hard to pull in across a gap, easy to hold once closed. That's why it snaps cleanly instead of buzzing in between.</p></div>
+  </div>
+
+  <div class="topic" id="coil" data-title="The coil at DC">
+    <span class="eyebrow">Topic 11 · the load is a resistor (mostly)</span>
+    <h3>The coil at DC is just its resistance</h3>
+    <p>A coil is an <b>inductor</b> (symbol L) made of a long, thin wire, which has resistance. Inductors only push back on <i>changes</i> in current:</p>
+    <div class="mbox">\[v_L = L\,\frac{di}{dt}\]</div>
+    <p>Once the current is steady, \(di/dt = 0\) and the inductance drops out. All that's left is the wire's resistance, so a relay datasheet lists a <b>coil resistance</b>, 800 Ω here. At DC:</p>
+    <div class="mbox">\[I_{coil} = \frac{V_{CC} - V_{CE}}{R_{coil}}\]</div>
+    <p>With the transistor saturated, \(V_{CE} \approx 0\), so the coil gets the full supply. That current is the <b>saturation current</b> \(I_{C,sat}\), the most the collector loop allows. It plays the role the 20 mA LED current played in Part A. After that, the same base recipe applies: \(I_B = I_{C,sat}/\beta_{min}\), then KVL for R<sub>1</sub>.</p>
+    <div class="warn"><b>Watch out.</b> The coil's 12 V comes from its own supply. The pin's 3.3 V only appears in the base loop. Mixing them up is the classic slip here.</div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p5" data-title="Problem 5">
+      <div class="prob-head"><span class="pnum">Problem 5</span><span class="eyebrow">npn relay driver · hand design</span><span class="pts">2 + 3 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(I_{C,sat}\)</b> for the relay driver in Figure 4 (12 V supply, 800 Ω coil, \(V_{CE} = 0\) V), and <b>choose a standard ±5% R<sub>1</sub></b> so a 3.3 V pin saturates Q1, with \(V_{BE} = 0.7\) V and \(\beta_{min} = 10\).</p>
+        <ol class="steps">
+          <li><h5>Write the collector loop</h5><p>From 12 V through the coil and Q1 to ground. At DC the coil is its 800 Ω resistance: \(12 = I_C \cdot 800\ \Omega + V_{CE}\).</p></li>
+          <li><h5>Find the saturation current</h5><p>Set \(V_{CE} = 0\): \(I_{C,sat} = \dfrac{12\text{ V}}{800\ \Omega}\). Compute it.</p></li>
+          <li><h5>Pick the base current</h5><p>\(I_B = I_{C,sat}/\beta_{min} = I_{C,sat}/10\).</p></li>
+          <li><h5>Write the base loop and solve</h5><p>\(3.3 = I_B R_1 + 0.7\), so \(R_1 = \dfrac{2.6\text{ V}}{I_B}\). Divide.</p></li>
+          <li><h5>Round R<sub>1</sub> to E24</h5><p>Write your value as a number from 1 to 10 times 1000 Ω, find its two E24 neighbours, and take the closer one.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(I_{C,sat} = 15\) mA · R1_Actual = 1.8 kΩ<small>\(I_B = 1.5\) mA, so \(R_1 = 2.6/0.0015 = 1733\ \Omega\). Between 1.6 kΩ (133 Ω away) and 1.8 kΩ (67 Ω away), 1.8 kΩ is closer.</small></div>
+          <p>Rounding up gives slightly less base current, 1.44 mA, a forced β of about 10.4. That's still plenty to saturate a 2N3904.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="relaysim" data-title="Simulating the relay">
+    <span class="eyebrow">Topic 12 · a simpler model</span>
+    <h3>Simulating the relay with a resistor</h3>
+    <p>For a DC operating point you can strip the circuit to what matters at DC:</p>
+    <ul>
+      <li><b>Coil → an 800 Ω resistor.</b> The inductance does nothing at DC, as Topic 11 showed.</li>
+      <li><b>D1 → leave it out.</b> In normal operation it's reverse-biased, with its cathode at 12 V and its anode lower, so it carries no current.</li>
+      <li><b>Contacts and lamp → leave them out.</b> They're a separate circuit, so they don't load the transistor.</li>
+    </ul>
+    <p>What's left is Part A's circuit with a 12 V supply and an 800 Ω load. Expect \(I_C\) a little under your \(I_{C,sat}\), because \(V_{CE}\) isn't exactly 0, and a β near 10.</p>
+    <div class="warn"><b>Typos in the handout.</b> Part C's text says the relay circuit is in <span class="typo">Figure 5</span> (it's Figure 4), Table 3 is titled "for the <span class="typo">LED</span> On State" (it means the relay), and the extra credit asks about D1 in <span class="typo">Figure 3</span> (D1 is in Figure 4).</div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p6" data-title="Problem 6">
+      <div class="prob-head"><span class="pnum">Problem 6</span><span class="eyebrow">npn relay driver · LTspice .op</span><span class="pts">4 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Simulate the relay driver</b> at \(V_{in} = 3.3\) V with the coil modelled as an 800 Ω resistor, no D1 and no AC load. Fill in <b>Table 3</b>: \(V_{CE}\), \(I_B\), \(I_C\) and \(\beta = I_C/I_B\).</p>
+        <ol class="steps">
+          <li><h5>Simplify the circuit</h5><p>A 12 V source, an 800 Ω resistor for the coil, a 2N3904, your R<sub>1</sub>, a 3.3 V source for Vin, and a net label <code>Vce</code> on the collector.</p></li>
+          <li><h5>Run and read</h5><p>Run DC op pnt and copy <code>V(vce)</code>, <code>Ib(Q1)</code> and <code>Ic(Q1)</code>.</p></li>
+          <li><h5>Check, then find β</h5><p>Confirm that \(I_C\) is between 12 and 18 mA and close to your \(I_{C,sat}\), then divide \(I_C\) by \(I_B\). Compute it.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(V_{CE} \approx 40.5\) mV · \(I_B \approx 1.41\) mA · \(I_C \approx 14.95\) mA · \(\beta \approx 10.6\)<small>With R1 = 1.8 kΩ. Your LTspice may differ in the last digit.</small></div>
+          <div class="tbl"><table>
+            <thead><tr><th>Vin</th><th>VCE</th><th>IB</th><th>IC</th><th>β = IC/IB</th></tr></thead>
+            <tbody><tr><td>3.3 V</td><td>0.0405 V (40.5 mV)</td><td>1.408 mA</td><td>14.95 mA</td><td>10.6</td></tr></tbody></table></div>
+          <p>\(I_C\) is 99.7% of the hand-calculated 15 mA, because the coil gets \(12 - 0.04\) V instead of 12 V. \(I_B\) is a bit under 1.44 mA because the model's \(V_{BE}\) is about 0.766 V instead of 0.7 V.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="flyback" data-title="The flyback kick">
+    <span class="eyebrow">Topic 13 · why D1 is there</span>
+    <h3>The flyback kick, and the diode that catches it</h3>
+    <p>An inductor stores energy in its magnetic field while current flows:</p>
+    <div class="mbox">\[E = \tfrac12 L I^2\]</div>
+    <p>It also refuses to let its current change suddenly. From \(v = L\,di/dt\), stopping the current in an instant would take an <i>infinite</i> voltage. When Q1 switches off in a microsecond, the coil tries to keep its current flowing anyway, and the collector voltage shoots up until something gives. Without protection it can reach hundreds or thousands of volts. A 2N3904 is rated for only 40 V from collector to emitter, so it breaks down, and the energy can also spark across the switch.</p>
+    <p><b>D1 is a flyback diode</b> (also called a freewheeling, catch or snubber diode). It sits across the coil with its cathode on +12 V:</p>
+    <ul>
+      <li><b>Coil on:</b> the bottom of the coil is near 0 V, so D1 is reverse-biased and does nothing.</li>
+      <li><b>Coil switched off:</b> the coil's current pushes the bottom end up. As soon as it passes 12 V plus one diode drop, D1 turns on, and the coil current loops round through D1.</li>
+      <li>The collector is <b>clamped</b> near 12.7 V. The stored energy burns off as heat in the coil's resistance and the diode over a millisecond or so.</li>
+    </ul>
+    <div class="panel" id="kickPanel">
+      <div class="panel-head"><span class="t">Switch the coil off · collector scope</span><span class="status" id="kickStatus"></span></div>
+      <div class="setup" style="border-top:0"><div class="row"><div class="seg" id="kickSeg" role="group" aria-label="Flyback diode"><button type="button" data-k="on" aria-pressed="true">With D1</button><button type="button" data-k="off" aria-pressed="false">Without D1</button></div><button class="btn ghost" type="button" id="kickGo">Switch off again</button></div></div>
+      <canvas id="kickCv" class="p2" style="height:300px" aria-label="Collector voltage and coil current against time after the transistor switches off. With D1 the voltage stops just above 12 volts and the current fades smoothly. Without D1 the voltage shoots off the top of the chart and rings."></canvas>
+      <div class="legend"><span><span class="sw" style="background:var(--t3)"></span>collector voltage V<sub>C</sub> (left axis)</span><span><span class="sw" style="background:var(--t1)"></span>coil current (right axis)</span><span><span class="sw" style="background:var(--bad)"></span>2N3904's 40 V rating</span></div>
+      <div class="cursorbox" id="kickReads"></div>
+      <p class="note">Values assumed for illustration: the example 400 Ω, 12 V relay with L = 0.3 H, about 100 pF of stray capacitance, and a 1N4148-like diode. Real numbers vary, but the shape doesn't. Without D1, the only place for the current to go is that tiny capacitance, so the voltage soars.</p>
+    </div>
+    <div class="analogy"><span class="eyebrow">Analogy · water hammer</span><p>Slam a tap shut and the moving water in the pipe bangs, sometimes hard enough to burst it. The water's momentum is the coil's current. D1 is a bypass loop that lets the water keep circling until it slows on its own.</p></div>
+    <p class="key">Inductor + sudden switch-off = voltage spike. A diode across the coil gives the current somewhere to go.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ec" data-title="Extra credit">
+      <div class="prob-head"><span class="pnum">Extra credit</span><span class="eyebrow">explain D1</span><span class="pts">3 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>In your own words and at least three sentences, explain the purpose of diode D1</b> in the relay driver (the handout says Figure 3, but D1 is in Figure 4).</p>
+        <ol class="steps">
+          <li><h5>What the coil holds</h5><p>While Q1 is on, current through the coil stores energy in its magnetic field.</p></li>
+          <li><h5>What happens at switch-off</h5><p>An inductor resists a sudden change in current (\(v = L\,di/dt\)). When Q1 turns off, the coil drives the collector voltage far above 12 V.</p></li>
+          <li><h5>What D1 does</h5><p>D1 is reverse-biased in normal operation. At switch-off it turns on and carries the coil current in a loop, clamping the collector near 12 V + 0.7 V.</p></li>
+          <li><h5>Write your three sentences</h5><p>Cover what causes the spike, how D1 stops it, and what it protects. Try it before you peek.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal a sample answer</summary><div class="ans">
+          <div class="final">D1 is a flyback diode that protects Q1 from the relay coil's turn-off voltage spike.<small>Any answer covering the spike's cause, the diode's path and what it protects should earn the points.</small></div>
+          <p><i>Sample:</i> The relay coil is an inductor, so while Q1 is on it stores energy in its magnetic field, and it resists any sudden change in its current. When Q1 switches off, the coil tries to keep its current flowing, and \(v = L\,di/dt\) makes the collector voltage spike to hundreds of volts or more, far beyond the 2N3904's 40 V rating. D1 sits across the coil and is reverse-biased in normal operation. At turn-off it becomes forward-biased and gives the coil current a safe loop, so the collector is clamped near 12.7 V while the stored energy dies away as heat. This protects the transistor, and the microcontroller behind it, and cuts electrical noise. It doesn't affect the DC operating point, which is why the simulation could leave it out.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= CHEAT SHEET ================= -->
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">npn low-side driver</span><div class="eqs tall">\(R_2 = \dfrac{V_{CC} - V_{LED} - V_{CE}}{I_C}\)<br>\(R_1 = \dfrac{V_{in} - V_{BE}}{I_C/\beta_{min}}\)</div><p>Pin HIGH = on. Emitter to ground. For a relay, drop \(V_{LED}\) and use the coil resistance: \(I_{C,sat} = V_{CC}/R_{coil}\).</p></div>
+    <div class="card"><span class="eyebrow">pnp high-side driver</span><div class="eqs tall">\(R_2 = \dfrac{V_{CC} - V_{EC} - V_{LED}}{I_C}\)<br>\(R_1 = \dfrac{V_{CC} - V_{EB} - V_{in}}{I_C/\beta_{min}}\)</div><p>Pin LOW = on. Emitter to +V. The pin must reach \(V_{CC}\) to turn it off.</p></div>
+    <div class="card"><span class="eyebrow">Switch rules of thumb</span><div class="eqs">\(V_{BE} \approx 0.7\) V · \(V_{CE(sat)} \approx 0\)<br>\(\beta_{min} = 10\)</div><p>Saturation: the load sets \(I_C\), and \(I_C/I_B\) falls well below β. Simulation gives \(V_{BE}\) of 0.77 to 0.78 V and \(V_{CE}\) of a few tens of mV.</p></div>
+    <div class="card"><span class="eyebrow">E24 · ±5%</span><div class="eqs">1.0 1.1 1.2 1.3 1.5 1.6 1.8 2.0 2.2 2.4 2.7 3.0 3.3 3.6 3.9 4.3 4.7 5.1 5.6 6.2 6.8 7.5 8.2 9.1</div><p>× any power of ten. Round to the closer neighbour by difference. On a tie, say which you chose and why.</p></div>
+    <div class="card"><span class="eyebrow">LTspice</span><div class="eqs"><code>.model Name D (...)</code> · DC op pnt</div><p>Set the part's value to the model name. Net labels name nodes: <code>V(vce)</code>. Currents into a terminal are positive, so pnp currents print negative. M = milli, MEG = mega.</p></div>
+    <div class="card"><span class="eyebrow">Inductors &amp; flyback</span><div class="eqs">\(v = L\,\dfrac{di}{dt}\) · \(E = \tfrac12 LI^2\)</div><p>At DC a coil is its resistance. At switch-off it spikes. A reverse diode across the coil, cathode to +V, clamps it.</p></div>
+  </div>
+  <div class="topic" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Using the datasheet β (100–300) instead of \(\beta_{min} = 10\) for \(I_B\). The base resistor comes out far too big and the transistor never saturates.</li>
+      <li>Forgetting \(V_{BE}\) in the base loop: \(R_1 = 3.3/I_B\) instead of \((3.3 - 0.7)/I_B\).</li>
+      <li>In the pnp base loop, starting from the pin instead of the 5 V emitter. R<sub>1</sub> drops \(5 - 0.7 - V_{in}\).</li>
+      <li>Rounding to a value that isn't in E24, like 1.7 kΩ, or rounding to the wrong decade.</li>
+      <li>Reading pnp currents' minus signs as an error, or reporting \(V_C\) where the table asks for \(V_{EC} = 5 - V_C\).</li>
+      <li>Typing <code>RS=42M</code> and thinking it means megohms. It means milliohms.</li>
+      <li>Using the pin's 3.3 V in the relay's collector loop. The coil runs from its own 12 V.</li>
+      <li>Leaving out the flyback diode on a real relay circuit. The first switch-off can kill the transistor.</li>
+    </ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal every answer on this page</summary>
+      <div class="ans"><div class="tbl"><table>
+        <thead><tr><th>Problem</th><th>Answer</th></tr></thead>
+        <tbody>
+          <tr><td>1 · npn LED design</td><td>R1 = 1.3 kΩ (1300 Ω exact) · R2 = 91 Ω (from 90 Ω)</td></tr>
+          <tr><td>2 · Table 1, Vin = 3.3 V</td><td>VCE ≈ 40.7 mV · IB ≈ 1.935 mA · IC ≈ 19.38 mA · β ≈ 10.0</td></tr>
+          <tr><td>3 · pnp LED design</td><td>R1 = 2.2 kΩ (from 2150 Ω) · R2 = 120 Ω (from 115 Ω, a tie with 110 Ω)</td></tr>
+          <tr><td>4 · Table 2, Vin = 0 V</td><td>R2 = 120 Ω: VEC ≈ 40.8 mV · IB ≈ −1.917 mA · IC ≈ −18.93 mA · β ≈ 9.88<br>R2 = 110 Ω: VEC ≈ 42.7 mV · IB ≈ −1.916 mA · IC ≈ −20.53 mA · β ≈ 10.7</td></tr>
+          <tr><td>5 · relay design</td><td>IC_sat = 15 mA · R1 = 1.8 kΩ (from 1733 Ω)</td></tr>
+          <tr><td>6 · Table 3, Vin = 3.3 V</td><td>VCE ≈ 40.5 mV · IB ≈ 1.408 mA · IC ≈ 14.95 mA · β ≈ 10.6</td></tr>
+          <tr><td>Extra credit</td><td>D1 is a flyback diode. It gives the coil's current a path at switch-off, clamping the collector near 12.7 V so the turn-off spike can't destroy Q1.</td></tr>
+        </tbody>
+      </table></div></div></details>
+  </div>
+  <footer><p>Problems, figures, model cards and design targets are from <i>BJT LED and Relay Driver HW</i> (jas, 11/08/2025). Hand designs follow the homework's approximations. Simulated values come from a reproduction of LTspice's DC solve: the Gummel-Poon parameters of the 2N3904 and 2N3906 in LTspice's standard library (IS = 10 fA, BF = 300 and 200, BR = 4, VAF = 100 V, IKF = 0.4 A, RB = 20 Ω, RC = RE = 0.1 Ω) and the handout's LED model cards, at 27 °C, checked in <code>verify.py</code>. Your LTspice may differ in the last printed digit. The demos' example resistor values, the example 400 Ω relay (pull-in 8 V, drop-out 2.5 V) and the flyback scope's L and C are illustrations, not homework values.</p></footer>
+</section>
+
+</main>
