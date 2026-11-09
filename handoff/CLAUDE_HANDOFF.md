@@ -143,7 +143,7 @@ Where to find things:
 - **`gallery/bjt-characterization-lesson.html`**: **`class Plot`**, LTspice-style plots with draggable cursors, the electron-flow canvas, `.dc` command decoders, and "run the sweep" animations.
 - **`gallery/bjt-calculation-lesson.html`**: **`playground()`**, a live circuit with sliders, animated current flow and a load-line chart.
 - **`lessons/wk7-bjt-led-relay-drivers/`**: the circuits reference. Live SVG schematics with current dots in `page.js` (a pin-flip hero, a pnp sweep, a relay cutaway with hysteresis, a flyback scope), Gummel-Poon BJT and LED solvers in `shared.js`, and six 2D steppers.
-- **Schematic kit** (`engine/js/schematic.js`, add `"schematic"` to `libs`): `new Schem(svgGroup)` draws parts in viewBox units, y down: `res`, `diode`, `led(a, k, {c})` with `.set(brightness)`, `bjt(B, {pnp})` returning pins `{B, C, E}`, `vsrc` returning `{top, bot}`, `gnd`, `net(p, {w, left})` (an LTspice net flag), `coil`, `lever(pivot, len)` with `.set(deg)`, `lamp` with `.set`, `rect`, `text`, `wire`, `node`, `arrow`. `flow(pts, {c, gap})` makes moving current dots: set `.speed`, then call `Schem.tick(flows, dt)` each frame. Classes `w`, `tint` (colour from `--c`), `fillc`, `soft`, `sm`.
+- **Schematic kit** (`engine/js/schematic.js`, add `"schematic"` to `libs`): `new Schem(svgGroup)` draws parts in viewBox units, y down: `res`, `diode`, `led(a, k, {c})` with `.set(brightness)`, `bjt(B, {pnp})` returning pins `{B, C, E}`, `vsrc` and `vac` returning `{top, bot}`, `cap(a, b, {pol})`, `gnd`, `net(p, {w, left})` (an LTspice net flag), `coil`, `lever(pivot, len)` with `.set(deg)`, `lamp` with `.set`, `rect`, `text`, `wire`, `node`, `arrow`. `flow(pts, {c, gap})` makes moving current dots: set `.speed`, then call `Schem.tick(flows, dt)` each frame. Classes `w`, `tint` (colour from `--c`), `fillc`, `soft`, `sm`.
 - **`shared.js`** in a lesson folder is copied into both the `page.js` closure and the stepper closure. Put circuit drawings and solvers there so the hero and the worked examples draw the same circuit.
 
 Gallery pages are plain HTML, so read their source and copy what you need into `page.js`. Repeated code worth keeping belongs in `engine/`.
@@ -230,6 +230,9 @@ A scene with `view: "2d"` draws an SVG inside `box: [x0, y0, w, h]` (viewBox uni
 - Declare the column the cards use as `side: [x, y, w, h]`, and draw the cards with `{ side: true }` (the `SC` helpers already do). Under 600px the engine then draws the circuit full width and moves the cards below it, scaled up. Otherwise a 740-wide scene shrinks its text to about 6px on a phone. Leave `side` out if the circuit itself reaches into that column.
 - Write labels with inline division, `1.8\text{ V}/20\text{ mA}`. A `\frac` in a label renders too small to read.
 - Demos in `page.js` use example part values. When the homework fixes a part (an 800 Ω relay), the demo uses a different one (400 Ω) and says so, or it shows the answer.
+- To redraw a circuit (R1 swinging down beside R2), draw the moving part in a `k.sch.group()` and set its transform from `P`. `drawCoupling` and `drawAmp` in the wk8 BJT amplifier's `shared.js` show it, including fading the wire stub the part leaves behind. Hide the flow on the new path until the fold ends: `if (P.f < .97) k.o.fa2.el.style.display = "none"`. `update` runs after visibility, so this wins.
+- Frames only keep coming while some flow has a nonzero speed, so a scrolling side plot needs at least one moving flow in that step.
+- `k.rect` tint opacity goes on `.r`: `z.r.style.opacity = .16`.
 
 ## 9. QA
 
@@ -251,6 +254,8 @@ These all build to `dist/` and never touch a delivered page.
 
 **A passing `check.py` doesn't mean the page is right.** Open every contact sheet and read it like a student, step by step. Sheets show each step's end state at real size. Fix these on sight: labels colliding, objects cropped by the frame, a plane seen edge-on when its face matters, a scene too small in its frame, a caption describing something the picture doesn't show, a colour named in a caption that doesn't match what's drawn, and a label too pale to read. The test agent made about a dozen fixes on a one-example lesson after `check.py` had already passed, so expect that.
 
+`sheets.py` and `shot.py` only capture a demo's default state. Check every toggle, and every slider at both ends, with a scratch script that injects clicks and `input` events before the screenshot. Pass `--force-prefers-reduced-motion` to `chrome()` so an animated state jumps to its finish (the demo's handler needs `if (reduce) p = want`). Time-driven canvases need `probe()` and `canvas.toDataURL()`. The wk8 BJT amplifier's tangent line was only wrong at the top of its slider.
+
 Then look at every section of the page itself with `shot.py`, in both themes and at 500px. Report honestly what you couldn't test: audio you couldn't hear, touch on a real phone, real GPUs (headless Chrome uses software rendering), and motion you only saw as stills.
 
 ## 10. Deliver
@@ -270,7 +275,10 @@ Then look at every section of the page itself with `shot.py`, in both themes and
 - **Scratch folders get wiped between sessions.** Everything that matters lives in this repo.
 - **Check a drawing's moving parts in both states.** The wk7 relay cutaway's armature rotated the wrong way, so "released" drew the contacts touching. Only a screenshot showed it.
 - **Monospace fonts lack `½`** and draw something like `%`. Write `LI²/2`.
-- **Uppercase labels and variables don't mix.** `.katex` is exempt from `text-transform`, but plain-text variables aren't: `r` becomes `R` and `ρ` becomes `Ρ`. Use math markup or override the label, as this lesson's `.read .k` does.
+- **Uppercase labels and variables don't mix.** `.katex` is exempt from `text-transform`, but plain-text variables aren't: `r` becomes `R` and `ρ` becomes `Ρ`. Use math markup or override the label, as this lesson's `.read .k` does. `.cursorbox .k`, `.eyebrow` and `.panel-head .t` are uppercased too, which turned `β` into `B` and `25 mV` into `25 MV`. Set `text-transform:none` or reword.
+- **Don't clamp one coordinate of a line's endpoint.** Clamping `y` alone changes the slope, so a tangent stops touching its curve. Move the endpoint along the line instead.
+- **A schematic's size limit goes on `.schbox .sch`.** A `max-height` on `.schbox` lets the drawing spill out of its box.
+- **`shared.js` can't declare `TAU`.** The stepper's closure already has one.
 - **Plot3D zoom is the `bounds`.** Tightening them zooms in, and geometry may exceed them. Shorten the axes to match, or they run off the canvas. Labels are pixel offsets, so re-check them after any zoom.
 - **Plot3D extras.** `frame:false` drops the floor and box. `text:[{p,s,col,dx,dy}]` adds labels.
 - **A solid that must hide what's inside needs `o:1`.** Below .995 opacity an object doesn't write depth, so later objects draw over it.

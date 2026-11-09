@@ -86,6 +86,24 @@ class Schem {
     this.path(`M${c[0] - 5} ${c[1] - 8}H${c[0] + 5}M${c[0]} ${c[1] - 13}V${c[1] - 3}M${c[0] - 5} ${c[1] + 8}H${c[0] + 5}`, "w thin");
     return { top: [c[0], c[1] - r], bot: [c[0], c[1] + r] };
   }
+  vac(c, o = {}) {                                   // AC source; returns { top, bot }
+    const r = o.r || 19, [x, y] = c, a = r * .56, h = r * .85;
+    svgEl("circle", { cx: x, cy: y, r, class: "w body" }, this.g);
+    this.path(`M${x - a} ${y}C${x - a * .7} ${y - h} ${x - a * .3} ${y - h} ${x} ${y}S${x + a * .7} ${y + h} ${x + a} ${y}`, "w thin");
+    return { top: [x, y - r], bot: [x, y + r] };
+  }
+  cap(a, b, o = {}) {                                // capacitor between two pins; o.pol puts a + by the straight plate at a and curves the plate at b
+    const [ux, uy] = unitDir(a, b), nx = -uy, ny = ux, m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], g = o.gap || 6, w = o.w || 15;
+    const P = (t, d) => [m[0] + ux * t + nx * d, m[1] + uy * t + ny * d];
+    this.path(pd([a, P(-g, 0)]) + pd([P(g, 0), b]));
+    this.path(pd([P(-g, -w), P(-g, w)]));
+    if (o.pol) {
+      const e = [P(g + 4, -w), P(g - 4, 0), P(g + 4, w)], c = P(-g - 9, (o.plus || 1) * w * .8), k = 3.6;
+      this.path(`M${e[0][0]} ${e[0][1]}Q${e[1][0]} ${e[1][1]} ${e[2][0]} ${e[2][1]}`);
+      this.path(`M${c[0] - k} ${c[1]}H${c[0] + k}M${c[0]} ${c[1] - k}V${c[1] + k}`, "w thin");
+    } else this.path(pd([P(g, -w), P(g, w)]));
+    return { m, P };
+  }
   gnd(p) { this.path(`M${p[0]} ${p[1]}V${p[1] + 10}M${p[0] - 13} ${p[1] + 10}H${p[0] + 13}L${p[0]} ${p[1] + 22}Z`, "w"); return p; }
   net(p, o = {}) {                                   // an LTspice-style net flag starting at p, pointing right (or o.left)
     const s = o.left ? -1 : 1, w = o.w || 52, h = 13, x = p[0], y = p[1];

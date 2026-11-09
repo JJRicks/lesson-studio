@@ -1,0 +1,586 @@
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#top">Start here</a>
+      <ol>
+        <li><a href="#top">A live amplifier</a></li>
+        <li><a href="#bigpic">Two signals, one wire</a></li>
+        <li><a href="#tour">Meet the circuit</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part1">Problem 1 · Coupling</a>
+      <ol>
+        <li><a href="#cap">What a capacitor does</a></li>
+        <li><a href="#xc">Reactance</a></li>
+        <li><a href="#rule">The 10× rule</a></li>
+        <li><a href="#req">What the capacitor sees</a></li>
+        <li class="prob"><a href="#p1">Problem 1 · f</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part2">Problem 2 · Bypassing</a>
+      <ol>
+        <li><a href="#bypass">Why bypass R4</a></li>
+        <li><a href="#pick">Choosing the capacitor</a></li>
+        <li class="prob"><a href="#p2">Problem 2 · C3</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part3">Problem 3 · The amplifier</a>
+      <ol>
+        <li><a href="#bjt">The transistor, briefly</a></li>
+        <li><a href="#plan">DC first, then AC</a></li>
+        <li><a href="#vdb">Voltage divider bias</a></li>
+        <li class="prob"><a href="#p3a">Problem 3a · V<sub>B</sub></a></li>
+        <li><a href="#ie">The emitter current</a></li>
+        <li class="prob"><a href="#p3b">Problem 3b · I<sub>E</sub></a></li>
+        <li><a href="#rc">AC collector resistance</a></li>
+        <li class="prob"><a href="#p3c">Problem 3c · r<sub>c</sub></a></li>
+        <li><a href="#re">AC emitter resistance</a></li>
+        <li class="prob"><a href="#p3d">Problem 3d · r<sub>e</sub>′</a></li>
+        <li><a href="#gain">Voltage gain</a></li>
+        <li class="prob"><a href="#p3e">Problem 3e · A<sub>V</sub></a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#mistakes">Common mistakes</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<!-- ================= HERO ================= -->
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Week 8 · BJT Amplifier Homework 1 · 18 pts</div>
+  <h1>The <span>Common-Emitter</span> Amplifier</h1>
+  <p class="lede">A few millivolts go in, a few volts come out, and the wave comes out upside down. One transistor, four resistors and three capacitors make that happen. This page builds every idea from scratch, then works all three problems step by step, with each final answer hidden until you click.</p>
+  <div class="chips"><span class="chip">Problem 1 · coupling capacitors</span><span class="chip">Problem 2 · bypass capacitors</span><span class="chip">Problem 3 · voltage divider bias and gain</span></div>
+  <div class="panel" id="hero">
+    <div class="panel-head"><span class="t">A common-emitter amplifier · live</span><span class="status" id="heroStatus"></span></div>
+    <div class="heroseg"><div class="seg" id="heroSeg" role="group" aria-label="Bypass capacitor C3"><button type="button" data-k="in" aria-pressed="true">C3 connected</button><button type="button" data-k="out" aria-pressed="false">C3 removed</button></div></div>
+    <div class="duo">
+      <div class="schbox" id="heroSch" style="--ar:1.27"></div>
+      <div class="side"><canvas id="heroCv" class="p2" aria-label="Two scrolling traces. The top one is the small input wave. The bottom one is the output wave, much larger and upside down."></canvas></div>
+    </div>
+    <div class="ctlgrid"><div class="sl"><label for="heroA"><span>Input signal size (peak)</span> <b id="heroAOut"></b></label><input type="range" id="heroA" min="0.5" max="25" step="0.5" value="3"></div></div>
+    <div class="cursorbox" id="heroReads"></div>
+    <div class="legend"><span><span class="dotsw" style="--c:var(--t3)"></span>collector current</span><span><span class="dotsw" style="--c:var(--t1)"></span>base and divider current</span><span><span class="dotsw" style="--c:var(--cursor)"></span>the AC signal</span></div>
+    <p class="note">Turn up the input and watch the output grow. Past about 5 mV the top and bottom of the wave stop matching, and that's distortion. Then remove C3 and see the gain collapse. The wave is slowed down so you can follow it. The part values are examples for this demo, so they aren't the homework's.</p>
+  </div>
+</section>
+
+<section class="topic" id="bigpic" data-title="Two signals, one wire">
+  <span class="eyebrow">Start here · no prior knowledge needed</span>
+  <h3>Two signals share one wire</h3>
+  <p>Electronics uses two kinds of voltage, and an amplifier needs both at once.</p>
+  <ul>
+    <li><b>DC</b> (direct current) stays put. A 15 V supply is DC.</li>
+    <li><b>AC</b> (alternating current) wiggles up and down. A microphone's output is AC. How fast it wiggles is its <b>frequency</b> \(f\), measured in <b>hertz</b> (Hz), which means cycles per second.</li>
+  </ul>
+  <p>A transistor can't amplify a wiggle by itself. It has to be switched partly on first, with a steady DC current already flowing. Setting up that steady current is called <b>biasing</b>. The AC signal then rides on top and nudges the current up and down.</p>
+  <div class="analogy"><span class="eyebrow">Analogy · a boat on a lake</span><p>DC is the water level, and AC is the ripples on the surface. The ripples go up and down around whatever level the lake is at. An amplifier sets a good water level first, so the ripples have room to grow in both directions.</p></div>
+  <p>Capacitors are what let these two share a circuit. They let the AC wiggles through while keeping the DC levels on each side separate. That job is the subject of Problems 1 and 2. Problem 3 then finds the DC levels and the AC gain.</p>
+  <p class="key">DC sets the stage. AC is the performance. Capacitors keep the two apart.</p>
+</section>
+
+<section class="topic" id="tour" data-title="Meet the circuit">
+  <span class="eyebrow">Start here · the parts</span>
+  <h3>Meet the circuit</h3>
+  <p>This is a <b>common-emitter amplifier</b>. The name means the emitter is the transistor leg shared by the input and the output, since AC treats it as ground. Click each part to see its job.</p>
+  <div class="panel" id="tourPanel">
+    <div class="panel-head"><span class="t">Click a part</span></div>
+    <div class="heroseg"><div class="seg" id="tourSeg" role="group" aria-label="Which part"><button type="button" data-k="c1" aria-pressed="true">C1</button><button type="button" data-k="div" aria-pressed="false">R1, R2</button><button type="button" data-k="q" aria-pressed="false">Q1</button><button type="button" data-k="r3" aria-pressed="false">R3</button><button type="button" data-k="r4" aria-pressed="false">R4</button><button type="button" data-k="c3" aria-pressed="false">C3</button><button type="button" data-k="c2" aria-pressed="false">C2, Rl</button></div></div>
+    <div class="duo">
+      <div class="schbox" id="tourSch" style="--ar:1.27"></div>
+      <div class="side"><div class="tourtxt" id="tourTxt"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PROBLEM 1 ================= -->
+<section class="part" id="part1" data-title="Problem 1 · Coupling">
+  <div class="part-head">
+    <div class="part-letter">1</div>
+    <div class="eyebrow">Problem 1 · 4 pts</div>
+    <h2>Coupling capacitors</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>A coupling capacitor passes the AC signal and blocks DC. It only passes the signal well when its opposition to AC is small next to the resistance it feeds. Since that opposition grows at low frequency, good coupling has a minimum frequency.</p></div>
+
+  <div class="topic" id="cap" data-title="What a capacitor does">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>What a capacitor does</h3>
+    <p>A <b>capacitor</b> is two metal plates with an insulator between them. Current can't cross the gap. Charge can still pile up on one plate and drain off the other, and that takes current in the wires on both sides.</p>
+    <p>The more charge \(Q\) that piles up, the more voltage \(V\) builds across the gap. The ratio is its <b>capacitance</b> \(C\), measured in <b>farads</b>. Real parts are usually microfarads (µF, millionths of a farad).</p>
+    <div class="mbox">\[Q = C V\]</div>
+    <ul>
+      <li><b>DC.</b> Connect a battery. Current flows until the capacitor's voltage matches the battery, then stops for good. To DC, a capacitor is an <b>open circuit</b>, a break in the path.</li>
+      <li><b>AC.</b> The voltage keeps reversing, so charge flows onto the plate, back off, and onto it again. The current never gets to stop. To AC, a capacitor acts like a connection, and a better one as the frequency rises.</li>
+    </ul>
+    <div class="analogy"><span class="eyebrow">Analogy · a rubber sheet across a pipe</span><p>Stretch a rubber sheet across a water pipe. Push steadily and it bulges, then stops: no steady flow can get past it. Push back and forth and the water on the far side moves back and forth as well, even though no water crosses the sheet. Fast small pushes barely stretch it at all. A bigger sheet stretches less for the same push.</p></div>
+    <div class="panel" id="capPanel">
+      <div class="panel-head"><span class="t">A capacitor and a resistor · live</span><span class="status" id="capStatus"></span></div>
+      <div class="heroseg"><div class="seg" id="capSeg" role="group" aria-label="Source type"><button type="button" data-k="ac" aria-pressed="true">AC source</button><button type="button" data-k="dc" aria-pressed="false">DC source</button></div></div>
+      <div class="duo">
+        <div class="schbox" id="capSch" style="--ar:1.3"></div>
+        <div class="side"><canvas id="capCv" class="p2" aria-label="Three scrolling traces: the source voltage, the voltage across the resistor, and the voltage across the capacitor."></canvas></div>
+      </div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="capF"><span>Frequency \(f\)</span> <b id="capFOut"></b></label><input type="range" id="capF" min="0" max="1000" step="1" value="445"></div>
+        <div class="sl"><label for="capC"><span>Capacitance \(C\)</span> <b id="capCOut"></b></label><input type="range" id="capC" min="0" max="1000" step="1" value="333"></div>
+      </div>
+      <div class="cursorbox" id="capReads"></div>
+      <div class="legend"><span><span class="sw" style="--c:var(--muted)"></span>source</span><span><span class="sw" style="--c:var(--accent)"></span>across the resistor (what gets through)</span><span><span class="sw" style="--c:var(--cursor)"></span>across the capacitor (what's lost)</span></div>
+      <p class="note">The resistor is 1 kΩ. Raise the frequency and the resistor's trace grows to match the source while the capacitor's trace shrinks. Pick DC and watch the current die away as the capacitor fills. The waves are slowed down so each cycle takes the same time on screen.</p>
+    </div>
+    <p class="key">DC can't get through a capacitor. AC can, and it gets through more easily at higher frequency and with more capacitance.</p>
+  </div>
+
+  <div class="topic" id="xc" data-title="Reactance">
+    <span class="eyebrow">Topic 2 · a number for "how much it resists"</span>
+    <h3>Reactance</h3>
+    <p>A resistor's opposition to current is its resistance. A capacitor's opposition to AC is called its <b>reactance</b>, written \(X_C\). It's also measured in ohms. Here's where the formula comes from.</p>
+    <ol class="steps">
+      <li><h5>Current is the rate charge moves</h5><p>Since \(Q = CV\), current is \(i = C\,\dfrac{dv}{dt}\). The faster the voltage changes, the more current flows.</p></li>
+      <li><h5>Use a sine wave</h5><p>Let \(v = V_p \sin(2\pi f t)\). Taking the rate of change gives \(i = 2\pi f C\,V_p \cos(2\pi f t)\).</p></li>
+      <li><h5>Compare the peaks</h5><p>The current's peak is \(I_p = 2\pi f C\,V_p\). Dividing voltage by current, the same way you'd find a resistance, gives the reactance.</p></li>
+    </ol>
+    <div class="thm"><span class="eyebrow">Capacitive reactance</span>\[X_C = \frac{1}{2\pi f C}\]</div>
+    <p>Both \(f\) and \(C\) sit on the bottom, so raising either one lowers \(X_C\).</p>
+    <ul>
+      <li>Double the frequency and \(X_C\) halves. The charge has half the time to pile up, so less voltage builds.</li>
+      <li>Double the capacitance and \(X_C\) halves. The plates hold twice the charge for the same voltage.</li>
+    </ul>
+    <details class="quick"><summary><span>Quick check: what is \(X_C\) at DC, where \(f = 0\)?</span></summary><div><p>Infinite, because you'd be dividing by zero. That's the formula saying a capacitor blocks DC.</p></div></details>
+  </div>
+
+  <div class="topic" id="rule" data-title="The 10× rule">
+    <span class="eyebrow">Topic 3 · what "good coupling" means</span>
+    <h3>The 10× rule</h3>
+    <p>A coupling capacitor sits in <b>series</b> with whatever it feeds, which means the same current passes through one and then the other. The resistance it feeds is called \(R_{eq}\), the <b>equivalent resistance</b>. Together they form a <b>voltage divider</b>, which shares the input voltage between them. The part of the signal that lands on \(R_{eq}\) is the part that got through.</p>
+    <p>Reactance and resistance don't add like two resistors, because a capacitor's voltage is a quarter cycle out of step with its current. They combine like the two sides of a right triangle:</p>
+    <div class="mbox">\[\frac{v_{out}}{v_{in}} = \frac{R_{eq}}{\sqrt{R_{eq}^2 + X_C^2}}\]</div>
+    <div class="tbl"><table>
+      <thead><tr><th>\(X_C\) compared with \(R_{eq}\)</th><th>Signal that gets through</th></tr></thead>
+      <tbody>
+        <tr><td>\(X_C = 10\,R_{eq}\)</td><td>10%</td></tr>
+        <tr><td>\(X_C = R_{eq}\)</td><td>71%</td></tr>
+        <tr><td>\(X_C = 0.1\,R_{eq}\)</td><td>99.5%</td></tr>
+      </tbody></table></div>
+    <p>The last row is the design rule. Once \(X_C\) is a tenth of \(R_{eq}\), the capacitor is close enough to a plain wire.</p>
+    <div class="thm"><span class="eyebrow">Good coupling</span>\[X_C \lt 0.1\,R_{eq}\]</div>
+    <p>\(X_C\) shrinks as \(f\) rises, so the rule holds at high frequencies and fails at low ones. Setting \(X_C\) equal to \(0.1\,R_{eq}\) finds the edge, the lowest frequency where coupling is still good:</p>
+    <div class="mbox">\[f_{min} = \frac{1}{2\pi C\,(0.1\,R_{eq})}\]</div>
+    <p class="key">Good coupling means \(X_C\) is under a tenth of what the capacitor feeds. Find where they meet, and everything above that frequency is fine.</p>
+  </div>
+
+  <div class="topic" id="req" data-title="What the capacitor sees">
+    <span class="eyebrow">Topic 4 · finding R<sub>eq</sub></span>
+    <h3>What the capacitor sees</h3>
+    <p>To find \(R_{eq}\), stand at the capacitor and ask what resistance the AC signal runs into. Three facts settle it.</p>
+    <ul>
+      <li><b>An ideal AC source has no resistance of its own.</b> The problem shows a plain source, so nothing adds on that side.</li>
+      <li><b>A DC supply can't wiggle.</b> Its voltage is held constant. For AC, any point that doesn't wiggle is the same as ground. So \(V_{cc}\) is an <b>AC ground</b>.</li>
+      <li><b>That makes R1 and R2 parallel.</b> R1 used to run from the signal's <b>node</b> (a point where parts connect) up to \(V_{cc}\). For AC, it runs from that node to ground, exactly like R2.</li>
+    </ul>
+    <div class="mbox">\[R_{eq} = R_1 \parallel R_2 = \frac{R_1 R_2}{R_1 + R_2}\]</div>
+    <p>The symbol \(\parallel\) means "in parallel with". Two parallel paths always pass current more easily than either alone, so the result is smaller than the smaller resistor.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · two drains in one sink</span><p>Water leaves a sink faster through two drains than through either one. It doesn't matter that one pipe runs up to the roof tank and the other down to the sewer. If the roof tank's level never changes, a ripple sees both as places to go.</p></div>
+    <div class="panel" id="reqPanel">
+      <div class="panel-head"><span class="t">Watch the circuit redraw itself</span><span class="status" id="reqStatus"></span></div>
+      <div class="heroseg"><div class="seg" id="reqSeg" role="group" aria-label="Which view"><button type="button" data-k="dc" aria-pressed="true">As drawn</button><button type="button" data-k="ac" aria-pressed="false">What AC sees</button></div></div>
+      <div class="schbox short" id="reqSch" style="--ar:1.25"></div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="reqR1"><span>R1</span> <b id="reqR1Out"></b></label><input type="range" id="reqR1" min="0" max="11" step="1" value="8"></div>
+        <div class="sl"><label for="reqR2"><span>R2</span> <b id="reqR2Out"></b></label><input type="range" id="reqR2" min="0" max="11" step="1" value="4"></div>
+      </div>
+      <div class="cursorbox" id="reqReads"></div>
+      <p class="note">These are example values. Make R1 much larger than R2 and see \(R_{eq}\) settle just under R2. The smaller resistor does most of the deciding.</p>
+    </div>
+    <p class="key">For AC, \(V_{cc}\) is ground. Anything that connected to \(V_{cc}\) now connects to ground.</p>
+    <details class="quick"><summary><span>Quick check: what is 10 kΩ in parallel with 10 kΩ?</span></summary><div><p>5 kΩ. Two equal resistors in parallel give half of one.</p></div></details>
+
+    <article class="prob" id="p1" data-title="Problem 1">
+      <div class="prob-head"><span class="pnum">Problem 1</span><span class="eyebrow">coupling capacitor</span><span class="pts">4 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Determine the frequency \(f\) associated with \(X_C \lt 0.1\,R_{eq}\)</b> in the circuit shown, recognizing that good coupling occurs for \(f\) greater than this minimum. \(V_{cc}\) = 15 V, R1 = 13 kΩ, R2 = 1 kΩ, C1 = 47 µF. The hint says it should be under 100 Hz.</p>
+        <ol class="steps">
+          <li><h5>Write the rule</h5><p>Good coupling needs \(X_C \lt 0.1\,R_{eq}\). So find \(R_{eq}\), then find the frequency where \(X_C\) reaches that limit.</p></li>
+          <li><h5>Treat \(V_{cc}\) as ground</h5><p>\(V_{cc}\) holds a steady 15 V, so for AC the top of R1 is ground. Vin is an ideal source, so it adds no resistance.</p></li>
+          <li><h5>Combine R1 and R2</h5><p>Both now run from node Va to ground.</p><div class="mbox">\[R_{eq} = \frac{(13\text{ k}\Omega)(1\text{ k}\Omega)}{13\text{ k}\Omega + 1\text{ k}\Omega} = 928.6\ \Omega\]</div></li>
+          <li><h5>Find the limit</h5><div class="mbox">\[0.1\,R_{eq} = 92.86\ \Omega\]</div></li>
+          <li><h5>Solve for \(f\)</h5><p>Set \(X_C\) equal to the limit and rearrange. Put in C1 and the limit, then compute it.</p><div class="mbox">\[f = \frac{1}{2\pi C_1\,(0.1\,R_{eq})} = \frac{1}{2\pi\,(47\ \mu\text{F})\,(92.86\ \Omega)}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">f &gt; 36.5 Hz<small>36.47 Hz to four figures. Above this, \(X_C\) stays under 92.86 Ω.</small></div>
+          <p>Check: it's under the hint's 100 Hz. At exactly this frequency the capacitor passes about 99.5% of the signal.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= PROBLEM 2 ================= -->
+<section class="part" id="part2" data-title="Problem 2 · Bypassing">
+  <div class="part-head">
+    <div class="part-letter">2</div>
+    <div class="eyebrow">Problem 2 · 4 pts</div>
+    <h2>Bypass capacitors</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>The emitter resistor keeps the DC current stable, but it would throw away most of the AC gain. A capacitor across it gives AC a shortcut to ground while DC still has to go through the resistor. It uses the same 10× rule, solved for \(C\) this time.</p></div>
+
+  <div class="topic" id="bypass" data-title="Why bypass R4">
+    <span class="eyebrow">Topic 1 · the second capacitor job</span>
+    <h3>Why bypass the emitter resistor</h3>
+    <p>R4 sits between the emitter and ground. It's there for a good reason, which Problem 3 explains: it makes the DC current stable. For AC, though, it causes trouble.</p>
+    <p>When the signal pushes more current through the transistor, that current also flows through R4. R4's voltage rises, which lifts the emitter. The input is trying to raise the base relative to the emitter, and the rising emitter cancels most of that push. The gain collapses.</p>
+    <p>A <b>bypass capacitor</b> across R4 fixes this. DC can't pass through a capacitor, so the DC current still has to go through R4 and stays stable. AC takes the capacitor, which holds the emitter nearly still.</p>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>Coupling capacitor</th><th>Bypass capacitor</th></tr></thead>
+      <tbody>
+        <tr><td>Job</td><td>Connect two points for AC</td><td>Connect one point to ground for AC</td></tr>
+        <tr><td>Examples here</td><td>C1, C2</td><td>C3</td></tr>
+        <tr><td>Blocks DC?</td><td>Yes</td><td>Yes</td></tr>
+        <tr><td>Rule</td><td>\(X_C \lt 0.1\,R_{eq}\)</td><td>\(X_C \lt 0.1\,R_{eq}\)</td></tr>
+      </tbody></table></div>
+    <div class="analogy"><span class="eyebrow">Analogy · a speed bump with a side lane</span><p>R4 is a speed bump that keeps the steady traffic calm. The bypass capacitor is a side lane that only opens for traffic that keeps changing direction. Commuters going back and forth skip the bump, and the steady flow still has to cross it.</p></div>
+    <div class="panel" id="byPanel">
+      <div class="panel-head"><span class="t">Gain against frequency · live</span><span class="status" id="byStatus"></span></div>
+      <canvas id="byCv" class="p2" style="height:290px" aria-label="Gain of an example amplifier against frequency. It starts low at low frequency and climbs to a plateau at high frequency."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="byC"><span>Bypass capacitor</span> <b id="byCOut"></b></label><input type="range" id="byC" min="0" max="1000" step="1" value="500"></div>
+        <div class="sl"><label for="byF"><span>Signal frequency</span> <b id="byFOut"></b></label><input type="range" id="byF" min="0" max="1000" step="1" value="460"></div>
+      </div>
+      <div class="cursorbox" id="byReads"></div>
+      <p class="note">An example amplifier with a 560 Ω emitter resistor. A bigger capacitor slides the whole curve to the left, so the gain arrives at lower frequencies. The dashed line is where the 10× rule is first met.</p>
+    </div>
+    <details class="deeper"><summary>Going further: what the 10× rule leaves out</summary><div>
+      <p>Look at the chart above. Where the dashed line sits, the gain is well short of its top. The rule compares \(X_C\) with R4, and that keeps C3 small enough to be practical, but C3 also has to beat a much smaller resistance looking back into the emitter. That resistance is \(r_e'\), which you'll meet in Problem 3.</p>
+      <p>To get the full gain all the way down to the lowest frequency, a real design would compare \(X_C\) against \(R_4 \parallel r_e'\), which needs a far larger capacitor. Problem 2 only gives R4, so R4 is what you use here. If you simulate an amplifier and the low-frequency gain sags, this is why.</p>
+    </div></details>
+    <p class="key">C3 hides R4 from the AC signal and leaves it in place for DC.</p>
+  </div>
+
+  <div class="topic" id="pick" data-title="Choosing the capacitor">
+    <span class="eyebrow">Topic 2 · solving for C</span>
+    <h3>Choosing the capacitor</h3>
+    <p>Problem 1 knew \(C\) and solved for \(f\). A design problem goes the other way. Rearrange the same formula for \(C\):</p>
+    <div class="mbox">\[C = \frac{1}{2\pi f\,X_C} \qquad\text{with}\quad X_C = 0.1\,R_{eq}\]</div>
+    <p>Two decisions come with it.</p>
+    <ul>
+      <li><b>Which frequency?</b> Use the <b>lowest</b> one the circuit has to handle. \(X_C\) is largest there, so if the rule holds at the bottom it holds everywhere above.</li>
+      <li><b>Which value?</b> Capacitors are only sold in standard values. The 10% series has twelve steps per <b>decade</b> (one factor of ten): 10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68 and 82. Each repeats at every power of ten, so 18 nF, 18 µF and 180 µF all exist.</li>
+    </ul>
+    <p>Always <b>round up</b>. A bigger capacitor means a smaller \(X_C\), which only makes the rule more true. Rounding down breaks it.</p>
+    <div class="panel" id="ladPanel">
+      <div class="panel-head"><span class="t">The 10% capacitor ladder</span><span class="status" id="ladStatus"></span></div>
+      <canvas id="ladCv" class="p2" style="height:150px" aria-label="A ruler of standard capacitor values with an arrow at the calculated value and a ring around the next standard value above it."></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="ladV"><span>Calculated minimum capacitance</span> <b id="ladVOut"></b></label><input type="range" id="ladV" min="0" max="1000" step="1" value="492"></div></div>
+      <div class="cursorbox" id="ladReads"></div>
+    </div>
+    <details class="quick"><summary><span>Quick check: you calculate 25 µF. Which standard value do you buy?</span></summary><div><p>27 µF. The next step up from 25 on the list is 27. Picking 22 µF would leave \(X_C\) above the limit.</p></div></details>
+
+    <article class="prob" id="p2" data-title="Problem 2">
+      <div class="prob-head"><span class="pnum">Problem 2</span><span class="eyebrow">bypass capacitor</span><span class="pts">4 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Determine the smallest capacitor value for C3</b> that gives good bypassing of R4 = 1 kΩ at \(f \ge\) 20 Hz, using standard 10% values: 10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68 and 82 in each decade. The hint says the calculated value should be above 50 µF.</p>
+        <ol class="steps">
+          <li><h5>Say what C3 must do</h5><p>C3 has to look like a short next to R4 for AC. Use the same rule: \(X_C \lt 0.1\,R_{eq}\).</p></li>
+          <li><h5>Find the limit</h5><p>The only resistance given for C3 to work against is R4, so \(R_{eq}\) = R4 = 1 kΩ and the limit is \(X_C \lt\) 100 Ω.</p></li>
+          <li><h5>Pick the hardest frequency</h5><p>\(X_C\) is largest at the lowest frequency, so design at 20 Hz. If the rule holds there, it holds at every frequency above.</p></li>
+          <li><h5>Solve for \(C\)</h5><p>Set \(X_C\) to its limit and compute it.</p><div class="mbox">\[C = \frac{1}{2\pi f\,X_C} = \frac{1}{2\pi\,(20\text{ Hz})\,(100\ \Omega)}\]</div></li>
+          <li><h5>Round up to a standard value</h5><p>The result won't land on a standard value. Move up the 10% list to the next one.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">C3 = 82 µF<small>The calculation gives \(C \ge\) 79.6 µF, and 82 µF is the next standard value up.</small></div>
+          <p>Check: 79.6 µF is above the hint's 50 µF. At 20 Hz, 82 µF gives \(X_C\) = 97.1 Ω, under the limit. The value below it, 68 µF, gives 117 Ω and fails.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= PROBLEM 3 ================= -->
+<section class="part" id="part3" data-title="Problem 3 · The amplifier">
+  <div class="part-head">
+    <div class="part-letter">3</div>
+    <div class="eyebrow">Problem 3 · 10 pts · five parts, 2 pts each</div>
+    <h2>The voltage divider bias amplifier</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Solve the circuit twice. The DC pass finds the steady current through the transistor. The AC pass finds the gain, and that steady current sets the value of the transistor's tiny internal resistance, which decides how big the gain is.</p></div>
+
+  <div class="topic" id="bjt" data-title="The transistor, briefly">
+    <span class="eyebrow">Topic 1 · the three legs</span>
+    <h3>The transistor, briefly</h3>
+    <p>A <b>bipolar junction transistor</b> (BJT) has three legs: the <b>base</b>, the <b>collector</b> and the <b>emitter</b>. A small current into the base controls a much larger current from collector to emitter. Three facts cover this homework.</p>
+    <ul>
+      <li>The base-emitter path is a <b>diode</b>, a one-way valve for current. When it's on (<b>forward-biased</b>), the base sits about <b>0.7 V</b> above the emitter.</li>
+      <li>The collector current is the base current times the <b>current gain</b> β: \(I_C = \beta I_B\). Here β is 300.</li>
+      <li>The emitter carries both: \(I_E = I_C + I_B\). With β this large, \(I_B\) is tiny, so \(I_C \approx I_E\).</li>
+    </ul>
+    <p>An amplifier keeps the transistor in its <b>active region</b>, partly on, where the collector current can rise and fall with the input. Fully on or fully off would clip the wave, flattening its peaks.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a valve held partly open</span><p>Think of a big water pipe with a valve. A hand barely moving the valve changes a lot of water flow. For this to work in both directions, the valve has to start partly open. Biasing is what holds it there.</p></div>
+  </div>
+
+  <div class="topic" id="plan" data-title="DC first, then AC">
+    <span class="eyebrow">Topic 2 · the method</span>
+    <h3>DC first, then AC</h3>
+    <p>Small signals add on top of the DC levels without disturbing them, so you can treat the two cases separately. Draw the circuit once for each.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Part</th><th>In the DC circuit</th><th>In the AC circuit</th></tr></thead>
+      <tbody>
+        <tr><td>Capacitors</td><td>Open (remove them)</td><td>Short (replace with a wire)</td></tr>
+        <tr><td>\(V_{cc}\)</td><td>Its full voltage</td><td>Ground</td></tr>
+        <tr><td>Signal source</td><td>Off (zero)</td><td>On</td></tr>
+        <tr><td>Rl (the load)</td><td>Cut off by C2</td><td>Connected through C2</td></tr>
+        <tr><td>R4</td><td>In the circuit</td><td>Shorted by C3</td></tr>
+      </tbody></table></div>
+    <p>The homework says to use <b>simplified analysis</b>. That means these approximations:</p>
+    <ul>
+      <li>The base-emitter drop is 0.7 V.</li>
+      <li>The divider's voltage isn't disturbed by base current.</li>
+      <li>\(I_C \approx I_E\).</li>
+      <li>The thermal voltage, a constant you'll meet in Topic 6, is 25 mV.</li>
+    </ul>
+    <p class="key">Capacitors open for DC, shorted for AC. \(V_{cc}\) is its voltage for DC and ground for AC.</p>
+  </div>
+
+  <div class="topic" id="vdb" data-title="Voltage divider bias">
+    <span class="eyebrow">Topic 3 · finding V<sub>B</sub></span>
+    <h3>Voltage divider bias</h3>
+    <p>R1 and R2 form a <b>voltage divider</b>: two resistors in series across the supply, with the base tapped from the middle. Ignoring base current for the moment, the same current flows through both, \(I = V_{cc}/(R_1+R_2)\). The voltage at the middle is that current times R2.</p>
+    <div class="thm"><span class="eyebrow">Voltage divider</span>\[V_B = V_{cc}\,\frac{R_2}{R_1 + R_2}\]</div>
+    <p>The formula only holds if the base draws very little of that current. A divider that isn't disturbed by the base is called <b>stiff</b>. The usual test compares R2 with the resistance the emitter reflects back to the base, which is about \(\beta R_E\).</p>
+    <div class="thm"><span class="eyebrow">Stiff divider test</span>\[R_2 \le 0.01\,\beta\,R_E\]</div>
+    <p>In this homework β only appears in this check. Once the divider passes, the simplified formulas don't use it again.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · sipping from a fast stream</span><p>Dip a cup in a fast stream and the water level doesn't change. Dip it in a trickle and you've taken most of what was there. The divider's current is the stream, and the base current is the cup.</p></div>
+    <div class="panel" id="divPanel">
+      <div class="panel-head"><span class="t">The divider and the base · live</span><span class="status" id="divStatus"></span></div>
+      <canvas id="divCv" class="p2" style="height:270px" aria-label="A column showing how the supply voltage splits across R1 and R2, with bars comparing the divider current and the base current."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="divR1"><span>R1</span> <b id="divR1Out"></b></label><input type="range" id="divR1" min="0" max="11" step="1" value="6"></div>
+        <div class="sl"><label for="divR2"><span>R2</span> <b id="divR2Out"></b></label><input type="range" id="divR2" min="0" max="11" step="1" value="6"></div>
+        <div class="sl"><label for="divB"><span>β</span> <b id="divBOut"></b></label><input type="range" id="divB" min="30" max="400" step="5" value="300"></div>
+      </div>
+      <div class="cursorbox" id="divReads"></div>
+      <p class="note">An example circuit with \(V_{cc}\) = 12 V and a 560 Ω emitter resistor. Make R1 and R2 large and the base starts to pull the divider down, so the two values drift apart.</p>
+    </div>
+    <p class="key">A stiff divider acts like a fixed voltage source. The base takes a sip and the level doesn't change.</p>
+
+    <article class="prob" id="p3a" data-title="Problem 3a">
+      <div class="prob-head"><span class="pnum">Problem 3a</span><span class="eyebrow">the DC base voltage</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Calculate \(V_B\)</b> for the voltage divider bias (VDB) common-emitter amplifier shown, with β = 300 and simplified analysis. \(V_{cc}\) = 15 V, R1 = 3.6 kΩ, R2 = 620 Ω, R3 = 2.7 kΩ, R4 = 680 Ω, Rl = 100 kΩ.</p>
+        <ol class="steps">
+          <li><h5>Draw the DC circuit</h5><p>Capacitors are open at DC, so C1, C2, C3, the signal and Rl all drop out.</p></li>
+          <li><h5>Check that the divider is stiff</h5><div class="mbox">\[0.01\,\beta\,R_4 = 0.01\,(300)\,(680\ \Omega) = 2040\ \Omega\]</div><p>R2 is 620 Ω, which is smaller, so the divider is stiff.</p></li>
+          <li><h5>Follow the one current</h5><p>With base current ignored, the same current runs down through R1 and R2.</p></li>
+          <li><h5>Apply the divider</h5><p>Compute it.</p><div class="mbox">\[V_B = 15\text{ V}\;\frac{620\ \Omega}{3600\ \Omega + 620\ \Omega}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">V<sub>B</sub> = 2.20 V<small>2.204 V to four figures.</small></div>
+          <p>Check: including the base current gives 2.200 V, only 0.18% lower. That's why the simplified version is fair here.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="ie" data-title="The emitter current">
+    <span class="eyebrow">Topic 4 · finding I<sub>E</sub></span>
+    <h3>The emitter current</h3>
+    <p>Once you know the base voltage, the emitter takes care of itself. The base-emitter diode holds the emitter one diode drop below the base. Then <b>Ohm's law</b>, \(I = V/R\), gives the current through the emitter resistor.</p>
+    <div class="thm"><span class="eyebrow">DC emitter current</span>\[V_E = V_B - 0.7\text{ V} \qquad I_E = \frac{V_E}{R_E}\]</div>
+    <p>Notice what's missing. β isn't in either formula. That's the reason this circuit is popular. Transistors of the same part number can have β values that differ by a factor of three, and they also drift with temperature. This circuit sets its current with resistors, so it barely notices.</p>
+    <p>Compare it with the cruder <b>base bias</b>, which feeds the base through one resistor. That fixes \(I_B\), so \(I_C = \beta I_B\) follows β directly.</p>
+    <div class="panel" id="betaPanel">
+      <div class="panel-head"><span class="t">Swap in a different transistor</span><span class="status" id="betaStatus"></span></div>
+      <canvas id="betaCv" class="p2" style="height:270px" aria-label="Emitter current against beta. The voltage divider bias line is almost flat. The base bias line climbs steeply."></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="betaB"><span>β of the transistor</span> <b id="betaBOut"></b></label><input type="range" id="betaB" min="50" max="400" step="5" value="250"></div></div>
+      <div class="cursorbox" id="betaReads"></div>
+      <p class="note">An example circuit, with the base-bias resistor chosen so both circuits match at β = 150. Drag β and compare how far each line moves.</p>
+    </div>
+    <details class="quick"><summary><span>Quick check: does C3 carry any of the DC emitter current?</span></summary><div><p>No. Capacitors block DC, so all of it goes through R4.</p></div></details>
+    <p class="key">Resistors set the current. β barely gets a vote.</p>
+
+    <article class="prob" id="p3b" data-title="Problem 3b">
+      <div class="prob-head"><span class="pnum">Problem 3b</span><span class="eyebrow">the DC emitter current</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Calculate \(I_E\)</b> for the same circuit.</p>
+        <ol class="steps">
+          <li><h5>Drop one diode voltage</h5><p>The emitter sits 0.7 V below the base. Use your \(V_B\) from part a: \(V_E = V_B - 0.7\text{ V}\).</p></li>
+          <li><h5>Find the emitter's path</h5><p>At DC, C3 is open. So all the emitter current has to go through R4.</p></li>
+          <li><h5>Apply Ohm's law</h5><p>Compute it.</p><div class="mbox">\[I_E = \frac{V_E}{R_4} = \frac{V_E}{680\ \Omega}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">I<sub>E</sub> = 2.21 mA<small>\(V_E\) = 2.204 − 0.7 = 1.504 V, and 1.504 V / 680 Ω = 2.212 mA.</small></div>
+          <p>Check that the transistor is active: \(V_C = 15 - (2.21\text{ mA})(2.7\text{ k}\Omega) \approx\) 9.03 V, so \(V_{CE} \approx\) 7.5 V. There's plenty of room for the signal in both directions.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="rc" data-title="AC collector resistance">
+    <span class="eyebrow">Topic 5 · finding <span class="lc">r<sub>c</sub></span></span>
+    <h3>AC collector resistance</h3>
+    <p>Now switch to the AC circuit. The collector is where the output voltage forms, so the question is what resistance the AC collector current runs into. It's written with a lowercase \(r_c\), because lowercase means an AC quantity.</p>
+    <p>Follow the AC rules. C2 becomes a wire, so Rl connects straight to the collector. \(V_{cc}\) becomes ground, so R3 runs from the collector to ground as well. That's the same picture as Problem 1.</p>
+    <div class="thm"><span class="eyebrow">AC collector resistance</span>\[r_c = R_C \parallel R_L\]</div>
+    <p>In the homework's schematic, \(R_C\) is R3 and \(R_L\) is Rl.</p>
+    <div class="panel" id="rcPanel">
+      <div class="panel-head"><span class="t">The load joins in for AC</span><span class="status" id="rcStatus"></span></div>
+      <div class="heroseg"><div class="seg" id="rcSeg" role="group" aria-label="Which view"><button type="button" data-k="dc" aria-pressed="true">As drawn</button><button type="button" data-k="ac" aria-pressed="false">What AC sees</button></div></div>
+      <div class="schbox short" id="rcSch" style="--ar:1.27"></div>
+      <div class="ctlgrid"><div class="sl"><label for="rcL"><span>Load resistor Rl</span> <b id="rcLOut"></b></label><input type="range" id="rcL" min="0" max="14" step="1" value="11"></div></div>
+      <div class="cursorbox" id="rcReads"></div>
+      <p class="note">An example circuit with a 2.2 kΩ collector resistor. Make the load small and \(r_c\) drops with it, so a heavy load steals gain. Make it huge and \(r_c\) settles just under the collector resistor.</p>
+    </div>
+    <p class="key">AC sees the collector resistor and the load side by side.</p>
+
+    <article class="prob" id="p3c" data-title="Problem 3c">
+      <div class="prob-head"><span class="pnum">Problem 3c</span><span class="eyebrow">the AC collector resistance</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Calculate \(r_c\)</b> for the same circuit.</p>
+        <ol class="steps">
+          <li><h5>Switch to the AC circuit</h5><p>Capacitors become wires and \(V_{cc}\) becomes ground. C2 connects the collector straight to Rl.</p></li>
+          <li><h5>See the two paths</h5><p>From the collector, AC has two ways to ground: down through Rl, and through R3 to the grounded supply.</p></li>
+          <li><h5>Combine them in parallel</h5><p>Compute it.</p><div class="mbox">\[r_c = R_3 \parallel R_l = \frac{(2.7\text{ k}\Omega)(100\text{ k}\Omega)}{2.7\text{ k}\Omega + 100\text{ k}\Omega}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">r<sub>c</sub> = 2.63 kΩ<small>2629 Ω. Rl is so much larger than R3 that it barely changes anything.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="re" data-title="AC emitter resistance">
+    <span class="eyebrow">Topic 6 · finding <span class="lc">r<sub>e</sub>′</span></span>
+    <h3>AC emitter resistance</h3>
+    <p>The base-emitter junction is a diode, and a diode's current grows exponentially with its voltage:</p>
+    <div class="mbox">\[I = I_S\, e^{V/V_T}\]</div>
+    <p>\(V_T\) is the <b>thermal voltage</b>, about 25 mV near room temperature. \(I_S\) is a tiny constant that depends on the transistor.</p>
+    <p>A signal only moves the junction a tiny distance along this curve. Over such a short stretch, the curve looks like a straight line, and a straight line on a current-voltage graph is a resistor. So the junction behaves like a small resistor for AC, called \(r_e'\). The prime is part of the name.</p>
+    <p>Its value is the inverse slope of the curve. Taking the derivative gives \(dI/dV = I/V_T\), and flipping that over gives the rule:</p>
+    <div class="thm"><span class="eyebrow">AC emitter resistance</span>\[r_e' = \frac{25\text{ mV}}{I_E}\]</div>
+    <p>More DC current puts you higher up the curve where it's steeper, so \(r_e'\) is smaller. This is the link between the two halves of the analysis: the DC current sets an AC resistance.</p>
+    <p>Some books use 26 mV. This homework needs 25 mV, because the hint's range for the gain only works with it.</p>
+    <div class="panel" id="rePanel">
+      <div class="panel-head"><span class="t">The diode curve, up close · live</span><span class="status" id="reStatus"></span></div>
+      <canvas id="reCv" class="p2" style="height:300px" aria-label="An exponential diode curve with a dot at the DC current and a tangent line. A small input wiggle along the horizontal axis makes a current wiggle along the vertical axis."></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="reI"><span>DC emitter current \(I_E\)</span> <b id="reIOut"></b></label><input type="range" id="reI" min="0.3" max="8" step="0.05" value="1.0"></div></div>
+      <div class="cursorbox" id="reReads"></div>
+      <p class="note">Drag the current up. The dot climbs to where the curve is steeper, so the same small voltage wiggle makes a much bigger current wiggle. The dashed line is the tangent, and its steepness is \(1/r_e'\).</p>
+    </div>
+    <p class="key">\(r_e'\) is the slope of the diode curve at the DC current. More DC current means less \(r_e'\).</p>
+
+    <article class="prob" id="p3d" data-title="Problem 3d">
+      <div class="prob-head"><span class="pnum">Problem 3d</span><span class="eyebrow">the AC emitter resistance</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Calculate \(r_e'\)</b> for the same circuit.</p>
+        <ol class="steps">
+          <li><h5>Look at the base-emitter junction</h5><p>It's a forward-biased diode, sitting at the DC emitter current you found in part b.</p></li>
+          <li><h5>Turn the slope into a resistance</h5><p>For a small wiggle around that current, the junction acts like a resistor set by the curve's slope.</p></li>
+          <li><h5>Use the rule</h5><p>Use your \(I_E\) from part b and compute it.</p><div class="mbox">\[r_e' = \frac{25\text{ mV}}{I_E}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">r<sub>e</sub>′ = 11.3 Ω<small>25 mV / 2.212 mA = 11.30 Ω.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="gain" data-title="Voltage gain">
+    <span class="eyebrow">Topic 7 · finding A<sub>V</sub></span>
+    <h3>Voltage gain</h3>
+    <p><b>Voltage gain</b> \(A_V\) is how many times bigger the output wave is than the input wave. Lowercase \(v\) and \(i\) mean the AC part. Follow the signal through the AC circuit.</p>
+    <ol class="steps">
+      <li><h5>The input reaches the base</h5><p>C1 is a short for AC, so \(v_b = v_{in}\).</p></li>
+      <li><h5>All of it lands on \(r_e'\)</h5><p>C3 holds the emitter at AC ground. So the whole signal sits across the junction's small resistance, and Ohm's law gives \(i_e = v_{in}/r_e'\).</p></li>
+      <li><h5>The current flows into the collector</h5><p>Since \(i_c \approx i_e\), that same current runs through \(r_c\) and makes a voltage \(i_e r_c\).</p></li>
+      <li><h5>The output is upside down</h5><p>When the base rises, more current flows. More current means a bigger drop across \(r_c\), which pulls the collector down. So \(v_{out} = -i_e r_c\).</p></li>
+    </ol>
+    <p>Divide the output by the input and \(i_e\) cancels:</p>
+    <div class="thm"><span class="eyebrow">Gain of a bypassed common-emitter amplifier</span>\[A_V = \frac{v_{out}}{v_{in}} = -\frac{r_c}{r_e'}\]</div>
+    <p>The gain is the ratio of two resistances. The same current passes through a small one and a large one, and the voltage across the large one is proportionally bigger.</p>
+    <p>Without C3, R4 stays in the emitter's AC path, and the gain falls to \(-r_c/(r_e' + R_E)\).</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a see-saw with a long arm</span><p>Push the short end of a see-saw down a little and the long end swings up a lot. The input pushes on the short arm \(r_e'\), and the output is the long arm \(r_c\). The lengths set how much it multiplies, and the pivot is why the output goes the opposite way.</p></div>
+    <div class="panel" id="gainPanel">
+      <div class="panel-head"><span class="t">The gain see-saw · live</span><span class="status" id="gainStatus"></span></div>
+      <div class="heroseg"><div class="seg" id="gainSeg" role="group" aria-label="Bypass capacitor"><button type="button" data-k="in" aria-pressed="true">C3 connected</button><button type="button" data-k="out" aria-pressed="false">C3 removed</button></div></div>
+      <canvas id="gainCv" class="p2" style="height:280px" aria-label="A see-saw with a short input arm and a long output arm, beside two traces showing the input and the larger, inverted output."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="gainR"><span>\(r_c\)</span> <b id="gainROut"></b></label><input type="range" id="gainR" min="500" max="8000" step="50" value="1500"></div>
+        <div class="sl"><label for="gainI"><span>\(I_E\)</span> <b id="gainIOut"></b></label><input type="range" id="gainI" min="0.3" max="5" step="0.05" value="1"></div>
+      </div>
+      <div class="cursorbox" id="gainReads"></div>
+      <p class="note">The arms are compressed to fit the screen, so read the true ratio from the numbers. Raising \(I_E\) shortens \(r_e'\) and raises the gain. Remove C3 and 560 Ω joins the short arm, so the see-saw barely multiplies at all.</p>
+    </div>
+    <details class="deeper"><summary>Going further: why a simulator reads a little lower</summary><div>
+      <p>The simplified formula leaves a few things out. The transistor has its own output resistance in parallel with \(r_c\), and at 27 °C the thermal voltage is 25.9 mV. Both pull the gain down by several percent. If you simulate this homework's circuit, expect a magnitude somewhat under the hand answer.</p>
+    </div></details>
+    <p class="key">Gain is the collector's AC resistance over the emitter's AC resistance, with a minus sign for the flip.</p>
+
+    <article class="prob" id="p3e" data-title="Problem 3e">
+      <div class="prob-head"><span class="pnum">Problem 3e</span><span class="eyebrow">the voltage gain</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Calculate \(A_V\)</b> for the same circuit. The hint says it should be between −240 and −225.</p>
+        <ol class="steps">
+          <li><h5>Put the signal on the base</h5><p>C1 is a short for AC, so \(v_{in}\) arrives at the base.</p></li>
+          <li><h5>Find the emitter current</h5><p>C3 holds the emitter at AC ground, so all of \(v_{in}\) lands on \(r_e'\): \(i_e = v_{in}/r_e'\).</p></li>
+          <li><h5>Find the output voltage</h5><p>About the same current flows through \(r_c\). More current pulls the collector down: \(v_{out} = -i_e\, r_c\).</p></li>
+          <li><h5>Divide</h5><p>The current cancels. Use your \(r_c\) from part c and your \(r_e'\) from part d, and compute it.</p><div class="mbox">\[A_V = \frac{v_{out}}{v_{in}} = -\frac{r_c}{r_e'}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">A<sub>V</sub> ≈ −233<small>−2629 Ω / 11.30 Ω = −232.6. The output is about 233 times the input, and inverted.</small></div>
+          <p>Check: −232.6 is inside the hint's range of −240 to −225.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= CHEAT SHEET ================= -->
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">Reactance</span><div class="eqs tall">\(X_C = \dfrac{1}{2\pi f C}\)</div><p>Raising \(f\) or \(C\) lowers \(X_C\). At DC it's infinite.</p></div>
+    <div class="card"><span class="eyebrow">Good coupling or bypassing</span><div class="eqs tall">\(X_C \lt 0.1\,R_{eq}\)<br>\(f_{min} = \dfrac{1}{2\pi C(0.1 R_{eq})}\)<br>\(C_{min} = \dfrac{1}{2\pi f(0.1 R_{eq})}\)</div><p>Design at the lowest frequency. Round capacitors up.</p></div>
+    <div class="card"><span class="eyebrow">DC or AC circuit</span><div class="eqs">DC: caps open, \(V_{cc}\) on<br>AC: caps short, \(V_{cc}\) = ground</div><p>Parts tied to \(V_{cc}\) are tied to ground for AC.</p></div>
+    <div class="card"><span class="eyebrow">DC analysis</span><div class="eqs tall">\(V_B = V_{cc}\dfrac{R_2}{R_1+R_2}\)<br>\(V_E = V_B - 0.7\)<br>\(I_E = V_E/R_E\)</div><p>Stiff if \(R_2 \le 0.01\,\beta R_E\).</p></div>
+    <div class="card"><span class="eyebrow">AC resistances</span><div class="eqs tall">\(r_c = R_C \parallel R_L\)<br>\(r_e' = 25\text{ mV}/I_E\)</div><p>Parallel: \(R_1R_2/(R_1+R_2)\).</p></div>
+    <div class="card"><span class="eyebrow">Gain</span><div class="eqs tall">\(A_V = -\dfrac{r_c}{r_e'}\)<br>no \(C_3\): \(A_V = -\dfrac{r_c}{r_e' + R_E}\)</div><p>The minus sign means the output is inverted.</p></div>
+  </div>
+  <div class="topic" id="mistakes" data-title="Common mistakes" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Adding R1 and R2 in series for \(R_{eq}\). For AC they're in parallel, because \(V_{cc}\) is ground.</li>
+      <li>Forgetting the 0.1, and setting \(X_C\) equal to \(R_{eq}\).</li>
+      <li>Leaving capacitance in µF inside the formula. Convert to farads: 47 µF is \(47\times10^{-6}\) F.</li>
+      <li>Designing a capacitor at the highest frequency. The lowest one is the hard case.</li>
+      <li>Rounding a capacitor down to the nearest standard value. Always round up.</li>
+      <li>Forgetting to subtract 0.7 V, so that \(I_E\) comes out as \(V_B/R_E\).</li>
+      <li>Using R3 alone for \(r_c\) and leaving out the load.</li>
+      <li>Using \(I_B\) in \(r_e'\). The formula uses the emitter current.</li>
+      <li>Putting R4 in the gain formula when C3 is present. It's shorted for AC.</li>
+      <li>Dropping the minus sign on \(A_V\). It's part of the answer.</li>
+    </ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal every answer on this page</summary>
+      <div class="ans"><div class="tbl"><table>
+        <thead><tr><th>Problem</th><th>Answer</th><th>More digits</th></tr></thead>
+        <tbody>
+          <tr><td>1 · minimum frequency</td><td>f &gt; 36.5 Hz</td><td>36.47 Hz, from \(R_{eq}\) = 928.6 Ω</td></tr>
+          <tr><td>2 · bypass capacitor</td><td>C3 = 82 µF</td><td>calculated 79.58 µF</td></tr>
+          <tr><td>3a · \(V_B\)</td><td>2.20 V</td><td>2.204 V</td></tr>
+          <tr><td>3b · \(I_E\)</td><td>2.21 mA</td><td>2.212 mA, with \(V_E\) = 1.504 V</td></tr>
+          <tr><td>3c · \(r_c\)</td><td>2.63 kΩ</td><td>2629 Ω</td></tr>
+          <tr><td>3d · \(r_e'\)</td><td>11.3 Ω</td><td>11.30 Ω</td></tr>
+          <tr><td>3e · \(A_V\)</td><td>−233</td><td>−232.6</td></tr>
+        </tbody>
+      </table></div></div></details>
+  </div>
+  <footer><p>Problems, schematics and hints are from <i>BJT Amplifier Homework 1</i> (jas, 9/02/2022). Answers use the homework's simplified analysis: \(V_{BE}\) = 0.7 V, a stiff divider, \(I_C \approx I_E\) and a 25 mV thermal voltage. Problem 2 takes \(R_{eq}\) = R4, since that's the only resistance given. The live demos use example part values that aren't from the homework.</p></footer>
+</section>
+
+</main>
