@@ -1,0 +1,10 @@
+{
+  "title": "Polar & Triple Integrals",
+  "brand": "Polar & Triple Integrals",
+  "libs": [
+    "katex",
+    "plot3d",
+    "stepper3d"
+  ],
+  "output": "/Users/joelr/Documents/BYUI Assignments/Semester 7/215 Learning Webpage Week8/polar-triple-integrals-lesson.html"
+}

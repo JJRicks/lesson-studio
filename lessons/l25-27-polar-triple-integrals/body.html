@@ -1,0 +1,860 @@
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#l25">Lesson 25 · Polar</a>
+      <ol>
+        <li><a href="#polar-coords">Polar coordinates</a></li>
+        <li><a href="#polar-da">Why the extra r</a></li>
+        <li><a href="#polar-iter">Polar rectangles</a></li>
+        <li><a href="#polar-gen">General polar regions</a></li>
+        <li><a href="#polar-vol">Polar volumes</a></li>
+        <li><a href="#polar-area">Polar areas</a></li>
+      </ol></li>
+    <li><a class="grp" href="#l26">Lesson 26 · Triple integrals</a>
+      <ol>
+        <li><a href="#tri-what">What it means</a></li>
+        <li><a href="#tri-fubini">Inside out</a></li>
+        <li><a href="#tri-gen">General solids</a></li>
+        <li><a href="#tri-apps">Finding volume</a></li>
+        <li><a href="#tri-avg">Average value</a></li>
+      </ol></li>
+    <li><a class="grp" href="#l27">Lesson 27 · Round solids</a>
+      <ol>
+        <li><a href="#cyl-coords">Cylindrical coordinates</a></li>
+        <li><a href="#cyl-int">Cylindrical integrals</a></li>
+        <li><a href="#cyl-gen">General cylindrical solids</a></li>
+        <li><a href="#sph-coords">Spherical coordinates</a></li>
+        <li><a href="#sph-int">Spherical integrals</a></li>
+        <li><a href="#sph-gen">General spherical solids</a></li>
+        <li><a href="#choose">Which coordinates?</a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#mistakes">Common mistakes</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<!-- ================= HERO ================= -->
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Math 215 · Lessons 25–27</div>
+  <h1>Polar &amp; <span>Triple Integrals</span></h1>
+  <p class="lede">One idea runs through all three lessons. Chop a shape into tiny pieces, multiply each piece by a value, and add them up. What changes from lesson to lesson is the shape of the pieces. Round regions want round pieces, and round pieces come with a small correction factor. By the end you'll know exactly where each factor comes from. Every worked example has a 3D walkthrough, and every answer stays hidden until you click.</p>
+  <div class="chips"><span class="chip">Lesson 25 · Polar double integrals</span><span class="chip">Lesson 26 · Triple integrals</span><span class="chip">Lesson 27 · Cylindrical &amp; spherical</span></div>
+  <div class="panel">
+    <div class="panel-head"><span class="t">Same ball, three ways to chop it · live</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div class="seg" role="group" aria-label="Shape of the pieces" id="heroSeg"><button aria-pressed="true" data-k="cube">Cubes</button><button aria-pressed="false" data-k="cyl">Cylindrical</button><button aria-pressed="false" data-k="sph">Spherical</button></div>
+        <button class="btn ghost" id="heroPlay" type="button" aria-pressed="true">Pause</button>
+      </div></div>
+    <canvas id="heroCv" class="p3" style="height:400px" aria-label="A ball of radius 1 with one corner removed, built from small pieces. The pieces can be cubes, cylindrical wedges or spherical wedges, and they get finer over time."></canvas>
+    <div class="reads">
+      <div class="read"><div class="k">Pieces</div><div class="v" id="hN">–</div></div>
+      <div class="read"><div class="k">Sum of pieces</div><div class="v" id="hSum">–</div></div>
+      <div class="read"><div class="k">Real volume</div><div class="v">4.189</div></div>
+      <div class="read"><div class="k">Off by</div><div class="v" id="hErr">–</div></div>
+    </div>
+    <p class="note">A ball of radius 1 with one corner cut away so you can see inside. Cubes leave a staircase skin. Cylindrical pieces fit the sides but step at the top. Spherical pieces match the ball's skin at any size. Choosing coordinates that fit the shape is what these three lessons are about. Drag to rotate.</p>
+  </div>
+</section>
+
+<section class="topic" aria-labelledby="map-h">
+  <h3 id="map-h">The week at a glance</h3>
+  <div class="grid2">
+    <a class="card" href="#l25" style="text-decoration:none;color:inherit"><span class="eyebrow">Lesson 25</span><h4>Double integrals in polar</h4><p>Circles and pie slices are easy to describe with a distance and an angle. The cost is one extra \(r\).</p></a>
+    <a class="card" href="#l26" style="text-decoration:none;color:inherit"><span class="eyebrow">Lesson 26</span><h4>Triple integrals</h4><p>Add up a value through a solid. Work one variable at a time, inside out.</p></a>
+    <a class="card" href="#l27" style="text-decoration:none;color:inherit"><span class="eyebrow">Lesson 27</span><h4>Cylindrical and spherical</h4><p>Round solids get round coordinates. Each system brings its own factor: \(r\) or \(\rho^2\sin\phi\).</p></a>
+  </div>
+</section>
+
+<!-- ================= LESSON 25 ================= -->
+<section class="part" id="l25" data-title="Lesson 25 · Polar">
+  <div class="part-head">
+    <div class="part-letter">25</div>
+    <div class="eyebrow">Lesson 25 · round regions</div>
+    <h2>Double integrals in polar coordinates</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>When a region is round, describe it with a distance and an angle. The limits become plain numbers. The one thing you have to remember is that the tiny area \(dA\) turns into \(r\,dr\,d\theta\).</p></div>
+
+  <div class="topic" id="polar-coords" data-title="Polar coordinates">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>Polar coordinates: another way to name a point</h3>
+    <p>Normally you name a point by walking \(x\) steps across and \(y\) steps up. Polar coordinates name the same point by turning and walking:</p>
+    <ol>
+      <li>Face along the positive \(x\)-axis.</li>
+      <li>Turn counterclockwise by an angle \(\theta\) (the Greek letter theta), measured in radians.</li>
+      <li>Walk forward a distance \(r\).</li>
+    </ol>
+    <div class="analogy"><span class="eyebrow">Analogy · a radar screen</span><p>A radar operator doesn't report "three miles east, four miles north." They report a bearing and a range. The bearing is \(\theta\) and the range is \(r\).</p></div>
+    <p>The walk forms a right triangle with hypotenuse \(r\), so trigonometry gives the conversions:</p>
+    <div class="grid2">
+      <div class="card"><h4>Polar to rectangular</h4><div class="mbox">\[x = r\cos\theta,\qquad y = r\sin\theta\]</div></div>
+      <div class="card"><h4>Rectangular to polar</h4><div class="mbox">\[r^2 = x^2 + y^2,\qquad \tan\theta = \frac{y}{x}\]</div></div>
+    </div>
+    <p>Here's the payoff. The circle \(x^2 + y^2 = 4\) is a messy square-root curve in \(x\) and \(y\). In polar it's \(r = 2\).</p>
+    <h4>The polar rectangle</h4>
+    <p>In \(xy\) coordinates the easiest region is a rectangle, with \(x\) between two numbers and \(y\) between two numbers. A <b>polar rectangle</b> uses the same recipe with \(r\) and \(\theta\):</p>
+    <div class="mbox">\[R = \{(r,\theta)\ \mid\ a \le r \le b,\ \ \alpha \le \theta \le \beta\}\]</div>
+    <p>On paper it looks like a slice of a ring. Its name comes from its sides, which each hold \(r\) or \(\theta\) constant. Two of the sides are arcs (\(r = a\) and \(r = b\)) and two are straight rays (\(\theta = \alpha\) and \(\theta = \beta\)).</p>
+  </div>
+
+  <div class="topic" id="polar-da" data-title="Why the extra r">
+    <span class="eyebrow">Topic 2 · where the factor comes from</span>
+    <h3>Why \(dA\) becomes \(r\,dr\,d\theta\)</h3>
+    <p>Cut a polar rectangle with circles spaced \(\Delta r\) apart and rays spaced \(\Delta\theta\) apart. You get small cells. All of them have the same \(\Delta r\) and \(\Delta\theta\). They do <b>not</b> all have the same area.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · cutting a pizza</span><p>Cut a pizza along rings and along slice lines. The pieces near the center are tiny. The pieces at the crust are large, even though each one spans the same angle and the same ring width. Being farther out gives you more crust for the same angle.</p></div>
+    <p>To find the area of one cell, start from what a radian is:</p>
+    <ol class="steps">
+      <li><h5>Arc length</h5><p>On a circle of radius \(r\), an angle \(\Delta\theta\) cuts off an arc of length \(r\,\Delta\theta\). The farther out, the longer the arc.</p></li>
+      <li><h5>The cell is almost a trapezoid</h5><p>Zoom in and the cell has two nearly parallel arcs, of lengths \(r_{i-1}\Delta\theta\) and \(r_i\Delta\theta\), a distance \(\Delta r\) apart.</p></li>
+      <li><h5>Trapezoid area</h5><p>Width times the average of the parallel sides:</p><div class="mbox">\[\Delta A = \tfrac12\,\Delta r\,\big(r_{i-1}\Delta\theta + r_i\Delta\theta\big)\]</div></li>
+      <li><h5>Name the middle radius</h5><p>Let \(r^* = \tfrac12(r_{i-1} + r_i)\). Factoring gives the result:</p><div class="mbox">\[\Delta A = r^*\,\Delta r\,\Delta\theta\]</div></li>
+    </ol>
+    <p class="key">The \(r\) is a stretch factor. It says how much bigger a real cell is than its \(\Delta r\,\Delta\theta\) would suggest.</p>
+    <div class="panel" id="cellPanel">
+      <div class="panel-head"><span class="t">One cell, two views</span><span class="status" id="cellStatus"></span></div>
+      <div class="twoviews">
+        <figure><figcaption>The \((r,\theta)\) "map": every cell looks equal</figcaption><canvas id="cellMap" class="p2" style="height:260px" aria-label="Grid of equal cells in the r theta plane with one highlighted"></canvas></figure>
+        <figure><figcaption>The real \(xy\) plane: cells grow with \(r\)</figcaption><canvas id="cellXY" class="p2" style="height:260px" aria-label="The same grid drawn as a polar rectangle in the xy plane with the matching cell highlighted"></canvas></figure>
+      </div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="cellI"><span>Move the cell outward (ring)</span> <b id="cellIOut"></b></label><input type="range" id="cellI" min="1" max="6" step="1" value="2"></div>
+        <div class="sl"><label for="cellJ"><span>Move the cell around (angle)</span> <b id="cellJOut"></b></label><input type="range" id="cellJ" min="1" max="8" step="1" value="4"></div>
+      </div>
+      <div class="reads">
+        <div class="read"><div class="k">r* (middle)</div><div class="v" id="cellR">–</div></div>
+        <div class="read"><div class="k">Map size Δr Δθ</div><div class="v" id="cellMapA">–</div></div>
+        <div class="read"><div class="k">Real area ΔA</div><div class="v" id="cellA">–</div></div>
+        <div class="read"><div class="k">Real ÷ map</div><div class="v" id="cellRatio">–</div></div>
+      </div>
+      <p class="note">Slide the cell outward. Its size on the map never changes, but its real area keeps growing. The ratio always equals \(r^*\), which is the factor you multiply by.</p>
+    </div>
+    <h4>The double integral over a polar rectangle</h4>
+    <p>Stand a thin box on each cell, tall enough to reach the surface \(z = f(r,\theta)\). One box has volume height × base, which is \(f(r^*,\theta^*)\,r^*\,\Delta r\,\Delta\theta\). Add all the boxes and make the grid finer:</p>
+    <div class="thm"><span class="eyebrow">Double integral over a polar rectangle</span>
+      \[\iint_R f(r,\theta)\,dA = \lim_{m,n\to\infty}\sum_{i=1}^{m}\sum_{j=1}^{n} f(r^*_{ij},\theta^*_{ij})\,r^*_{ij}\,\Delta r\,\Delta\theta = \int_{\alpha}^{\beta}\!\!\int_{a}^{b} f(r,\theta)\,r\,dr\,d\theta\]
+    </div>
+    <div class="panel" id="pbPanel">
+      <div class="panel-head"><span class="t">Polar boxes under \(z = 5 - r^2\)</span><span class="status">drag to rotate</span></div>
+      <canvas id="pbCv" class="p3" aria-label="Wedge-shaped boxes standing on a polar grid, reaching up to the surface z equals 5 minus r squared"></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="pbM"><span>Rings \(m\)</span> <b id="pbMOut"></b></label><input type="range" id="pbM" min="1" max="10" step="1" value="3"></div>
+        <div class="sl"><label for="pbN"><span>Wedges \(n\)</span> <b id="pbNOut"></b></label><input type="range" id="pbN" min="3" max="36" step="1" value="9"></div>
+      </div>
+      <div class="reads">
+        <div class="read"><div class="k">Boxes</div><div class="v" id="pbCount">–</div></div>
+        <div class="read"><div class="k">Sum with the r</div><div class="v" id="pbWith">–</div></div>
+        <div class="read"><div class="k">Sum, r forgotten</div><div class="v" id="pbWithout">–</div></div>
+        <div class="read"><div class="k">Exact</div><div class="v">28.274</div></div>
+      </div>
+      <p class="note">The region is \(0 \le r \le 2\), \(0 \le \theta \le \tfrac{3\pi}{2}\), and the exact volume is \(9\pi\). Push both sliders up. The sum with the \(r\) closes in on the exact value. The sum without it settles on a wrong number.</p>
+    </div>
+    <p><b>Things to notice</b></p>
+    <ul>
+      <li>\(dA\) is replaced with \(r\,dr\,d\theta\) every time.</li>
+      <li>Every property of double integrals from rectangular coordinates still holds, so use them.</li>
+      <li>To convert an integrand, substitute \(x = r\cos\theta\) and \(y = r\sin\theta\).</li>
+    </ul>
+  </div>
+
+  <div class="topic" id="polar-iter" data-title="Polar rectangles">
+    <span class="eyebrow">Topic 3 · the method</span>
+    <h3>Evaluating over a polar rectangle</h3>
+    <ol class="steps">
+      <li><h5>Describe the region</h5><p>Write down the numbers that bound \(r\) and \(\theta\).</p></li>
+      <li><h5>Convert the integrand</h5><p>Replace \(x\) and \(y\). Then replace \(dA\) with \(r\,dr\,d\theta\).</p></li>
+      <li><h5>Integrate \(r\) first</h5><p>Treat \(\theta\) as a constant.</p></li>
+      <li><h5>Integrate \(\theta\)</h5><p>What's left depends on \(\theta\) only.</p></li>
+    </ol>
+    <div class="warn"><b>Count your \(r\)'s.</b> The \(r\) from \(dA\) is added to whatever \(r\)'s the function already has. If \(f\) contains one \(r\), the integrand ends up with \(r^2\).</div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex25-1" data-title="Example 1">
+      <div class="prob-head"><span class="pnum">Example 1</span><span class="eyebrow">Polar rectangle</span><span class="pts">notes p. 4</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> \(\displaystyle\iint_R 2\theta r\,dA\) over the region \(R = \left\{(r,\theta)\ \middle|\ 1 \le r \le 7,\ \tfrac{2\pi}{3} \le \theta \le \tfrac{3\pi}{2}\right\}\).</p>
+        <ol class="steps">
+          <li><h5>Read the region</h5><p>Every bound is a constant, so this is a polar rectangle. It's a slice of a ring running from \(120^\circ\) around to \(270^\circ\).</p></li>
+          <li><h5>Replace \(dA\)</h5><p>The \(r\) in \(2\theta r\) belongs to the function. \(dA\) brings a second one:</p><div class="mbox">\[\int_{2\pi/3}^{3\pi/2}\!\!\int_1^7 2\theta r\cdot r\,dr\,d\theta = \int_{2\pi/3}^{3\pi/2}\!\!\int_1^7 2\theta r^2\,dr\,d\theta\]</div></li>
+          <li><h5>Inner integral (\(\theta\) is a constant)</h5><div class="mbox">\[\int_1^7 2\theta r^2\,dr = 2\theta\left[\frac{r^3}{3}\right]_1^7 = 2\theta\cdot\frac{342}{3} = 228\,\theta\]</div></li>
+          <li><h5>Outer integral</h5><div class="mbox">\[\int_{2\pi/3}^{3\pi/2} 228\,\theta\,d\theta = 114\Big[\theta^2\Big]_{2\pi/3}^{3\pi/2}\]</div></li>
+          <li><h5>Plug in the angles</h5><p>\(\left(\tfrac{3\pi}{2}\right)^2 - \left(\tfrac{2\pi}{3}\right)^2 = \tfrac{9\pi^2}{4} - \tfrac{4\pi^2}{9} = \tfrac{65\pi^2}{36}\). Multiply by 114.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\dfrac{1235\pi^2}{6} \approx 2031.49\)<small>\(114 \cdot \tfrac{65\pi^2}{36}\), reduced.</small></div>
+          <p>If you got about 428 instead, you used only one \(r\). The second one matters a lot on a region reaching out to \(r = 7\).</p>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="ex25-2">
+      <div class="prob-head"><span class="pnum">Example 2</span><span class="eyebrow">Convert from \(x\) and \(y\)</span><span class="pts">notes p. 5</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> \(\displaystyle\iint_R (x+y)\,dA\) where \(R = \{(x,y)\ |\ 1 \le x^2 + y^2 \le 4,\ x \le 0\}\).</p>
+        <ol class="steps">
+          <li><h5>Convert the region</h5><p>\(1 \le r^2 \le 4\) means \(1 \le r \le 2\). The condition \(x \le 0\) keeps the left half of the plane, so \(\tfrac{\pi}{2} \le \theta \le \tfrac{3\pi}{2}\).</p></li>
+          <li><h5>Convert the integrand</h5><p>\(x + y = r\cos\theta + r\sin\theta\), and \(dA = r\,dr\,d\theta\):</p><div class="mbox">\[\int_{\pi/2}^{3\pi/2}\!\!\int_1^2 r^2(\cos\theta + \sin\theta)\,dr\,d\theta\]</div></li>
+          <li><h5>Inner integral</h5><p>The trig part is a constant while \(r\) changes, and \(\int_1^2 r^2\,dr = \tfrac{7}{3}\). That leaves \(\tfrac73(\cos\theta + \sin\theta)\).</p></li>
+          <li><h5>Outer integral</h5><div class="mbox">\[\frac73\int_{\pi/2}^{3\pi/2}(\cos\theta + \sin\theta)\,d\theta = \frac73\Big[\sin\theta - \cos\theta\Big]_{\pi/2}^{3\pi/2}\]</div></li>
+          <li><h5>Evaluate at the ends</h5><p>At \(\tfrac{3\pi}{2}\): \(-1 - 0 = -1\). At \(\tfrac{\pi}{2}\): \(1 - 0 = 1\). The bracket is \(-2\). Multiply by \(\tfrac73\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(-\dfrac{14}{3} \approx -4.667\)<small>\(\tfrac73 \cdot (-2)\).</small></div>
+          <p>Negative makes sense. The region sits where \(x\) is negative, so the plane \(z = x + y\) dips below the floor over more of it than it rises above.</p>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 1): \(\iint_R 7y\,dA\) over \(36 \le x^2 + y^2 \le 81,\ y \le 0\).</span></summary><div><p>\(6 \le r \le 9\), and \(y \le 0\) means \(\pi \le \theta \le 2\pi\). The integral is \(\int_\pi^{2\pi}\!\int_6^9 7r^2\sin\theta\,dr\,d\theta = 7\cdot 171\cdot(-2) = -2394\), matching the notes.</p></div></details>
+  </div>
+
+  <div class="topic" id="polar-gen" data-title="General polar regions">
+    <span class="eyebrow">Topic 4</span>
+    <h3>General polar regions</h3>
+    <p>Most round regions aren't perfect ring slices. Their edges are curves like a cardioid. This is the same step you took from rectangles to Type I and Type II regions: the <b>inner</b> limits become functions.</p>
+    <div class="thm"><span class="eyebrow">General polar region</span>
+      <p>If \(D = \{(r,\theta)\ |\ \alpha \le \theta \le \beta,\ h_1(\theta) \le r \le h_2(\theta)\}\) and \(f\) is continuous on \(D\), then</p>
+      \[\iint_D f(r,\theta)\,r\,dr\,d\theta = \int_{\alpha}^{\beta}\!\!\int_{h_1(\theta)}^{h_2(\theta)} f(r,\theta)\,r\,dr\,d\theta.\]
+    </div>
+    <div class="analogy"><span class="eyebrow">Analogy · a lighthouse beam</span><p>Stand at the origin with a lighthouse beam. Point it at angle \(\theta\). The beam enters the region at distance \(h_1(\theta)\) and leaves at \(h_2(\theta)\). Those are your inner limits. The first and last angles where the beam touches the region are your outer limits.</p></div>
+    <div class="panel" id="rayPanel">
+      <div class="panel-head"><span class="t">Beam explorer</span>
+        <div class="seg" role="group" aria-label="Region" id="raySeg"><button aria-pressed="true" data-k="bean">Bean</button><button aria-pressed="false" data-k="circle">Off-center circle</button><button aria-pressed="false" data-k="ring">Wavy ring</button><button aria-pressed="false" data-k="petal">One petal</button></div></div>
+      <canvas id="rayCv" class="p2" style="height:340px" aria-label="A region in the plane with a ray from the origin. The part of the ray inside the region is highlighted."></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="rayT"><span>Beam angle \(\theta\)</span> <b id="rayTOut"></b></label><input type="range" id="rayT" min="0" max="1000" step="1" value="200"></div></div>
+      <div class="setup" id="raySetup"></div>
+      <p class="note">Move the beam. The glowing part is the piece of the beam inside the region. Its two ends are the inner limits at that angle.</p>
+    </div>
+    <p class="key">The line starts at the origin and shoots outward. Where it enters and leaves gives the inner limits.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex25-3">
+      <div class="prob-head"><span class="pnum">Example 3</span><span class="eyebrow">Cardioid region</span><span class="pts">notes p. 7</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> \(\displaystyle\iint_D r^2\sin(\theta)\,r\,dr\,d\theta\) where \(D\) is the region bounded by the polar axis and the upper half of the cardioid \(r = 1 + \cos\theta\).</p>
+        <ol class="steps">
+          <li><h5>Find the limits</h5><p>A ray from the origin starts inside at \(r = 0\) and leaves through the cardioid at \(r = 1 + \cos\theta\). The upper half runs \(0 \le \theta \le \pi\).</p></li>
+          <li><h5>Write the integral</h5><p>The \(r\) from \(dA\) is already written in the problem, so don't add another.</p><div class="mbox">\[\int_0^{\pi}\!\!\int_0^{1+\cos\theta} r^3\sin\theta\,dr\,d\theta\]</div></li>
+          <li><h5>Inner integral</h5><div class="mbox">\[\sin\theta\left[\frac{r^4}{4}\right]_0^{1+\cos\theta} = \frac14\sin\theta\,(1+\cos\theta)^4\]</div></li>
+          <li><h5>Substitute</h5><p>Let \(u = 1 + \cos\theta\), so \(du = -\sin\theta\,d\theta\). At \(\theta = 0\), \(u = 2\). At \(\theta = \pi\), \(u = 0\). Flipping the limits absorbs the minus sign.</p><div class="mbox">\[\frac14\int_0^{2} u^4\,du\]</div></li>
+          <li><h5>Integrate</h5><p>\(\tfrac14\left[\tfrac{u^5}{5}\right]_0^2\). Finish the arithmetic.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\dfrac{8}{5} = 1.6\)<small>\(\tfrac14\cdot\tfrac{32}{5}\).</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="polar-vol" data-title="Polar volumes">
+    <span class="eyebrow">Topic 5</span>
+    <h3>Polar volumes</h3>
+    <p>A double integral adds up (height) × (little area). If the height is a surface \(z = f(r,\theta)\), the total is the volume under it.</p>
+    <div class="thm"><span class="eyebrow">Volume under a surface</span>
+      \[V = \iint_R f(r,\theta)\,r\,dr\,d\theta = \int_\alpha^\beta\!\!\int_a^b f(r,\theta)\,r\,dr\,d\theta\]
+      <p class="note" style="padding:0">Over a general base, replace \(a\) and \(b\) with \(h_1(\theta)\) and \(h_2(\theta)\).</p>
+    </div>
+    <p>Look out for \(x^2 + y^2\) in a problem. It's a strong hint to use polar, because it turns straight into \(r^2\).</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex25-4">
+      <div class="prob-head"><span class="pnum">Example 4</span><span class="eyebrow">Volume</span><span class="pts">notes p. 8</span></div>
+      <div class="prob-body">
+        <p class="ask">Use polar coordinates to <b>find the volume</b> of the solid bounded by the paraboloid \(z = -9x^2 - 9y^2 + 2\) and the planes \(x = 0\), \(y = 0\) and \(z = 0\).</p>
+        <ol class="steps">
+          <li><h5>Picture it</h5><p>\(z = 2 - 9(x^2 + y^2)\) is a dome with its top at \(z = 2\). The planes \(x = 0\) and \(y = 0\) slice it into quarters. We'll use the first-quadrant quarter. All four are mirror images, so any of them gives the same volume.</p></li>
+          <li><h5>Find where the dome meets the floor</h5><p>Set \(z = 0\): \(0 = 2 - 9r^2\), so \(r = \tfrac{\sqrt2}{3}\).</p></li>
+          <li><h5>Set up in polar</h5><div class="mbox">\[V = \int_0^{\pi/2}\!\!\int_0^{\sqrt2/3} (2 - 9r^2)\,r\,dr\,d\theta\]</div></li>
+          <li><h5>Inner integral</h5><div class="mbox">\[\int_0^{\sqrt2/3}(2r - 9r^3)\,dr = \left[r^2 - \frac{9r^4}{4}\right]_0^{\sqrt2/3} = \frac29 - \frac19 = \frac19\]</div></li>
+          <li><h5>Outer integral</h5><p>\(\displaystyle\int_0^{\pi/2}\frac19\,d\theta\). The integrand is constant, so multiply by the width of the interval.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(V = \dfrac{\pi}{18} \approx 0.1745\) units³</div>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 3): the volume under the cone \(z = \sqrt{x^2+y^2}\) above the disk \(3x^2 + 3y^2 \le 4\).</span></summary><div><p>\(z = r\) and \(0 \le r \le \tfrac{2}{\sqrt3}\), so \(V = \int_0^{2\pi}\!\int_0^{2/\sqrt3} r\cdot r\,dr\,d\theta = 2\pi\cdot\tfrac13\left(\tfrac{2}{\sqrt3}\right)^3 = \tfrac{16\pi\sqrt3}{27}\), matching the notes.</p></div></details>
+  </div>
+
+  <div class="topic" id="polar-area" data-title="Polar areas">
+    <span class="eyebrow">Topic 6</span>
+    <h3>Polar areas</h3>
+    <p>Put a height of 1 everywhere. A solid of height 1 has the same number for its volume as its base has for its area. That gives an area formula:</p>
+    <div class="thm"><span class="eyebrow">Area in polar</span>
+      \[A = \int_\alpha^\beta\!\!\int_{h_1(\theta)}^{h_2(\theta)} 1\,r\,dr\,d\theta\]
+    </div>
+    <p>Sketching the curve is what keeps you honest about the limits. Polar curves have one quirk worth learning. <b>\(r\) can come out negative.</b> When it does, you walk backward through the origin, so the point lands on the opposite side from the angle \(\theta\).</p>
+    <div class="panel" id="rosePanel">
+      <div class="panel-head"><span class="t">Rose tracer · \(r = \pm 3\sin(n\theta)\)</span>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <div class="seg" role="group" aria-label="n" id="roseN"><button aria-pressed="false" data-k="2">n=2</button><button aria-pressed="true" data-k="3">n=3</button><button aria-pressed="false" data-k="4">n=4</button><button aria-pressed="false" data-k="5">n=5</button></div>
+          <div class="seg" role="group" aria-label="Sign" id="roseS"><button aria-pressed="true" data-k="1">+</button><button aria-pressed="false" data-k="-1">−</button></div>
+        </div></div>
+      <canvas id="roseCv" class="p2" style="height:340px" aria-label="A rose curve being traced by a moving point. When r is negative the point appears on the opposite side of the origin from the ray."></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="roseT"><span>Angle \(\theta\)</span> <b id="roseTOut"></b></label><input type="range" id="roseT" min="0" max="1000" step="1" value="0"></div>
+      <div class="row"><button class="btn" type="button" id="rosePlay">▶ Trace</button></div></div>
+      <div class="reads">
+        <div class="read"><div class="k">r(θ)</div><div class="v" id="roseR">–</div></div>
+        <div class="read"><div class="k">Point lands</div><div class="v" id="roseWhere">–</div></div>
+        <div class="read"><div class="k">Area swept</div><div class="v" id="roseA">–</div></div>
+      </div>
+      <p class="note">Watch the dashed ray and the point. When \(r\) is negative they sit on opposite sides of the origin. For odd \(n\), the curve starts retracing itself at \(\theta = \pi\), and the shading gets darker to show the overlap.</p>
+    </div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex25-5">
+      <div class="prob-head"><span class="pnum">Example 5</span><span class="eyebrow">Area of a rose</span><span class="pts">notes p. 9</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the area</b> of the region \(D\) bounded by the polar curve \(r = -6\sin(4\theta)\), where \(0 \le \theta \le \tfrac{3\pi}{2}\).</p>
+        <ol class="steps">
+          <li><h5>Write the area integral</h5><p>Rays leave the origin at \(r = 0\) and stop at the curve. Call the curve \(h(\theta) = -6\sin 4\theta\).</p><div class="mbox">\[A = \int_0^{3\pi/2}\!\!\int_0^{h(\theta)} r\,dr\,d\theta\]</div></li>
+          <li><h5>Deal with negative \(r\)</h5><p>\(h\) is negative for some angles. That just means that petal is drawn on the far side of the origin. The next step squares \(h\), so every petal adds positive area.</p></li>
+          <li><h5>Inner integral</h5><div class="mbox">\[\int_0^{h} r\,dr = \frac{h^2}{2} = \frac{36\sin^2 4\theta}{2} = 18\sin^2 4\theta\]</div></li>
+          <li><h5>Reduce the power</h5><p>Use \(\sin^2 u = \tfrac12(1 - \cos 2u)\) with \(u = 4\theta\). The integrand becomes \(9 - 9\cos 8\theta\).</p></li>
+          <li><h5>Outer integral</h5><div class="mbox">\[\int_0^{3\pi/2}(9 - 9\cos 8\theta)\,d\theta = \left[9\theta - \frac98\sin 8\theta\right]_0^{3\pi/2}\]</div><p>\(\sin(12\pi) = 0\), so only one term survives.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(A = \dfrac{27\pi}{2} \approx 42.41\) units²<small>\(9\cdot\tfrac{3\pi}{2}\).</small></div>
+          <p>Check it by petals. Each petal uses an angle span of \(\tfrac{\pi}{4}\), so \(\tfrac{3\pi}{2}\) traces six of the rose's eight petals, and none overlap. One petal has area \(\tfrac{9\pi}{4}\), and \(6\cdot\tfrac{9\pi}{4}\) gives the same total.</p>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 2): the area in Quadrant I bounded by the rose \(r = 8\sin 2\theta\).</span></summary><div><p>One petal, \(0 \le \theta \le \tfrac{\pi}{2}\): \(\int_0^{\pi/2}\tfrac12\cdot 64\sin^2 2\theta\,d\theta = 32\cdot\tfrac{\pi}{4} = 8\pi\), matching the notes.</p></div></details>
+  </div>
+</section>
+
+<!-- ================= LESSON 26 ================= -->
+<section class="part" id="l26" data-title="Lesson 26 · Triple integrals">
+  <div class="part-head">
+    <div class="part-letter">26</div>
+    <div class="eyebrow">Lesson 26 · one more dimension</div>
+    <h2>Triple integrals</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Chop a solid into tiny boxes. Multiply each box's volume by the value of \(f\) there. Add them up. You compute that by integrating one variable at a time, from the inside out.</p></div>
+
+  <div class="topic" id="tri-what" data-title="What it means">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>What a triple integral means</h3>
+    <p>A function \(f(x,y,z)\) takes a point in space and gives back one number. Graphing it would take four dimensions, so stop picturing height. Picture a <b>value living at every point of a solid</b>, like a color.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a block of uneven clay</span><p>Suppose \(f\) is density, and the clay is packed tighter in some spots. To weigh the block, cut it into tiny cubes. Each cube's mass is about density × volume. Add every cube. That total is the triple integral.</p></div>
+    <p>Here's the setup. Take a box \(B = \{a \le x \le b,\ c \le y \le d,\ e \le z \le f\}\). Divide the \(x\) range into \(l\) pieces, the \(y\) range into \(m\) and the \(z\) range into \(n\). You get \(lmn\) sub-boxes, each with volume \(\Delta V = \Delta x\,\Delta y\,\Delta z\). (The \(f\) in those bounds is a number, separate from the function \(f\). The notes reuse the letter.)</p>
+    <div class="thm"><span class="eyebrow">Triple integral</span>
+      \[\iiint_B f(x,y,z)\,dV = \lim_{l,m,n\to\infty}\sum_{i=1}^{l}\sum_{j=1}^{m}\sum_{k=1}^{n} f(x^*_{ijk},y^*_{ijk},z^*_{ijk})\,\Delta x\,\Delta y\,\Delta z\]
+      <p class="note" style="padding:0">When this limit exists, \(f\) is <b>integrable</b> on \(B\). It always exists if \(f\) is continuous on \(B\).</p>
+    </div>
+    <div class="panel" id="tbPanel">
+      <div class="panel-head"><span class="t">Fill a box with values · \(f = x^2 + yz\)</span><span class="status">drag to rotate</span></div>
+      <canvas id="tbCv" class="p3" aria-label="A box split into small sub-boxes colored by the value of the function at each one"></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="tbL"><span>\(l\) (pieces in \(x\))</span> <b id="tbLOut"></b></label><input type="range" id="tbL" min="1" max="8" step="1" value="3"></div>
+        <div class="sl"><label for="tbM"><span>\(m\) (pieces in \(y\))</span> <b id="tbMOut"></b></label><input type="range" id="tbM" min="1" max="8" step="1" value="2"></div>
+        <div class="sl"><label for="tbN"><span>\(n\) (pieces in \(z\))</span> <b id="tbNOut"></b></label><input type="range" id="tbN" min="1" max="8" step="1" value="3"></div>
+      </div>
+      <div class="reads">
+        <div class="read"><div class="k">Sub-boxes</div><div class="v" id="tbCount">–</div></div>
+        <div class="read"><div class="k">Riemann sum</div><div class="v" id="tbSum">–</div></div>
+        <div class="read"><div class="k">Exact</div><div class="v">7.333</div></div>
+      </div>
+      <p class="note">Brighter boxes have larger \(f\). The sample point is each sub-box's far top corner, so the sum starts too big. Add pieces and it comes down to the exact value, \(\tfrac{22}{3}\). The gaps between the boxes are only there so you can see inside.</p>
+    </div>
+  </div>
+
+  <div class="topic" id="tri-fubini" data-title="Inside out">
+    <span class="eyebrow">Topic 2 · how to compute one</span>
+    <h3>Fubini's theorem: work from the inside out</h3>
+    <p>You never compute that limit directly. You integrate one variable at a time. While you integrate one, the others stand still as constants.</p>
+    <div class="thm"><span class="eyebrow">Fubini's theorem for triple integrals</span>
+      <p>If \(f\) is continuous on the box \(B = [a,b]\times[c,d]\times[e,f]\), then</p>
+      \[\iiint_B f(x,y,z)\,dV = \int_e^f\!\!\int_c^d\!\!\int_a^b f(x,y,z)\,dx\,dy\,dz,\]
+      <p>and the other five orders of integration give the same value.</p>
+    </div>
+    <div class="warn"><b>Typo in the notes.</b> They print the box as \([a,b]\times[c,e]\times[e,f]\). The middle interval should be \([c,d]\), which is what the integral's limits show.</div>
+    <div class="analogy"><span class="eyebrow">Analogy · stacking sugar cubes</span><p>Line cubes up into a <b>stick</b>. Lay sticks side by side into a <b>sheet</b>. Stack sheets into a <b>block</b>. Each integral does one of those moves: stick, sheet, block.</p></div>
+    <p>The order of the differentials says which comes first. In \(dx\,dy\,dz\), the \(x\) integral is innermost, so you do it first. The limits nearest the integrand go with the first differential.</p>
+    <p class="key">Shortcut: if the limits are all constants and the integrand is a product like \(g(x)\,h(y)\,k(z)\), the triple integral splits into three separate single integrals multiplied together.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex26-1" data-title="Example 1">
+      <div class="prob-head"><span class="pnum">Example 1</span><span class="eyebrow">Inside out</span><span class="pts">notes p. 4</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> \(\displaystyle\int_0^1\!\!\int_2^4\!\!\int_1^5 \left(x + yz^2\right)dx\,dy\,dz\).</p>
+        <ol class="steps">
+          <li><h5>Read the order</h5><p>\(dx\,dy\,dz\): \(x\) first (1 to 5), then \(y\) (2 to 4), then \(z\) (0 to 1).</p></li>
+          <li><h5>Integrate \(x\) (\(y\) and \(z\) are constants)</h5><div class="mbox">\[\int_1^5 (x + yz^2)\,dx = \left[\frac{x^2}{2} + xyz^2\right]_1^5 = 12 + 4yz^2\]</div></li>
+          <li><h5>Integrate \(y\) (\(z\) is a constant)</h5><div class="mbox">\[\int_2^4 (12 + 4yz^2)\,dy = \Big[12y + 2y^2z^2\Big]_2^4 = 24 + 24z^2\]</div></li>
+          <li><h5>Integrate \(z\)</h5><p>\(\displaystyle\int_0^1 (24 + 24z^2)\,dz = \Big[24z + 8z^3\Big]_0^1\). Evaluate it.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(32\)<small>\(24 + 8\).</small></div>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="ex26-2">
+      <div class="prob-head"><span class="pnum">Example 2</span><span class="eyebrow">Splits into a product</span><span class="pts">notes p. 4</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> \(\displaystyle\int_{-3}^{-2}\!\!\int_1^2\!\!\int_0^{\ln 3} y^2z^3e^{2x}\,dx\,dy\,dz\).</p>
+        <ol class="steps">
+          <li><h5>Spot the product</h5><p>The integrand is a function of \(x\) times one of \(y\) times one of \(z\), and all limits are constants. So it splits:</p><div class="mbox">\[\int_0^{\ln 3} e^{2x}\,dx\ \cdot\ \int_1^2 y^2\,dy\ \cdot\ \int_{-3}^{-2} z^3\,dz\]</div></li>
+          <li><h5>The \(x\) factor</h5><p>\(\tfrac12\big[e^{2x}\big]_0^{\ln 3} = \tfrac12(9 - 1) = 4\). Remember that \(e^{2\ln 3} = e^{\ln 9} = 9\).</p></li>
+          <li><h5>The \(y\) factor</h5><p>\(\left[\tfrac{y^3}{3}\right]_1^2 = \tfrac{8}{3} - \tfrac13 = \tfrac73\).</p></li>
+          <li><h5>The \(z\) factor</h5><p>\(\left[\tfrac{z^4}{4}\right]_{-3}^{-2} = \tfrac{16 - 81}{4} = -\tfrac{65}{4}\). Negative is right, since \(z^3\) is negative on this interval.</p></li>
+          <li><h5>Multiply</h5><p>\(4 \cdot \tfrac73 \cdot \left(-\tfrac{65}{4}\right)\). The 4's cancel.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(-\dfrac{455}{3} \approx -151.67\)</div>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 1): \(\displaystyle\int_1^2\!\int_2^3\!\int_1^3 \frac{7yz^2}{5x^3}\,dx\,dy\,dz\).</span></summary><div><p>It splits: \(\tfrac75\cdot\int_1^3 x^{-3}\,dx\cdot\int_2^3 y\,dy\cdot\int_1^2 z^2\,dz = \tfrac75\cdot\tfrac49\cdot\tfrac52\cdot\tfrac73 = \tfrac{98}{27}\), matching the notes.</p></div></details>
+  </div>
+
+  <div class="topic" id="tri-gen" data-title="General solids">
+    <span class="eyebrow">Topic 3</span>
+    <h3>Triple integrals over general solids</h3>
+    <p>Real solids aren't boxes. To describe one, look at its <b>shadow</b> on the floor. Call the shadow \(D\). Above each point of the shadow, the solid runs from a bottom surface \(z = u_1(x,y)\) to a top surface \(z = u_2(x,y)\):</p>
+    <div class="thm"><span class="eyebrow">Triple integral over a general region</span>
+      <p>If \(E = \{(x,y,z)\ |\ (x,y) \in D,\ u_1(x,y) \le z \le u_2(x,y)\}\) and \(f\) is continuous on \(E\), then</p>
+      \[\iiint_E f(x,y,z)\,dV = \iint_D\left[\int_{u_1(x,y)}^{u_2(x,y)} f(x,y,z)\,dz\right]dA.\]
+    </div>
+    <p>So the job comes down to three questions, asked in order:</p>
+    <ol class="steps">
+      <li><h5>Stick in the \(z\) direction</h5><p>Push a vertical stick up through the solid. It enters through \(z = u_1(x,y)\) and leaves through \(z = u_2(x,y)\).</p></li>
+      <li><h5>Line in the \(y\) direction</h5><p>Flatten the solid to its shadow. Draw a line across the shadow in the \(y\) direction. It enters at \(y = g_1(x)\) and leaves at \(y = g_2(x)\).</p></li>
+      <li><h5>Range of \(x\)</h5><p>See where \(x\) starts and stops: \(x = a\) to \(x = b\). These are plain numbers.</p></li>
+    </ol>
+    <div class="mbox">\[\iiint_E f\,dV = \int_a^b\!\!\int_{g_1(x)}^{g_2(x)}\!\!\int_{u_1(x,y)}^{u_2(x,y)} f(x,y,z)\,dz\,dy\,dx\]</div>
+    <div class="panel" id="stPanel">
+      <div class="panel-head"><span class="t">Stick through a solid</span>
+        <div class="seg" role="group" aria-label="Solid" id="stSeg"><button aria-pressed="true" data-k="bowl">Bowl</button><button aria-pressed="false" data-k="roof">Slanted roof</button></div></div>
+      <canvas id="stCv" class="p3" aria-label="A solid with its shadow on the floor and a vertical stick passing through it"></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="stX"><span>Move \(x\) (outer)</span> <b id="stXOut"></b></label><input type="range" id="stX" min="0" max="1000" step="1" value="520"></div>
+        <div class="sl"><label for="stY"><span>Move \(y\) along the shadow line</span> <b id="stYOut"></b></label><input type="range" id="stY" min="0" max="1000" step="1" value="650"></div>
+      </div>
+      <div class="setup" id="stSetup"></div>
+      <div class="reads">
+        <div class="read"><div class="k">Enters at z</div><div class="v" id="stU1">–</div></div>
+        <div class="read"><div class="k">Leaves at z</div><div class="v" id="stU2">–</div></div>
+        <div class="read"><div class="k">Stick length</div><div class="v" id="stLen">–</div></div>
+      </div>
+      <p class="note">The outer \(x\) slider sets a line across the shadow. The \(y\) slider moves the stick along that line. Notice that the \(y\) range changes with \(x\), and the \(z\) range changes with both.</p>
+    </div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex26-3">
+      <div class="prob-head"><span class="pnum">Example 3</span><span class="eyebrow">Tetrahedron</span><span class="pts">notes p. 7</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> the triple integral of \(f(x,y,z) = 5x - 3y\) over the solid tetrahedron bounded by the planes \(x = 0\), \(y = 0\), \(z = 0\) and \(x + y + z = 1\).</p>
+        <ol class="steps">
+          <li><h5>Stick in \(z\)</h5><p>It enters through the floor at \(z = 0\) and leaves through the slanted plane at \(z = 1 - x - y\).</p></li>
+          <li><h5>Line in \(y\) on the shadow</h5><p>The shadow is where the slanted plane hits the floor. Set \(z = 0\): \(x + y = 1\). So \(y\) runs from 0 to \(1 - x\).</p></li>
+          <li><h5>Range of \(x\)</h5><p>From 0 to 1.</p><div class="mbox">\[\int_0^1\!\!\int_0^{1-x}\!\!\int_0^{1-x-y}(5x - 3y)\,dz\,dy\,dx\]</div></li>
+          <li><h5>\(z\) integral</h5><p>\(f\) has no \(z\) in it, so it just multiplies the stick length: \((5x - 3y)(1 - x - y)\).</p></li>
+          <li><h5>\(y\) integral</h5><p>Let \(a = 1 - x\) to keep it short. Then \(\int_0^a (5x - 3y)(a - y)\,dy = \tfrac52xa^2 - \tfrac12a^3\). Factoring gives</p><div class="mbox">\[\frac{(1-x)^2(6x - 1)}{2}\]</div></li>
+          <li><h5>\(x\) integral</h5><p>Substitute \(u = 1 - x\), so \(6x - 1 = 5 - 6u\):</p><div class="mbox">\[\frac12\int_0^1 u^2(5 - 6u)\,du = \frac12\left[\frac{5u^3}{3} - \frac{3u^4}{2}\right]_0^1\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\dfrac{1}{12}\)<small>\(\tfrac12\left(\tfrac53 - \tfrac32\right)\).</small></div>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 2): set up \(\iiint (9x + 4y)\,dV\) over the tetrahedron bounded by the coordinate planes and \(4x + 7y + 9z = 252\), integrating \(z\), then \(y\), then \(x\).</span></summary><div><p>Solve for the top: \(z = 28 - \tfrac{4x}{9} - \tfrac{7y}{9}\). Set \(z = 0\): \(y = 36 - \tfrac{4x}{7}\). Set \(y = 0\) too: \(x = 63\). So \(\int_0^{63}\!\int_0^{36 - 4x/7}\!\int_0^{28 - 4x/9 - 7y/9}(9x + 4y)\,dz\,dy\,dx\), matching the notes.</p></div></details>
+  </div>
+
+  <div class="topic" id="tri-apps" data-title="Finding volume">
+    <span class="eyebrow">Topic 4</span>
+    <h3>Applications and finding volume</h3>
+    <p>What a triple integral measures depends on what \(f\) is.</p>
+    <div class="grid2">
+      <div class="card"><h4>\(f = 1\)</h4><p>Adds up 1 × each tiny volume, which gives the <b>volume</b> of the solid.</p></div>
+      <div class="card"><h4>\(f =\) density</h4><p>Adds up density × tiny volume, which gives the total <b>mass</b>.</p></div>
+      <div class="card"><h4>\(f =\) charge density</h4><p>Gives the total <b>charge</b>.</p></div>
+      <div class="card"><h4>Divide by volume</h4><p>Gives the <b>average value</b> of \(f\) over the solid. That's the next topic.</p></div>
+    </div>
+    <div class="mbox">\[V(E) = \iiint_E 1\,dV\]</div>
+    <p>With \(f = 1\), the \(z\) integral is just the length of the stick: top minus bottom.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex26-4">
+      <div class="prob-head"><span class="pnum">Example 4</span><span class="eyebrow">Volume</span><span class="pts">notes p. 8</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the volume</b> of the solid \(D\) bounded above by the paraboloid \(z = 4x^2 + 4y^2 + 4\) and below by the \(xy\)-plane. The projection of \(D\) onto the \(xy\)-plane is bounded by the \(x\)- and \(y\)-axes and the lines \(x = 3\) and \(y = 2\).</p>
+        <ol class="steps">
+          <li><h5>Set up \(\iiint 1\,dV\)</h5><p>Sticks run from the floor up to the paraboloid. The shadow is the rectangle \([0,3]\times[0,2]\).</p><div class="mbox">\[V = \int_0^3\!\!\int_0^2\!\!\int_0^{4x^2+4y^2+4} 1\,dz\,dy\,dx\]</div></li>
+          <li><h5>\(z\) integral</h5><p>The stick's length is \(4x^2 + 4y^2 + 4\).</p></li>
+          <li><h5>\(y\) integral</h5><div class="mbox">\[\int_0^2 (4x^2 + 4y^2 + 4)\,dy = \left[4x^2y + \frac{4y^3}{3} + 4y\right]_0^2 = 8x^2 + \frac{56}{3}\]</div></li>
+          <li><h5>\(x\) integral</h5><p>\(\displaystyle\int_0^3\left(8x^2 + \frac{56}{3}\right)dx = \left[\frac{8x^3}{3} + \frac{56x}{3}\right]_0^3\). Evaluate it.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(V = 128\) units³<small>\(72 + 56\).</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="tri-avg" data-title="Average value">
+    <span class="eyebrow">Topic 5</span>
+    <h3>Average value of a function of three variables</h3>
+    <p>The average of a list is its total divided by how many items there are. For a solid, the "total" is the triple integral and "how many" is the volume.</p>
+    <div class="thm"><span class="eyebrow">Average value</span>
+      \[f_{\text{avg}} = \frac{1}{V(E)}\iiint_E f(x,y,z)\,dV,\qquad V(E) = \iiint_E 1\,dV\]
+    </div>
+    <div class="analogy"><span class="eyebrow">Analogy · stirring the coffee</span><p>Pour hot coffee on one side of a cup and cold on the other. Stir until it's all one temperature. That final temperature is the average value of the temperature function.</p></div>
+    <div class="panel" id="stirPanel">
+      <div class="panel-head"><span class="t">Stir it · \(T = 10 + 60xy\) on the unit cube</span><button class="btn" id="stirPlay" type="button">▶ Stir</button></div>
+      <canvas id="stirCv" class="p3" aria-label="A cube colored by temperature. Stirring blends every piece to one uniform color."></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="stirS"><span>Stir</span> <b id="stirOut"></b></label><input type="range" id="stirS" min="0" max="1" step="0.01" value="0"></div></div>
+      <div class="reads">
+        <div class="read"><div class="k">Coolest piece now</div><div class="v" id="stirLo">–</div></div>
+        <div class="read"><div class="k">Hottest piece now</div><div class="v" id="stirHi">–</div></div>
+        <div class="read"><div class="k">Average</div><div class="v">25.0</div></div>
+      </div>
+      <p class="note">Stirring pulls every piece toward 25°. The average doesn't change, because stirring moves heat around without adding any.</p>
+    </div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex26-5">
+      <div class="prob-head"><span class="pnum">Example 5</span><span class="eyebrow">Average temperature</span><span class="pts">notes p. 9</span></div>
+      <div class="prob-body">
+        <p class="ask">The temperature at a point \((x,y,z)\) of a solid \(E\) bounded by the coordinate planes and the plane \(x + y + z = 1\) is \(T(x,y,z) = xy + 8x + 20\) degrees Celsius. <b>Find the average temperature</b> over the solid.</p>
+        <ol class="steps">
+          <li><h5>Limits</h5><p>This is the same tetrahedron as Example 3, so the limits are the same: \(0 \le z \le 1 - x - y\), \(0 \le y \le 1 - x\), \(0 \le x \le 1\).</p></li>
+          <li><h5>Volume</h5><p>A tetrahedron is \(\tfrac13 \times\) base area \(\times\) height. The base triangle has area \(\tfrac12\) and the height is 1, so \(V = \tfrac16\).</p></li>
+          <li><h5>\(z\) integral</h5><p>\(T\) has no \(z\), so it multiplies the stick length: \((xy + 8x + 20)(1 - x - y)\).</p></li>
+          <li><h5>\(y\) integral</h5><p>With \(a = 1 - x\): \(\int_0^a (xy + 8x + 20)(a - y)\,dy = x\cdot\tfrac{a^3}{6} + (8x + 20)\cdot\tfrac{a^2}{2}\).</p></li>
+          <li><h5>\(x\) integral</h5><p>Substituting \(u = 1 - x\) turns each term into a plain polynomial:</p><div class="mbox">\[\int_0^1\left[\frac{x(1-x)^3}{6} + (4x + 10)(1-x)^2\right]dx = \frac{1}{120} + \frac13 + \frac{10}{3} = \frac{147}{40}\]</div></li>
+          <li><h5>Divide by the volume</h5><p>\(T_{\text{avg}} = \dfrac{147/40}{1/6}\). Dividing by \(\tfrac16\) is the same as multiplying by 6.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(T_{\text{avg}} = \dfrac{441}{20} = 22.05\,{}^\circ\text{C}\)</div>
+          <p>This is close to 20, which makes sense. Most of a tetrahedron's volume sits near the corner where \(x\) and \(y\) are small.</p>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 3): the average of \(f = x^2yz^2\) over the cube \([0,6]^3\).</span></summary><div><p>It splits, and the average of a product of independent factors is the product of their averages. The average of \(x^2\) on \([0,6]\) is 12, of \(y\) is 3, of \(z^2\) is 12, so \(12\cdot 3\cdot 12 = 432\), matching the notes.</p></div></details>
+  </div>
+</section>
+
+<!-- ================= LESSON 27 ================= -->
+<section class="part" id="l27" data-title="Lesson 27 · Round solids">
+  <div class="part-head">
+    <div class="part-letter">27</div>
+    <div class="eyebrow">Lesson 27 · round solids</div>
+    <h2>Cylindrical and spherical coordinates</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Match the coordinates to the solid. Things round about an axis use cylindrical \((r,\theta,z)\), with \(dV = r\,dz\,dr\,d\theta\). Things round about a point use spherical \((\rho,\theta,\phi)\), with \(dV = \rho^2\sin\phi\,d\rho\,d\phi\,d\theta\).</p></div>
+
+  <div class="topic" id="cyl-coords" data-title="Cylindrical coordinates">
+    <span class="eyebrow">Topic 1 · review from first principles</span>
+    <h3>Cylindrical coordinates</h3>
+    <p>Take polar coordinates on the floor and add a height. A point is \((r,\theta,z)\):</p>
+    <ul>
+      <li>\((r,\theta)\) are the polar coordinates of the point's shadow on the \(xy\)-plane.</li>
+      <li>\(z\) is the usual height.</li>
+    </ul>
+    <div class="analogy"><span class="eyebrow">Analogy · a seat on a carousel</span><p>Say where someone is on a carousel: how far from the center pole (\(r\)), how far around (\(\theta\)), and how high their horse is right now (\(z\)).</p></div>
+    <div class="thm"><span class="eyebrow">Converting</span>
+      \[x = r\cos\theta,\quad y = r\sin\theta,\quad z = z \qquad\qquad r^2 = x^2 + y^2,\quad \tan\theta = \frac{y}{x},\quad z = z\]
+    </div>
+    <p>Hold one coordinate fixed and the rest of space traces out a surface:</p>
+    <ul>
+      <li>\(r = c\) is an endless vertical <b>cylinder</b> around the \(z\)-axis.</li>
+      <li>\(\theta = \alpha\) is a vertical <b>half-plane</b> hinged on the \(z\)-axis, at angle \(\alpha\) from the positive \(x\)-axis.</li>
+      <li>\(z = m\) is a <b>horizontal plane</b>.</li>
+    </ul>
+    <div class="warn"><b>Correction to the notes.</b> They say \(\theta = \alpha\) makes a constant angle \(\alpha\) "with the \(xy\)-plane." That surface actually stands straight up. The angle \(\alpha\) is measured around the \(z\)-axis, starting from the positive \(x\) direction.</div>
+    <div class="panel" id="cpPanel">
+      <div class="panel-head"><span class="t">Three surfaces meet at a point</span>
+        <div class="seg" role="group" aria-label="Surface to show" id="cpSeg"><button aria-pressed="true" data-k="all">All</button><button aria-pressed="false" data-k="r">\(r = c\)</button><button aria-pressed="false" data-k="t">\(\theta = \alpha\)</button><button aria-pressed="false" data-k="z">\(z = m\)</button></div></div>
+      <canvas id="cpCv" class="p3" style="height:380px" aria-label="A point in space where a cylinder, a vertical half-plane and a horizontal plane meet"></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="cpR"><span>\(r\)</span> <b id="cpROut"></b></label><input type="range" id="cpR" min="0.2" max="2" step="0.01" value="1.3"></div>
+        <div class="sl"><label for="cpT"><span>\(\theta\)</span> <b id="cpTOut"></b></label><input type="range" id="cpT" min="0" max="6.28" step="0.01" value="0.9"></div>
+        <div class="sl"><label for="cpZ"><span>\(z\)</span> <b id="cpZOut"></b></label><input type="range" id="cpZ" min="-1.4" max="1.8" step="0.01" value="1"></div>
+      </div>
+      <div class="reads"><div class="read"><div class="k">x = r cos θ</div><div class="v" id="cpX">–</div></div><div class="read"><div class="k">y = r sin θ</div><div class="v" id="cpY">–</div></div><div class="read"><div class="k">z</div><div class="v" id="cpZv">–</div></div></div>
+    </div>
+    <p>These surfaces make familiar shapes short to write:</p>
+    <div class="tbl"><table>
+      <thead><tr><th></th><th>Cylinder</th><th>Cone</th><th>Sphere</th><th>Paraboloid</th></tr></thead>
+      <tbody>
+        <tr><td>Rectangular</td><td>\(x^2+y^2=c^2\)</td><td>\(z^2=c^2(x^2+y^2)\)</td><td>\(x^2+y^2+z^2=c^2\)</td><td>\(z=c(x^2+y^2)\)</td></tr>
+        <tr><td>Cylindrical</td><td>\(r=c\)</td><td>\(z=cr\)</td><td>\(r^2+z^2=c^2\)</td><td>\(z=cr^2\)</td></tr>
+      </tbody></table></div>
+  </div>
+
+  <div class="topic" id="cyl-int" data-title="Cylindrical integrals">
+    <span class="eyebrow">Topic 2</span>
+    <h3>Triple integrals in cylindrical coordinates</h3>
+    <p>A <b>cylindrical box</b> is the polar rectangle from Lesson 25 with a height added: \(B = \{a \le r \le b,\ \alpha \le \theta \le \beta,\ c \le z \le d\}\). Chop it up and each tiny piece is a polar cell of area \(r\,\Delta r\,\Delta\theta\) with height \(\Delta z\).</p>
+    <div class="mbox">\[\Delta V = r\,\Delta r\,\Delta\theta\,\Delta z\]</div>
+    <div class="panel" id="cePanel">
+      <div class="panel-head"><span class="t">A cylindrical piece</span><span class="status">drag to rotate</span></div>
+      <canvas id="ceCv" class="p3" aria-label="A small cylindrical wedge at adjustable radius, with its edges labeled"></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="ceR"><span>Distance from the axis \(r\)</span> <b id="ceROut"></b></label><input type="range" id="ceR" min="0.45" max="2" step="0.01" value="0.9"></div></div>
+      <div class="reads"><div class="read"><div class="k">Δr</div><div class="v" id="ceDr">–</div></div><div class="read"><div class="k">r Δθ (arc)</div><div class="v" id="ceArc">–</div></div><div class="read"><div class="k">Δz</div><div class="v" id="ceDz">–</div></div><div class="read"><div class="k">ΔV</div><div class="v" id="ceV">–</div></div></div>
+      <p class="note">Same \(\Delta r\), \(\Delta\theta\) and \(\Delta z\) the whole time. Only the arc changes, and it's proportional to \(r\).</p>
+    </div>
+    <div class="thm"><span class="eyebrow">Fubini's theorem in cylindrical coordinates</span>
+      <p>If \(g(x,y,z)\) is continuous on a cylindrical box \(B\), then with \(f(r,\theta,z) = g(r\cos\theta, r\sin\theta, z)\),</p>
+      \[\iiint_B g(x,y,z)\,dV = \int_c^d\!\!\int_\alpha^\beta\!\!\int_a^b f(r,\theta,z)\,r\,dr\,d\theta\,dz.\]
+      <p>Any of the other five orders gives the same value.</p>
+    </div>
+    <p>Cylindrical coordinates work well for solids that are symmetric around an axis, like cylinders and cones.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex27-1" data-title="Example 1">
+      <div class="prob-head"><span class="pnum">Example 1</span><span class="eyebrow">Cylindrical box</span><span class="pts">notes p. 5</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> \(\displaystyle\iiint_B (zr\sin\theta)\,r\,dr\,d\theta\,dz\) where \(B = \left\{(r,\theta,z)\ \middle|\ 0 \le r \le 2,\ 0 \le \theta \le \tfrac{\pi}{2},\ 0 \le z \le 4\right\}\).</p>
+        <ol class="steps">
+          <li><h5>Read the solid</h5><p>A quarter of a cylinder, radius 2 and height 4. The second \(r\) is the \(dV\) factor, already written for you.</p></li>
+          <li><h5>Split it</h5><p>Constant limits and a product, so the integral splits:</p><div class="mbox">\[\int_0^4 z\,dz\ \cdot\ \int_0^{\pi/2}\sin\theta\,d\theta\ \cdot\ \int_0^2 r^2\,dr\]</div></li>
+          <li><h5>The \(r\) factor</h5><p>\(\left[\tfrac{r^3}{3}\right]_0^2 = \tfrac83\).</p></li>
+          <li><h5>The \(\theta\) factor</h5><p>\(\big[-\cos\theta\big]_0^{\pi/2} = 0 - (-1) = 1\).</p></li>
+          <li><h5>The \(z\) factor, then multiply</h5><p>\(\left[\tfrac{z^2}{2}\right]_0^4 = 8\). Multiply the three results.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\dfrac{64}{3} \approx 21.33\)<small>\(8 \cdot 1 \cdot \tfrac83\).</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="cyl-gen" data-title="General cylindrical solids">
+    <span class="eyebrow">Topic 3</span>
+    <h3>General cylindrical solids</h3>
+    <p>This is the same stick method from Lesson 26. Find the shadow \(D\) on the floor and describe it in polar. A vertical stick runs from a bottom surface \(u_1(r,\theta)\) to a top surface \(u_2(r,\theta)\).</p>
+    <div class="thm"><span class="eyebrow">General solid, cylindrical</span>
+      <p>For \(E = \{(r,\theta) \in D,\ u_1 \le z \le u_2\}\) with \(D = \{\alpha \le \theta \le \beta,\ g_1(\theta) \le r \le g_2(\theta)\}\),</p>
+      \[\iiint_E f\,dV = \int_\alpha^\beta\!\!\int_{g_1(\theta)}^{g_2(\theta)}\!\!\int_{u_1(r,\theta)}^{u_2(r,\theta)} f(r,\theta,z)\,r\,dz\,dr\,d\theta.\]
+    </div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex27-2">
+      <div class="prob-head"><span class="pnum">Example 2</span><span class="eyebrow">Slanted top</span><span class="pts">notes p. 6</span></div>
+      <div class="prob-body">
+        <p class="ask">Given the region \(E = \{(x,y,z)\ |\ 0 \le x^2 + y^2 \le 4,\ x \ge 0,\ y \ge 0,\ 0 \le z \le x + 2\}\), <b>convert</b> the integral \(\displaystyle\iiint_E \frac{1}{x+2}\,dV\) into cylindrical coordinates and <b>evaluate</b> it.</p>
+        <ol class="steps">
+          <li><h5>The shadow</h5><p>\(x^2 + y^2 \le 4\) with \(x, y \ge 0\) is a quarter disk: \(0 \le r \le 2\), \(0 \le \theta \le \tfrac{\pi}{2}\).</p></li>
+          <li><h5>The stick</h5><p>It runs from the floor to the slanted plane: \(0 \le z \le r\cos\theta + 2\).</p></li>
+          <li><h5>Set it up</h5><p>Replace \(x\), and use \(dV = r\,dz\,dr\,d\theta\):</p><div class="mbox">\[\int_0^{\pi/2}\!\!\int_0^2\!\!\int_0^{r\cos\theta+2} \frac{r}{r\cos\theta + 2}\,dz\,dr\,d\theta\]</div></li>
+          <li><h5>\(z\) integral</h5><p>There's no \(z\) in the integrand, so multiply by the stick length. The length is exactly the denominator, so they cancel:</p><div class="mbox">\[\frac{r}{r\cos\theta + 2}\cdot(r\cos\theta + 2) = r\]</div></li>
+          <li><h5>\(r\), then \(\theta\)</h5><p>\(\displaystyle\int_0^2 r\,dr = 2\), which leaves \(\displaystyle\int_0^{\pi/2} 2\,d\theta\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\pi\)</div>
+          <p>The answer equals the area of the quarter disk. Each stick's weight canceled to 1, so adding sticks is the same as measuring the shadow.</p>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 1): \(\iiint_E (5x^2 + 5y^2)\,dV\) over the quarter disk \(0 \le x^2+y^2 \le 4\), \(x, y \ge 0\), with \(0 \le z \le -x + 2\).</span></summary><div><p>\(f = 5r^2\) and the stick length is \(2 - r\cos\theta\). So \(\int_0^2\!\int_0^{\pi/2} 5r^3(2 - r\cos\theta)\,d\theta\,dr = \int_0^2 5r^3(\pi - r)\,dr = 20\pi - 32\), matching the notes.</p></div></details>
+  </div>
+
+  <div class="topic" id="sph-coords" data-title="Spherical coordinates">
+    <span class="eyebrow">Topic 4 · review from first principles</span>
+    <h3>Spherical coordinates</h3>
+    <p>A point is named by one distance and two angles, \((\rho,\theta,\phi)\):</p>
+    <ul>
+      <li>\(\rho\) (the Greek letter rho) is the straight-line distance from the origin.</li>
+      <li>\(\theta\) is the same around-the-axis angle as in cylindrical.</li>
+      <li>\(\phi\) (the Greek letter phi) is the angle <b>down from the positive \(z\)-axis</b>, with \(0 \le \phi \le \pi\).</li>
+    </ul>
+    <div class="analogy"><span class="eyebrow">Analogy · a globe</span><p>\(\theta\) is longitude, sweeping around the Earth's axis. \(\phi\) is how far you've come down from the North Pole. It's 0 at the pole, \(\tfrac{\pi}{2}\) at the equator and \(\pi\) at the South Pole. \(\rho\) is how far you are from the center of the Earth.</p></div>
+    <p>Where do the conversions come from? Draw the line from the origin to the point. It makes the angle \(\phi\) with the \(z\)-axis, and it has length \(\rho\), so:</p>
+    <div class="mbox">\[z = \rho\cos\phi,\qquad r = \rho\sin\phi\]</div>
+    <p>Here \(r\) is the shadow's distance from the origin. Put \(r = \rho\sin\phi\) into \(x = r\cos\theta\) and \(y = r\sin\theta\):</p>
+    <div class="thm"><span class="eyebrow">Converting</span>
+      \[x = \rho\sin\phi\cos\theta,\quad y = \rho\sin\phi\sin\theta,\quad z = \rho\cos\phi\]
+      \[\rho^2 = x^2+y^2+z^2,\quad \tan\theta = \frac{y}{x},\quad \phi = \arccos\frac{z}{\sqrt{x^2+y^2+z^2}}\]
+    </div>
+    <div class="panel" id="spPanel">
+      <div class="panel-head"><span class="t">Sphere, half-plane and cone meet at a point</span>
+        <div class="seg" role="group" aria-label="Surface to show" id="spSeg"><button aria-pressed="true" data-k="all">All</button><button aria-pressed="false" data-k="r">\(\rho = c\)</button><button aria-pressed="false" data-k="t">\(\theta = \alpha\)</button><button aria-pressed="false" data-k="p">\(\phi = \gamma\)</button></div></div>
+      <canvas id="spCv" class="p3" style="height:380px" aria-label="A point in space where a sphere, a vertical half-plane and a cone meet"></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="spR"><span>\(\rho\)</span> <b id="spROut"></b></label><input type="range" id="spR" min="0.3" max="2" step="0.01" value="1.6"></div>
+        <div class="sl"><label for="spT"><span>\(\theta\)</span> <b id="spTOut"></b></label><input type="range" id="spT" min="0" max="6.28" step="0.01" value="0.9"></div>
+        <div class="sl"><label for="spP"><span>\(\phi\)</span> <b id="spPOut"></b></label><input type="range" id="spP" min="0.05" max="3.09" step="0.01" value="0.85"></div>
+      </div>
+      <div class="reads"><div class="read"><div class="k">x</div><div class="v" id="spX">–</div></div><div class="read"><div class="k">y</div><div class="v" id="spY">–</div></div><div class="read"><div class="k">z = ρ cos φ</div><div class="v" id="spZ">–</div></div><div class="read"><div class="k">r = ρ sin φ</div><div class="v" id="spRr">–</div></div></div>
+      <p class="note">\(\phi = \gamma\) is a cone with its tip at the origin. At \(\gamma = \tfrac{\pi}{2}\) it flattens into the \(xy\)-plane, and past that it opens downward.</p>
+    </div>
+  </div>
+
+  <div class="topic" id="sph-int" data-title="Spherical integrals">
+    <span class="eyebrow">Topic 5 · where the factor comes from</span>
+    <h3>Why \(dV = \rho^2\sin\phi\,d\rho\,d\phi\,d\theta\)</h3>
+    <p>A <b>spherical box</b> is \(B = \{a \le \rho \le b,\ \alpha \le \theta \le \beta,\ \gamma \le \phi \le \psi\}\). A tiny piece of it is almost a rectangular brick. Multiply its three edges:</p>
+    <div class="grid2">
+      <div class="card"><h4>Radial edge</h4><p>Straight out from the origin: length \(\Delta\rho\).</p></div>
+      <div class="card"><h4>Down-the-globe edge</h4><p>An arc on a circle of radius \(\rho\): length \(\rho\,\Delta\phi\).</p></div>
+      <div class="card"><h4>Around-the-globe edge</h4><p>An arc on a circle of latitude. That circle has radius \(\rho\sin\phi\), so the length is \(\rho\sin\phi\,\Delta\theta\).</p></div>
+    </div>
+    <div class="mbox">\[\Delta V = (\Delta\rho)(\rho\,\Delta\phi)(\rho\sin\phi\,\Delta\theta) = \rho^2\sin\phi\,\Delta\rho\,\Delta\theta\,\Delta\phi\]</div>
+    <p class="key">Latitude circles shrink to a point at the poles. That is the \(\sin\phi\). Pieces far from the center get bigger in two directions. That is the \(\rho^2\).</p>
+    <div class="panel" id="sePanel">
+      <div class="panel-head"><span class="t">A spherical piece</span><span class="status">drag to rotate</span></div>
+      <canvas id="seCv" class="p3" style="height:380px" aria-label="A small spherical wedge at adjustable distance and angle, with its three edges labeled"></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="seR"><span>\(\rho\) (distance out)</span> <b id="seROut"></b></label><input type="range" id="seR" min="0.5" max="1.6" step="0.01" value="1.3"></div>
+        <div class="sl"><label for="seP"><span>\(\phi\) (down from the top)</span> <b id="sePOut"></b></label><input type="range" id="seP" min="0.22" max="2.92" step="0.01" value="1.05"></div>
+      </div>
+      <div class="reads"><div class="read"><div class="k">Δρ</div><div class="v" id="seDr">–</div></div><div class="read"><div class="k">ρ Δφ</div><div class="v" id="seA1">–</div></div><div class="read"><div class="k">ρ sin φ Δθ</div><div class="v" id="seA2">–</div></div><div class="read"><div class="k">ΔV</div><div class="v" id="seV">–</div></div></div>
+      <p class="note">Drag \(\phi\) toward the top. The around-the-globe edge pinches down because the circle of latitude is getting small. Drag \(\rho\) outward and two edges grow together.</p>
+    </div>
+    <div class="thm"><span class="eyebrow">Triple integral in spherical coordinates</span>
+      \[\iiint_B f\,dV = \lim_{l,m,n\to\infty}\sum\sum\sum f(\rho^*,\theta^*,\phi^*)(\rho^*)^2\sin\phi^*\,\Delta\rho\,\Delta\theta\,\Delta\phi = \int_\alpha^\beta\!\!\int_\gamma^\psi\!\!\int_a^b f\,\rho^2\sin\phi\,d\rho\,d\phi\,d\theta\]
+      <p class="note" style="padding:0">Other orders give the same value.</p>
+    </div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex27-3">
+      <div class="prob-head"><span class="pnum">Example 3</span><span class="eyebrow">Spherical box</span><span class="pts">notes p. 9</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> the iterated triple integral \(\displaystyle\int_0^{2\pi}\!\!\int_0^{\pi/2}\!\!\int_0^1 \rho^2\sin\phi\,d\rho\,d\phi\,d\theta\).</p>
+        <ol class="steps">
+          <li><h5>Read the solid</h5><p>\(\rho\) from 0 to 1 fills a unit ball. \(\phi\) from 0 to \(\tfrac{\pi}{2}\) stops at the equator. \(\theta\) goes all the way around. The integrand is only the \(dV\) factor, so this is a volume.</p></li>
+          <li><h5>\(\rho\) integral</h5><p>\(\sin\phi\) is a constant here: \(\sin\phi\left[\tfrac{\rho^3}{3}\right]_0^1 = \tfrac13\sin\phi\).</p></li>
+          <li><h5>\(\phi\) integral</h5><p>\(\tfrac13\big[-\cos\phi\big]_0^{\pi/2} = \tfrac13\).</p></li>
+          <li><h5>\(\theta\) integral</h5><p>\(\displaystyle\int_0^{2\pi}\frac13\,d\theta\). Multiply by the width of the interval.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\dfrac{2\pi}{3} \approx 2.094\)</div>
+          <p>A hemisphere of radius 1 has volume \(\tfrac12\cdot\tfrac43\pi\), so this matches geometry.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="sph-gen" data-title="General spherical solids">
+    <span class="eyebrow">Topic 6</span>
+    <h3>General spherical solids</h3>
+    <p>The limits can be functions here too, following the same rule as before: only inner limits may depend on outer variables.</p>
+    <div class="mbox">\[\iiint_E f\,dV = \int_\alpha^\beta\!\!\int_{g_1(\theta)}^{g_2(\theta)}\!\!\int_{u_1(\rho,\theta)}^{u_2(\rho,\theta)} f(\rho,\theta,\phi)\,\rho^2\sin\phi\,d\phi\,d\rho\,d\theta\]</div>
+    <p><b>How to translate conditions.</b> Each inequality on \(x\), \(y\) or \(z\) becomes a limit on one spherical coordinate:</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Condition</th><th>Means</th><th>Spherical limit</th></tr></thead>
+      <tbody>
+        <tr><td>\(z \ge 0\)</td><td>Above the equator</td><td>\(0 \le \phi \le \tfrac{\pi}{2}\)</td></tr>
+        <tr><td>\(y \ge 0\)</td><td>The half of space on the \(+y\) side</td><td>\(0 \le \theta \le \pi\)</td></tr>
+        <tr><td>\(x \ge 0\)</td><td>The half of space on the \(+x\) side</td><td>\(-\tfrac{\pi}{2} \le \theta \le \tfrac{\pi}{2}\)</td></tr>
+        <tr><td>\(x^2+y^2+z^2 \le c^2\)</td><td>Inside the sphere</td><td>\(0 \le \rho \le c\)</td></tr>
+      </tbody></table></div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="ex27-4">
+      <div class="prob-head"><span class="pnum">Example 4</span><span class="eyebrow">Quarter ball</span><span class="pts">notes p. 10</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Integrate</b> \(f(x,y,z) = 5x^2 + 5y^2 + 5z^2\) over the solid region inside \(x^2 + y^2 + z^2 = 1\) with \(z \ge 0\) and \(y \ge 0\).</p>
+        <ol class="steps">
+          <li><h5>Translate the region</h5><p>Inside the unit sphere: \(0 \le \rho \le 1\). Above the equator (\(z \ge 0\)): \(0 \le \phi \le \tfrac{\pi}{2}\). Halfway around (\(y \ge 0\)): \(0 \le \theta \le \pi\).</p></li>
+          <li><h5>Translate the function</h5><p>\(5(x^2 + y^2 + z^2) = 5\rho^2\). The value depends on distance only.</p></li>
+          <li><h5>Set it up with \(dV\)</h5><div class="mbox">\[\int_0^{\pi}\!\!\int_0^{\pi/2}\!\!\int_0^1 5\rho^2\cdot\rho^2\sin\phi\,d\rho\,d\phi\,d\theta\]</div></li>
+          <li><h5>\(\rho\) factor</h5><p>\(\int_0^1 5\rho^4\,d\rho = \big[\rho^5\big]_0^1 = 1\).</p></li>
+          <li><h5>\(\phi\) and \(\theta\) factors</h5><p>\(\int_0^{\pi/2}\sin\phi\,d\phi = 1\), and \(\int_0^{\pi} d\theta\) is the width of its interval. Multiply all three.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\pi\)<small>\(1 \cdot 1 \cdot \pi\).</small></div>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 2): set up \(\iiint -6\,dV\) over \(x^2+y^2+z^2 \le 33,\ z \ge 0\) in spherical coordinates.</span></summary><div><p>Top half of a ball, radius \(\sqrt{33}\): \(\int_0^{2\pi}\!\int_0^{\pi/2}\!\int_0^{\sqrt{33}} -6\rho^2\sin\phi\,d\rho\,d\phi\,d\theta\), matching the notes.</p></div></details>
+  </div>
+
+  <div class="topic" id="choose" data-title="Which coordinates?">
+    <span class="eyebrow">Wrap-up</span>
+    <h3>Which coordinates should you use?</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>If you see</th><th>Try</th><th>Tiny volume</th></tr></thead>
+      <tbody>
+        <tr><td>Flat faces, boxes, tetrahedra</td><td>Rectangular</td><td>\(dx\,dy\,dz\)</td></tr>
+        <tr><td>\(x^2+y^2\), cylinders, paraboloids, a round shadow</td><td>Cylindrical</td><td>\(r\,dz\,dr\,d\theta\)</td></tr>
+        <tr><td>\(x^2+y^2+z^2\), balls, cones from the origin</td><td>Spherical</td><td>\(\rho^2\sin\phi\,d\rho\,d\phi\,d\theta\)</td></tr>
+      </tbody></table></div>
+    <p style="margin:14px 0 6px"><b>Quick check.</b> You need to integrate over the solid between the paraboloid \(z = x^2 + y^2\) and the plane \(z = 4\). Which system fits best?</p>
+    <div class="mcq" data-answer="c">
+      <button type="button" data-k="a" data-fb="You could, but the round shadow makes the limits full of square roots."><b>A</b><span>Rectangular</span></button>
+      <button type="button" data-k="b" data-fb="A paraboloid gets awkward in ρ and φ."><b>B</b><span>Spherical</span></button>
+      <button type="button" data-k="c" data-fb="Yes. The paraboloid becomes z = r², and the shadow is a disk with 0 ≤ r ≤ 2."><b>C</b><span>Cylindrical</span></button>
+      <p class="mcq-fb" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CHEAT SHEET ================= -->
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">Polar</span><div class="eqs">\(x = r\cos\theta,\ y = r\sin\theta\)</div><div class="eqs">\(dA = r\,dr\,d\theta\)</div></div>
+    <div class="card"><span class="eyebrow">Polar rectangle</span><div class="eqs tall">\(\displaystyle\int_\alpha^\beta\!\!\int_a^b f\,r\,dr\,d\theta\)</div></div>
+    <div class="card"><span class="eyebrow">General polar</span><div class="eqs tall">\(\displaystyle\int_\alpha^\beta\!\!\int_{h_1(\theta)}^{h_2(\theta)} f\,r\,dr\,d\theta\)</div><p>Ray from the origin: enters, leaves.</p></div>
+    <div class="card"><span class="eyebrow">Polar area</span><div class="eqs tall">\(\displaystyle A = \int_\alpha^\beta\!\!\int_{h_1}^{h_2} r\,dr\,d\theta\)</div></div>
+    <div class="card"><span class="eyebrow">Triple integral</span><div class="eqs tall">\(\displaystyle\int_a^b\!\!\int_{g_1(x)}^{g_2(x)}\!\!\int_{u_1(x,y)}^{u_2(x,y)} f\,dz\,dy\,dx\)</div><p>Stick in \(z\), line in \(y\), range of \(x\).</p></div>
+    <div class="card"><span class="eyebrow">Volume &amp; average</span><div class="eqs tall">\(\displaystyle V = \iiint_E 1\,dV\)</div><div class="eqs tall">\(\displaystyle f_{\text{avg}} = \frac1V\iiint_E f\,dV\)</div></div>
+    <div class="card"><span class="eyebrow">Cylindrical</span><div class="eqs">\(x = r\cos\theta,\ y = r\sin\theta\)</div><div class="eqs">\(dV = r\,dz\,dr\,d\theta\)</div></div>
+    <div class="card"><span class="eyebrow">Spherical</span><div class="eqs">\(x = \rho\sin\phi\cos\theta\)</div><div class="eqs">\(y = \rho\sin\phi\sin\theta\)</div><div class="eqs">\(z = \rho\cos\phi\)</div><div class="eqs">\(dV = \rho^2\sin\phi\,d\rho\,d\phi\,d\theta\)</div></div>
+    <div class="card"><span class="eyebrow">Useful swaps</span><div class="eqs">\(x^2 + y^2 = r^2\)</div><div class="eqs">\(x^2 + y^2 + z^2 = \rho^2\)</div><div class="eqs">\(r = \rho\sin\phi\)</div></div>
+  </div>
+  <div class="topic" id="mistakes" data-title="Common mistakes" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Forgetting the \(r\) in \(dA\), or the \(\rho^2\sin\phi\) in \(dV\).</li>
+      <li>Treating the \(r\) in \(f\) as if it were the \(r\) from \(dA\). If the problem says \(dA\), add one. If it already says \(r\,dr\,d\theta\), don't.</li>
+      <li>Using a variable in an outer limit. Outer limits are always numbers.</li>
+      <li>Mixing up \(r\) and \(\rho\). \(r\) is the distance from the \(z\)-axis. \(\rho\) is the distance from the origin.</li>
+      <li>Mixing up \(\theta\) and \(\phi\). \(\phi\) is measured down from the positive \(z\)-axis and stops at \(\pi\).</li>
+      <li>Assuming \(z \ge 0\) limits \(\theta\). It limits \(\phi\). Conditions on \(x\) and \(y\) limit \(\theta\).</li>
+      <li>Forgetting to divide by the volume when finding an average value.</li>
+      <li>Using degrees in the limits. They must be radians.</li>
+    </ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal every answer on this page</summary>
+      <div class="ans">
+        <div class="tbl"><table>
+          <thead><tr><th>Lesson</th><th>Problem</th><th>Answer</th></tr></thead>
+          <tbody>
+            <tr><td>25</td><td>Example 1: \(2\theta r\) over a polar rectangle</td><td>\(\tfrac{1235\pi^2}{6} \approx 2031.49\)</td></tr>
+            <tr><td>25</td><td>Example 2: \(x + y\) over a half ring</td><td>\(-\tfrac{14}{3}\)</td></tr>
+            <tr><td>25</td><td>Example 3: cardioid</td><td>\(\tfrac85\)</td></tr>
+            <tr><td>25</td><td>Example 4: volume under the dome</td><td>\(\tfrac{\pi}{18}\)</td></tr>
+            <tr><td>25</td><td>Example 5: rose area</td><td>\(\tfrac{27\pi}{2}\)</td></tr>
+            <tr><td>26</td><td>Example 1: \(x + yz^2\)</td><td>\(32\)</td></tr>
+            <tr><td>26</td><td>Example 2: \(y^2z^3e^{2x}\)</td><td>\(-\tfrac{455}{3}\)</td></tr>
+            <tr><td>26</td><td>Example 3: tetrahedron</td><td>\(\tfrac{1}{12}\)</td></tr>
+            <tr><td>26</td><td>Example 4: volume</td><td>\(128\)</td></tr>
+            <tr><td>26</td><td>Example 5: average temperature</td><td>\(\tfrac{441}{20} = 22.05\)°C</td></tr>
+            <tr><td>27</td><td>Example 1: cylindrical box</td><td>\(\tfrac{64}{3}\)</td></tr>
+            <tr><td>27</td><td>Example 2: slanted top</td><td>\(\pi\)</td></tr>
+            <tr><td>27</td><td>Example 3: hemisphere</td><td>\(\tfrac{2\pi}{3}\)</td></tr>
+            <tr><td>27</td><td>Example 4: quarter ball</td><td>\(\pi\)</td></tr>
+          </tbody></table></div>
+      </div></details>
+  </div>
+  <footer>
+    <p>Examples follow your Math 215 guided notes (Lessons 25–27). Every answer was checked with a computer algebra system, and the notes' printed practice answers all agree. The notes don't print answers for the in-lesson examples, so those rest on that computer check. The interactive explorers use their own made-up functions so they don't give away a worked example.</p>
+  </footer>
+</section>
+
+</main>

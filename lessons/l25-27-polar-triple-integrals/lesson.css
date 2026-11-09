@@ -1,0 +1,6 @@
+/* Page-specific styles only. Reusable styles belong in engine/css. */
+.twoviews{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:1px;background:var(--line)}
+.twoviews figure{margin:0;background:var(--surface);min-width:0}
+.twoviews figcaption{font-size:.84rem;color:var(--muted);padding:8px 14px}
+.cheat .card .eqs.tall{line-height:2.9}
+.read .k{text-transform:none;letter-spacing:.03em}   /* these labels hold variables: uppercase would turn r into R and rho into P */

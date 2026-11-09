@@ -270,6 +270,11 @@ Then look at every section of the page itself with `shot.py`, in both themes and
 - **Scratch folders get wiped between sessions.** Everything that matters lives in this repo.
 - **Check a drawing's moving parts in both states.** The wk7 relay cutaway's armature rotated the wrong way, so "released" drew the contacts touching. Only a screenshot showed it.
 - **Monospace fonts lack `½`** and draw something like `%`. Write `LI²/2`.
+- **Uppercase labels and variables don't mix.** `.katex` is exempt from `text-transform`, but plain-text variables aren't: `r` becomes `R` and `ρ` becomes `Ρ`. Use math markup or override the label, as this lesson's `.read .k` does.
+- **Plot3D zoom is the `bounds`.** Tightening them zooms in, and geometry may exceed them. Shorten the axes to match, or they run off the canvas. Labels are pixel offsets, so re-check them after any zoom.
+- **Plot3D extras.** `frame:false` drops the floor and box. `text:[{p,s,col,dx,dy}]` adds labels.
+- **A solid that must hide what's inside needs `o:1`.** Below .995 opacity an object doesn't write depth, so later objects draw over it.
+- **A `.quick` summary is a flex row.** Wrap its text and math in one `<span>`, or each piece becomes its own column.
 
 If you edit `engine/` or `tools/`:
 - Under `--virtual-time-budget` Chrome fires almost no animation frames, so animations look broken when they aren't. `tools/common.py probe()` runs in real time and reports over a local POST for this reason. Headless viewports are also about 143px shorter than `--window-size`, with a 500px minimum width.
@@ -278,6 +283,9 @@ If you edit `engine/` or `tools/`:
 - After any engine change, run `check.py` on every folder in `lessons/`.
 - `Object.assign` copies a getter's current value, not the getter. Use `Object.defineProperty` to forward a setter, as `Kit2.flow` does for `speed`.
 - An SVG `<use>` copy doesn't get the page's CSS, so its cards render black. That's why the 2D split layout moves one layer instead of mirroring it.
+- KaTeX output is nested spans. A bare `.x span` rule hits every one of them, which is how math in step titles got a mono font and 6px gaps. Use `.x>span:not(.katex)`.
+- `T3.TubeGeometry` samples a path by arc length, so a path with unequal sides lost its corners. `Poly.getUtoTmapping` returns `u` to keep them.
+- A `.thm` box needs `grid-template-columns:minmax(0,1fr)`, or a wide equation pushes the page sideways.
 
 ## 12. Repo rules
 

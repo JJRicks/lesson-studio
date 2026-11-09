@@ -18,6 +18,7 @@ const GL = {
 class Poly extends T3.Curve {
   constructor(p) { super(); this.p = p; }
   getPoint(t, o = new T3.Vector3()) { const n = this.p.length - 1, s = t * n, i = min(n - 1, floor(s)); return o.copy(this.p[i]).lerp(this.p[i + 1], s - i); }
+  getUtoTmapping(u) { return u; }   // TubeGeometry samples by arc length; without this, a path with unequal sides loses its corners
 }
 
 /* ---------- scene-building kit: all coordinates are maths coordinates, z up ---------- */

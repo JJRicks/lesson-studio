@@ -76,7 +76,7 @@ class Plot3D {
       if (fill) { c.fillStyle = fill; c.fill(); }
       if (stroke) { c.strokeStyle = stroke; c.lineWidth = lw || 0.6; c.stroke(); }
     };
-    poly([P(B.a, B.c, 0), P(B.b, B.c, 0), P(B.b, B.d, 0), P(B.a, B.d, 0)], rgbS(T.accent, 0.07), rgbS(T.muted, 0.6), 1);
+    if (sc.frame !== false) poly([P(B.a, B.c, 0), P(B.b, B.c, 0), P(B.b, B.d, 0), P(B.a, B.d, 0)], rgbS(T.accent, 0.07), rgbS(T.muted, 0.6), 1);
     const gs = sc.groups.map(g => ({ g, dep: P(g.at[0], g.at[1], g.at[2])[2] }));
     gs.sort((u, v) => v.dep - u.dep);
     for (const { g } of gs) for (const f of g.faces) {
@@ -87,6 +87,11 @@ class Plot3D {
       c.strokeStyle = rgbS(ln.col, ln.a ?? 1); c.lineWidth = ln.w || 1; c.beginPath();
       ln.p.forEach((q, i) => { const r = P(q[0], q[1], q[2]); if (i) c.lineTo(r[0], r[1]); else c.moveTo(r[0], r[1]); }); c.stroke();
     }
+    if (sc.text) {                 // text pinned to 3D points: [{ p, s, col, dx, dy }]
+      c.textAlign = "center"; c.font = `600 13px "JetBrains Mono", ui-monospace, monospace`;
+      for (const t of sc.text) { const q = P(t.p[0], t.p[1], t.p[2]); c.fillStyle = rgbS(t.col || T.ink); c.fillText(t.s, q[0] + (t.dx || 0), q[1] + (t.dy || 0)); }
+    }
+    if (sc.frame === false) return;   // scenes that draw their own axes through the origin
     // axes
     const e = 0.16 * L, zTop = B.zhi + 0.1 * (B.zhi - B.zlo), zBot = Math.min(0, B.zlo);
     const ax = [[[B.a, B.c, 0], [B.b + e, B.c, 0], "x"], [[B.a, B.c, 0], [B.a, B.d + e, 0], "y"], [[B.a, B.c, zBot], [B.a, B.c, zTop], "z"]];
