@@ -1,0 +1,10 @@
+{
+  "title": "Swamped Amplifiers and the Small-Signal Model",
+  "brand": "BJT Amplifiers 2",
+  "libs": [
+    "katex",
+    "schematic",
+    "stepper2d"
+  ],
+  "output": "/Users/joelr/Documents/BYUI Assignments/Semester 7/bjt-amplifier-2-lesson.html"
+}

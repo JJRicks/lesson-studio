@@ -92,6 +92,18 @@ class Schem {
     this.path(`M${x - a} ${y}C${x - a * .7} ${y - h} ${x - a * .3} ${y - h} ${x} ${y}S${x + a * .7} ${y + h} ${x + a} ${y}`, "w thin");
     return { top: [x, y - r], bot: [x, y + r] };
   }
+  /* current source, arrow pointing down from top to bot (the way current flows through it). o.dep draws the diamond of a
+     dependent (controlled) source. Returns { top, bot, flip(up) }, where flip(true) turns the arrow to point up. */
+  isrc(c, o = {}) {
+    const [x, y] = c, r = o.r || (o.dep ? 23 : 19);
+    if (o.dep) this.path(`M${x} ${y - r}L${x + r} ${y}L${x} ${y + r}L${x - r} ${y}Z`, "w body");
+    else svgEl("circle", { cx: x, cy: y, r, class: "w body" }, this.g);
+    const a = this.group(), h = r * .5;
+    a.wire([[x, y - h], [x, y + h * .35]], "w thin"); a.head([x, y + h], [x, y - h], 9);
+    const flip = up => a.g.setAttribute("transform", up ? `rotate(180 ${x} ${y})` : "");
+    flip(!!o.up);
+    return { top: [x, y - r], bot: [x, y + r], flip };
+  }
   cap(a, b, o = {}) {                                // capacitor between two pins; o.pol puts a + by the straight plate at a and curves the plate at b
     const [ux, uy] = unitDir(a, b), nx = -uy, ny = ux, m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2], g = o.gap || 6, w = o.w || 15;
     const P = (t, d) => [m[0] + ux * t + nx * d, m[1] + uy * t + ny * d];

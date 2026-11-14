@@ -143,7 +143,7 @@ Where to find things:
 - **`gallery/bjt-characterization-lesson.html`**: **`class Plot`**, LTspice-style plots with draggable cursors, the electron-flow canvas, `.dc` command decoders, and "run the sweep" animations.
 - **`gallery/bjt-calculation-lesson.html`**: **`playground()`**, a live circuit with sliders, animated current flow and a load-line chart.
 - **`lessons/wk7-bjt-led-relay-drivers/`**: the circuits reference. Live SVG schematics with current dots in `page.js` (a pin-flip hero, a pnp sweep, a relay cutaway with hysteresis, a flyback scope), Gummel-Poon BJT and LED solvers in `shared.js`, and six 2D steppers.
-- **Schematic kit** (`engine/js/schematic.js`, add `"schematic"` to `libs`): `new Schem(svgGroup)` draws parts in viewBox units, y down: `res`, `diode`, `led(a, k, {c})` with `.set(brightness)`, `bjt(B, {pnp})` returning pins `{B, C, E}`, `vsrc` and `vac` returning `{top, bot}`, `cap(a, b, {pol})`, `gnd`, `net(p, {w, left})` (an LTspice net flag), `coil`, `lever(pivot, len)` with `.set(deg)`, `lamp` with `.set`, `rect`, `text`, `wire`, `node`, `arrow`. `flow(pts, {c, gap})` makes moving current dots: set `.speed`, then call `Schem.tick(flows, dt)` each frame. Classes `w`, `tint` (colour from `--c`), `fillc`, `soft`, `sm`.
+- **Schematic kit** (`engine/js/schematic.js`, add `"schematic"` to `libs`): `new Schem(svgGroup)` draws parts in viewBox units, y down: `res`, `diode`, `led(a, k, {c})` with `.set(brightness)`, `bjt(B, {pnp})` returning pins `{B, C, E}`, `vsrc` and `vac` returning `{top, bot}`, `isrc(c, {dep, up})` (a current source, a diamond when `dep`) returning `{top, bot, flip(up)}`, `cap(a, b, {pol})`, `gnd`, `net(p, {w, left})` (an LTspice net flag), `coil`, `lever(pivot, len)` with `.set(deg)`, `lamp` with `.set`, `rect`, `text`, `wire`, `node`, `arrow`. `flow(pts, {c, gap})` makes moving current dots: set `.speed`, then call `Schem.tick(flows, dt)` each frame. Classes `w`, `tint` (colour from `--c`), `fillc`, `soft`, `sm`.
 - **`shared.js`** in a lesson folder is copied into both the `page.js` closure and the stepper closure. Put circuit drawings and solvers there so the hero and the worked examples draw the same circuit.
 
 Gallery pages are plain HTML, so read their source and copy what you need into `page.js`. Repeated code worth keeping belongs in `engine/`.
@@ -233,6 +233,10 @@ A scene with `view: "2d"` draws an SVG inside `box: [x0, y0, w, h]` (viewBox uni
 - To redraw a circuit (R1 swinging down beside R2), draw the moving part in a `k.sch.group()` and set its transform from `P`. `drawCoupling` and `drawAmp` in the wk8 BJT amplifier's `shared.js` show it, including fading the wire stub the part leaves behind. Hide the flow on the new path until the fold ends: `if (P.f < .97) k.o.fa2.el.style.display = "none"`. `update` runs after visibility, so this wins.
 - Frames only keep coming while some flow has a nonzero speed, so a scrolling side plot needs at least one moving flow in that step.
 - `k.rect` tint opacity goes on `.r`: `z.r.style.opacity = .16`.
+- `k.flow` draws in the circuit layer. Dots inside a side card need `SC.sflow` from the wk9 BJT amplifier's `00-kit.js`, or they stay behind when the cards move below a narrow circuit.
+- A side card fits about 34 characters per row of mono `sm` text. Longer rows run past the card's edge, so read the sheets for it.
+- Keep a highlight ring tight around the part (`rx` 15 for an upright resistor). Part labels sit 16 units to the side, and a wider ring cuts through them.
+- For LTspice plots in a stepper, copy `piPane` from wk9 `scenes/p2.js`. It leaves a left margin for the axis values, because values printed at the right edge collided with the wave's peaks. For a live plot in `page.js`, copy `scopePanes` and `dragTime` from wk9 (dashed grid, ms labels and a cursor you can drag).
 
 ## 9. QA
 
@@ -275,7 +279,9 @@ Then look at every section of the page itself with `shot.py`, in both themes and
 - **Scratch folders get wiped between sessions.** Everything that matters lives in this repo.
 - **Check a drawing's moving parts in both states.** The wk7 relay cutaway's armature rotated the wrong way, so "released" drew the contacts touching. Only a screenshot showed it.
 - **Monospace fonts lack `½`** and draw something like `%`. Write `LI²/2`.
-- **Uppercase labels and variables don't mix.** `.katex` is exempt from `text-transform`, but plain-text variables aren't: `r` becomes `R` and `ρ` becomes `Ρ`. Use math markup or override the label, as this lesson's `.read .k` does. `.cursorbox .k`, `.eyebrow` and `.panel-head .t` are uppercased too, which turned `β` into `B` and `25 mV` into `25 MV`. Set `text-transform:none` or reword.
+- **Uppercase labels and variables don't mix.** `.katex` is exempt from `text-transform`, but plain-text variables aren't: `r` becomes `R` and `ρ` becomes `Ρ`. Use math markup or override the label, as this lesson's `.read .k` does. `.cursorbox .k`, `.eyebrow`, `.panel-head .t`, `th` and `.toc .grp` are uppercased too, which turned `β` into `B`, `π` into `Π`, `Zin` into `ZIN` and `25 mV` into `25 MV`. Wrap the word in `<span class="lc">`, set `text-transform:none`, or reword.
+- **`∥` is missing from both page fonts** and draws like `ı`. Write `\parallel` in math, or `||` in a readout label.
+- **LTspice signs.** `I(R)` is positive flowing into pin 1, which is the top of a resistor placed without rotating. A `bi` or `current` source pushes its current along its arrow, out of the top node and into the bottom one. Rotating either part 180° flips the sign of a simulated gain, so say which way the parts face (wk9's `ltLab` has a toggle for each).
 - **Don't clamp one coordinate of a line's endpoint.** Clamping `y` alone changes the slope, so a tangent stops touching its curve. Move the endpoint along the line instead.
 - **A schematic's size limit goes on `.schbox .sch`.** A `max-height` on `.schbox` lets the drawing spill out of its box.
 - **`shared.js` can't declare `TAU`.** The stepper's closure already has one.

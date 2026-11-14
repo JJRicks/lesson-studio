@@ -1,0 +1,580 @@
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#top">Start here</a>
+      <ol>
+        <li><a href="#top">A live swamped amplifier</a></li>
+        <li><a href="#bigpic">What's new this week</a></li>
+        <li><a href="#tour">Meet the circuit</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part1">Problem 1 · Emitter feedback</a>
+      <ol>
+        <li><a href="#dc">DC sees both resistors</a></li>
+        <li><a href="#re">AC emitter resistance</a></li>
+        <li class="prob"><a href="#p1a">Problem 1a · r<sub>e</sub>′</a></li>
+        <li><a href="#rc">AC collector resistance</a></li>
+        <li class="prob"><a href="#p1b">Problem 1b · r<sub>c</sub></a></li>
+        <li><a href="#swamp">Gain with emitter feedback</a></li>
+        <li class="prob"><a href="#p1c">Problem 1c · A<sub>V</sub></a></li>
+        <li><a href="#zin">Input impedance</a></li>
+        <li class="prob"><a href="#p1d">Problem 1d · Z<sub>in</sub></a></li>
+      </ol></li>
+    <li><a class="grp" href="#part2">Problem 2 · The <span class="lc">π</span> model</a>
+      <ol>
+        <li><a href="#model">The small-signal model</a></li>
+        <li><a href="#ltspice">Building it in LTspice</a></li>
+        <li class="prob"><a href="#p2a">Problem 2a · the schematic</a></li>
+        <li class="prob"><a href="#p2b">Problem 2b · the plot</a></li>
+        <li><a href="#scope">Reading gain off a plot</a></li>
+        <li class="prob"><a href="#p2c">Problem 2c · A<sub>V</sub></a></li>
+        <li><a href="#raise">What sets the gain</a></li>
+        <li class="prob"><a href="#p2d">Problem 2d · more gain</a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#mistakes">Common mistakes</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<!-- ================= HERO ================= -->
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Week 9 · BJT Amplifier Homework 2 · 22 pts</div>
+  <h1>Swamped Amplifiers and the <span>Small-Signal</span> Model</h1>
+  <p class="lede">Last week's amplifier had a huge gain, but that gain wobbles with temperature and changes from one transistor to the next. This week leaves a small resistor in the emitter's AC path to trade some gain for steadiness. Then the transistor gets replaced by a two-part model you can build in LTspice. Every idea is built from scratch, and both problems are worked step by step with each final answer hidden until you click.</p>
+  <div class="chips"><span class="chip">Problem 1 · emitter feedback: r′e, rc, AV, Zin</span><span class="chip">Problem 2 · the π model in LTspice</span></div>
+  <div class="panel" id="hero">
+    <div class="panel-head"><span class="t">A swamped amplifier · live</span><span class="status" id="heroStatus"></span></div>
+    <div class="duo">
+      <div class="schbox" id="heroSch" style="--ar:1.27"></div>
+      <div class="side"><canvas id="heroCv" class="p2" aria-label="Two scrolling traces. The top one is the small input wave. The bottom one is the output wave, larger and upside down."></canvas></div>
+    </div>
+    <div class="ctlgrid">
+      <div class="sl"><label for="heroRe"><span>Unbypassed resistor \(r_e\)</span> <b id="heroReOut"></b></label><input type="range" id="heroRe" min="0" max="270" step="5" value="100"></div>
+      <div class="sl"><label for="heroA"><span>Input signal size (peak)</span> <b id="heroAOut"></b></label><input type="range" id="heroA" min="0" max="1000" step="1" value="560"></div>
+    </div>
+    <div class="cursorbox" id="heroReads"></div>
+    <div class="legend"><span><span class="dotsw" style="--c:var(--t3)"></span>collector current</span><span><span class="dotsw" style="--c:var(--t1)"></span>divider current</span><span><span class="dotsw" style="--c:var(--cursor)"></span>the AC signal</span></div>
+    <p class="note">The emitter has 570 Ω in total, split between \(r_e\) on top and R4 below, and C3 bypasses only R4. Slide \(r_e\) to zero and the gain jumps, but a big input comes out lopsided. Slide it up and the gain drops while the wave cleans up. The DC current never changes, because DC flows through all 570 Ω either way. These are example part values, not the homework's, and the wave is slowed down so you can follow it.</p>
+  </div>
+</section>
+
+<section class="topic" id="bigpic" data-title="What's new this week">
+  <span class="eyebrow">Start here · no prior knowledge needed</span>
+  <h3>What's new this week</h3>
+  <p>An amplifier makes a small wiggling voltage bigger. It runs on two kinds of voltage at once.</p>
+  <ul>
+    <li><b>DC</b> (direct current) holds steady, like a 16 V supply. It sets the transistor partly on. That setup is called <b>biasing</b>.</li>
+    <li><b>AC</b> (alternating current) wiggles up and down. It's the signal, riding on top of the DC.</li>
+  </ul>
+  <p>Last week's amplifier put a capacitor across the whole emitter resistor. For AC, that left only the transistor's own tiny internal resistance, called \(r_e'\), in the emitter. The gain was \(-r_c/r_e'\), which came out in the hundreds. It had three problems.</p>
+  <ul>
+    <li><b>The gain drifts.</b> \(r_e'\) depends on the DC current and on temperature. Warm the transistor and the gain moves with it.</li>
+    <li><b>Big signals distort.</b> \(r_e'\) isn't a fixed resistor. It changes during each swing, so the top and bottom of the output wave stop matching.</li>
+    <li><b>The input impedance is low.</b> The amplifier draws a lot of current from whatever feeds it, which you'll measure in Problem 1d.</li>
+  </ul>
+  <p>This homework's fix is to leave a small resistor in the emitter's AC path. It's called <b>ac emitter feedback</b>, or <b>swamping</b>, and Problem 1 analyzes it. Problem 2 then swaps the transistor for a simple model made of a resistor and a controlled current source, and builds it in LTspice.</p>
+  <div class="analogy"><span class="eyebrow">Analogy · a wobbly table leg</span><p>A table standing on one short, wobbly leg tilts every time the leg shifts. Bolt a solid block under that leg and the same wobble barely moves the table. \(r_e'\) is the wobbly leg, and the extra emitter resistor is the block. The table sits a little lower, which is the gain you give up.</p></div>
+  <p class="key">A little unbypassed emitter resistance trades gain for steadiness.</p>
+</section>
+
+<section class="topic" id="tour" data-title="Meet the circuit">
+  <span class="eyebrow">Start here · the parts</span>
+  <h3>Meet the circuit</h3>
+  <p>This is a <b>voltage divider bias</b> (VDB) common-emitter amplifier, the same family as last week. One part is new. Click each part to see its job.</p>
+  <div class="panel" id="tourPanel">
+    <div class="panel-head"><span class="t">Click a part</span></div>
+    <div class="heroseg"><div class="seg" id="tourSeg" role="group" aria-label="Which part"><button type="button" data-k="c1" aria-pressed="true">C1</button><button type="button" data-k="div" aria-pressed="false">R1, R2</button><button type="button" data-k="q" aria-pressed="false">Q1</button><button type="button" data-k="r3" aria-pressed="false">R3</button><button type="button" data-k="re" aria-pressed="false" class="lc">re</button><button type="button" data-k="r4" aria-pressed="false">R4</button><button type="button" data-k="c3" aria-pressed="false">C3</button><button type="button" data-k="c2" aria-pressed="false">C2, Rl</button></div></div>
+    <div class="duo">
+      <div class="schbox" id="tourSch" style="--ar:1.27"></div>
+      <div class="side"><div class="tourtxt" id="tourTxt"></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PROBLEM 1 ================= -->
+<section class="part" id="part1" data-title="Problem 1 · Emitter feedback">
+  <div class="part-head">
+    <div class="part-letter">1</div>
+    <div class="eyebrow">Problem 1 · 10 pts · four parts</div>
+    <h2>The amplifier with ac emitter feedback</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>The emitter resistance is split in two, and C3 bypasses only the bottom part. DC flows through both parts, so the bias works like a normal VDB amplifier. AC flows through the top part only, and that resistor adds to \(r_e'\) everywhere \(r_e'\) shows up: in the gain and in the input impedance.</p></div>
+
+  <div class="topic" id="dc" data-title="DC sees both resistors">
+    <span class="eyebrow">Topic 1 · the DC pass</span>
+    <h3>DC sees both resistors</h3>
+    <p>Analyze an amplifier twice: once for DC to find the steady current, and once for AC to find what happens to the signal. Each pass uses its own version of the circuit.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Part</th><th>In the DC circuit</th><th>In the AC circuit</th></tr></thead>
+      <tbody>
+        <tr><td>Capacitors</td><td>Open (remove them)</td><td>Short (replace with a wire)</td></tr>
+        <tr><td>\(V_{cc}\)</td><td>Its full voltage</td><td>Ground</td></tr>
+        <tr><td>\(r_e\) (top emitter resistor)</td><td>In the circuit</td><td>In the circuit</td></tr>
+        <tr><td>R4 (bottom emitter resistor)</td><td>In the circuit</td><td>Shorted by C3</td></tr>
+      </tbody></table></div>
+    <p>A capacitor blocks DC because current can't cross the gap between its plates. So at DC, C3 might as well not be there. The emitter current comes out of the transistor, goes down through \(r_e\), then down through R4. The two are in <b>series</b>, one after the other, so their resistances add.</p>
+    <p>The homework says to use <b>simplified analysis</b>. That means:</p>
+    <ul>
+      <li>The base-emitter junction drops 0.7 V.</li>
+      <li>The divider is <b>stiff</b>, so the base current is too small to disturb it.</li>
+      <li>The collector current equals the emitter current, \(I_C \approx I_E\).</li>
+      <li>The thermal voltage, which you'll meet in the next topic, is 25 mV.</li>
+    </ul>
+    <div class="thm"><span class="eyebrow">DC analysis with two emitter resistors</span>\[V_B = V_{cc}\,\frac{R_2}{R_1 + R_2} \qquad V_E = V_B - 0.7\text{ V} \qquad I_E = \frac{V_E}{r_e + R_4}\]</div>
+    <p>The stiff test from last week still applies. Compare R2 with β times the whole DC emitter resistance:</p>
+    <div class="thm"><span class="eyebrow">Stiff divider test</span>\[R_2 \le 0.01\,\beta\,(r_e + R_4)\]</div>
+    <div class="analogy"><span class="eyebrow">Analogy · two speed bumps and a side lane</span><p>The road out of the emitter has two speed bumps in a row. Steady traffic (DC) has to cross both. A side lane (C3) runs around only the second bump, and it only opens for traffic that keeps reversing direction (AC). So AC crosses the first bump and skips the second.</p></div>
+    <div class="panel" id="legPanel">
+      <div class="panel-head"><span class="t">Which resistors carry which current</span><span class="status" id="legStatus"></span></div>
+      <div class="heroseg"><div class="seg" id="legSeg" role="group" aria-label="Which view"><button type="button" data-k="dc" aria-pressed="true">DC current</button><button type="button" data-k="ac" aria-pressed="false">AC signal</button></div></div>
+      <div class="schbox short" id="legSch" style="--ar:1.27"></div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="legRe"><span>\(r_e\)</span> <b id="legReOut"></b></label><input type="range" id="legRe" min="0" max="12" step="1" value="5"></div>
+        <div class="sl"><label for="legR4"><span>R4</span> <b id="legR4Out"></b></label><input type="range" id="legR4" min="0" max="12" step="1" value="7"></div>
+      </div>
+      <div class="cursorbox" id="legReads"></div>
+      <p class="note">An example circuit with \(V_{cc}\) = 12 V, R1 = 8.2 kΩ and R2 = 1.5 kΩ. In the DC view, the dots run through both emitter resistors. In the AC view the capacitors turn into wires, and the signal goes through \(r_e\) and then around R4 through C3. Change R4 and only the DC numbers move.</p>
+    </div>
+    <p class="warn"><b>Watch out.</b> Use \(r_e + R_4\) for the DC current, not R4 alone. C3 doesn't carry DC, so it can't shorten the DC path.</p>
+    <p class="key">DC sees \(r_e + R_4\). AC sees only \(r_e\).</p>
+  </div>
+
+  <div class="topic" id="re" data-title="AC emitter resistance">
+    <span class="eyebrow">Topic 2 · finding <span class="lc">r<sub>e</sub>′</span></span>
+    <h3>AC emitter resistance \(r_e'\)</h3>
+    <p>The base-emitter junction is a <b>diode</b>, a one-way valve for current. Its current grows exponentially with its voltage:</p>
+    <div class="mbox">\[I = I_S\, e^{V/V_T}\]</div>
+    <p>\(V_T\) is the <b>thermal voltage</b>, about 25 mV near room temperature. \(I_S\) is a tiny constant set by the transistor.</p>
+    <p>A small signal only moves the junction a short way along this curve. Over a short stretch, the curve looks like a straight line, and a straight line on a current-voltage graph behaves like a resistor. That resistor is \(r_e'\), read "r-e-prime". Its value is the inverse of the curve's slope. The derivative is \(dI/dV = I/V_T\), and flipping it over gives the rule.</p>
+    <div class="thm"><span class="eyebrow">AC emitter resistance</span>\[r_e' = \frac{25\text{ mV}}{I_E}\]</div>
+    <p>More DC current puts you higher up the curve where it's steeper, so \(r_e'\) gets smaller. This is how the DC pass feeds the AC pass. Some books use 26 mV. This homework's hint works with either, and the course uses 25 mV.</p>
+    <p class="warn"><b>Two different r's.</b> \(r_e'\), with the prime, lives inside the transistor and is set by the DC current. \(r_e\), with no prime, is the real 120 Ω resistor drawn in this homework's schematic. Some books call the real one \(R_{E1}\) to avoid the mix-up. Keep the prime and the two stay separate.</p>
+    <div class="panel" id="rePanel">
+      <div class="panel-head"><span class="t">The diode curve, up close · live</span><span class="status lc" id="reStatus"></span></div>
+      <canvas id="reCv" class="p2" style="height:300px" aria-label="An exponential diode curve with a dot at the DC current and a tangent line. A small input wiggle along the horizontal axis makes a current wiggle along the vertical axis."></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="reI"><span>DC emitter current \(I_E\)</span> <b id="reIOut"></b></label><input type="range" id="reI" min="0.3" max="8" step="0.05" value="1.2"></div></div>
+      <div class="cursorbox" id="reReads"></div>
+      <p class="note">Drag the current up. The dot climbs to where the curve is steeper, so the same small voltage wiggle makes a bigger current wiggle. The dashed tangent's steepness is \(1/r_e'\).</p>
+    </div>
+    <p class="key">\(r_e'\) is set by the DC current through the emitter, so find \(I_E\) first.</p>
+
+    <article class="prob" id="p1a" data-title="Problem 1a">
+      <div class="prob-head"><span class="pnum">Problem 1a</span><span class="eyebrow">the AC emitter resistance</span><span class="pts">4 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Calculate \(r_e'\)</b> for the voltage divider bias amplifier with ac emitter feedback, assuming β = 300 and simplified analysis. \(V_{cc}\) = 16 V, R1 = 3.3 kΩ, R2 = 560 Ω, R3 = 2.7 kΩ, \(r_e\) = 120 Ω (not bypassed), R4 = 560 Ω (bypassed by C3), Rl = 100 kΩ, Q1 = 2N3904.</p>
+        <ol class="steps">
+          <li><h5>Draw the DC circuit and check the divider</h5><p>The capacitors are open at DC, so C1, C2, C3, the signal and Rl drop out. The divider is stiff if R2 is at most \(0.01\,\beta\,(r_e + R_4)\):</p><div class="mbox">\[0.01\,(300)\,(120\ \Omega + 560\ \Omega) = 2040\ \Omega\]</div><p>R2 is 560 Ω, which is smaller, so it's stiff.</p></li>
+          <li><h5>Find the base voltage</h5><p>Ignore the base current, so the same current runs down through R1 and R2. Compute it.</p><div class="mbox">\[V_B = 16\text{ V}\;\frac{560\ \Omega}{3300\ \Omega + 560\ \Omega}\]</div></li>
+          <li><h5>Drop one diode voltage</h5><p>The emitter sits 0.7 V below the base: \(V_E = V_B - 0.7\text{ V}\).</p></li>
+          <li><h5>Send the current through both emitter resistors</h5><p>C3 is open at DC, so the emitter current goes through \(r_e\) and R4 in series. Compute it.</p><div class="mbox">\[I_E = \frac{V_E}{r_e + R_4} = \frac{V_E}{680\ \Omega}\]</div></li>
+          <li><h5>Turn the current into \(r_e'\)</h5><p>Use your \(I_E\) and compute it.</p><div class="mbox">\[r_e' = \frac{25\text{ mV}}{I_E}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">r<sub>e</sub>′ = 10.49 Ω<small>10.486 Ω to five figures.</small></div>
+          <p>The chain: \(V_B\) = 16 × 560/3860 = 2.321 V, \(V_E\) = 1.621 V, \(I_E\) = 1.621 V / 680 Ω = 2.384 mA, and 25 mV / 2.384 mA = 10.49 Ω.</p>
+          <p>Check: the collector sits at 16 − (2.384 mA)(2.7 kΩ) = 9.56 V, about 7.9 V above the emitter, so the transistor is active. Including the base current moves \(I_E\) by only 0.23%.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="rc" data-title="AC collector resistance">
+    <span class="eyebrow">Topic 3 · finding <span class="lc">r<sub>c</sub></span></span>
+    <h3>AC collector resistance \(r_c\)</h3>
+    <p>Now switch to the AC circuit. The output voltage forms at the collector, so ask what resistance the AC collector current runs into. It's written with a lowercase \(r_c\), because lowercase means an AC quantity.</p>
+    <p>Follow the AC rules. C2 becomes a wire, so Rl connects straight to the collector. \(V_{cc}\) becomes ground, because a supply that never wiggles is the same as ground to a signal. So R3 also runs from the collector to ground. Two resistors from the same point to ground are in <b>parallel</b>.</p>
+    <div class="thm"><span class="eyebrow">AC collector resistance</span>\[r_c = R_C \parallel R_L = \frac{R_C R_L}{R_C + R_L}\]</div>
+    <p>The symbol \(\parallel\) means "in parallel with". In this homework, \(R_C\) is R3 and \(R_L\) is Rl. Nothing about the emitter changes this, so it works exactly like last week.</p>
+    <div class="panel" id="rcPanel">
+      <div class="panel-head"><span class="t">The load joins in for AC</span><span class="status" id="rcStatus"></span></div>
+      <div class="heroseg"><div class="seg" id="rcSeg" role="group" aria-label="Which view"><button type="button" data-k="dc" aria-pressed="true">As drawn</button><button type="button" data-k="ac" aria-pressed="false">What AC sees</button></div></div>
+      <div class="schbox short" id="rcSch" style="--ar:1.27"></div>
+      <div class="ctlgrid"><div class="sl"><label for="rcL"><span>Load resistor Rl</span> <b id="rcLOut"></b></label><input type="range" id="rcL" min="0" max="14" step="1" value="11"></div></div>
+      <div class="cursorbox" id="rcReads"></div>
+      <p class="note">An example circuit with a 2.2 kΩ collector resistor. Make the load small and \(r_c\) drops with it. Make it huge and \(r_c\) settles just under the collector resistor.</p>
+    </div>
+    <p class="key">AC sees the collector resistor and the load side by side.</p>
+
+    <article class="prob" id="p1b" data-title="Problem 1b">
+      <div class="prob-head"><span class="pnum">Problem 1b</span><span class="eyebrow">the AC collector resistance</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Calculate \(r_c\)</b> for the same circuit.</p>
+        <ol class="steps">
+          <li><h5>Switch to the AC circuit</h5><p>Capacitors become wires and \(V_{cc}\) becomes ground. C2 connects the collector straight to Rl.</p></li>
+          <li><h5>See the two paths</h5><p>From the collector, AC can reach ground down through Rl, or up through R3 to the grounded supply.</p></li>
+          <li><h5>Combine them in parallel</h5><p>Compute it.</p><div class="mbox">\[r_c = R_3 \parallel R_l = \frac{(2.7\text{ k}\Omega)(100\text{ k}\Omega)}{2.7\text{ k}\Omega + 100\text{ k}\Omega}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">r<sub>c</sub> = 2.629 kΩ<small>2629 Ω. Rl is so much bigger than R3 that it barely changes anything.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="swamp" data-title="Gain with emitter feedback">
+    <span class="eyebrow">Topic 4 · finding A<sub>V</sub></span>
+    <h3>Gain with emitter feedback</h3>
+    <p><b>Voltage gain</b> \(A_V\) is how many times bigger the output wave is than the input wave. Follow the signal through the AC circuit.</p>
+    <ol class="steps">
+      <li><h5>The input reaches the base</h5><p>C1 is a short for AC, so \(v_b = v_{in}\). Lowercase \(v\) and \(i\) mean the AC part.</p></li>
+      <li><h5>The emitter path now has two resistances</h5><p>C3 shorts R4 to ground, but \(r_e\) sits above it with no capacitor. So the signal current leaving the emitter goes through \(r_e'\) inside the transistor, then through \(r_e\), then through C3.</p></li>
+      <li><h5>Ohm's law on the emitter path</h5><p>The whole input lands across those two in series: \(i_e = v_{in}/(r_e' + r_e)\).</p></li>
+      <li><h5>Ohm's law on the collector</h5><p>Since \(i_c \approx i_e\), the same current runs through \(r_c\). More current means a bigger drop, which pulls the collector down: \(v_{out} = -i_e\,r_c\).</p></li>
+    </ol>
+    <p>Divide the output by the input, and \(i_e\) cancels:</p>
+    <div class="thm"><span class="eyebrow">Gain with an unbypassed emitter resistor</span>\[A_V = -\frac{r_c}{r_e' + r_e} \;\approx\; -\frac{r_c}{r_e} \quad\text{when } r_e \gg r_e'\]</div>
+    <p>The minus sign means the output is upside down compared with the input.</p>
+    <p><b>Why it's called feedback.</b> When the input pushes more current through the transistor, that current also flows through \(r_e\) and lifts the emitter. A higher emitter cancels part of the push at the base. Part of the output's effect is fed back to fight the input. Engineers call that <b>negative feedback</b>, and it always trades gain for steadiness.</p>
+    <p><b>Why it's called swamping.</b> Once \(r_e\) is several times larger than \(r_e'\), the sum \(r_e' + r_e\) barely notices when \(r_e'\) changes. The wobbly part is swamped, which means drowned out, by the steady part. The gain is then set mostly by two ordinary resistors, \(r_c\) and \(r_e\), which don't drift.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · weighing a cat</span><p>Put a squirming cat on a bathroom scale by itself and the reading jumps all over. Weigh yourself holding the cat and the squirming barely moves the number. \(r_e'\) is the cat. \(r_e\) is you, a big steady weight that keeps the total calm.</p></div>
+    <div class="panel" id="swPanel">
+      <div class="panel-head"><span class="t">How much the gain drifts</span><span class="status" id="swStatus"></span></div>
+      <canvas id="swCv" class="p2" style="height:290px" aria-label="Gain against the transistor's internal resistance. Without an emitter resistor, the gain falls steeply as the internal resistance changes. With one, the curve is nearly flat."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="swRe"><span>Unbypassed resistor \(r_e\)</span> <b id="swReOut"></b></label><input type="range" id="swRe" min="0" max="300" step="5" value="60"></div>
+        <div class="sl"><label for="swRp"><span>\(r_e'\) today (temperature, transistor)</span> <b id="swRpOut"></b></label><input type="range" id="swRp" min="5" max="40" step="0.5" value="12.5"></div>
+      </div>
+      <div class="cursorbox" id="swReads"></div>
+      <p class="note">An example with \(r_c\) = 2.2 kΩ. The shaded band is a realistic spread of \(r_e'\), from a hot, high-current transistor on the left to a cool, low-current one on the right. Without \(r_e\) (dashed) the gain swings across the band. Raise \(r_e\) and the solid curve flattens.</p>
+    </div>
+    <details class="deeper"><summary>Going further: why the wave also gets cleaner</summary><div>
+      <p>\(r_e'\) isn't truly constant during a swing. On the up swing the current rises, so \(r_e'\) shrinks and the gain rises. On the down swing it's the opposite. Without \(r_e\), a large input comes out with one half taller than the other. With \(r_e\) in the path, those changes are a small slice of \(r_e' + r_e\), so both halves get nearly the same gain. The hero at the top shows this when you slide \(r_e\) to zero with a big input.</p>
+    </div></details>
+    <p class="key">Leave \(r_e\) in the AC path and it adds to \(r_e'\) on the bottom of the gain.</p>
+
+    <article class="prob" id="p1c" data-title="Problem 1c">
+      <div class="prob-head"><span class="pnum">Problem 1c</span><span class="eyebrow">the voltage gain</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Calculate \(A_V\)</b> for the same circuit.</p>
+        <ol class="steps">
+          <li><h5>Put the signal on the base</h5><p>C1 is a short for AC, so \(v_{in}\) arrives at the base.</p></li>
+          <li><h5>Find the emitter's AC path</h5><p>C3 shorts R4, and only R4. So the AC emitter current goes through \(r_e'\) and the 120 Ω \(r_e\) in series.</p></li>
+          <li><h5>Write both ends with Ohm's law</h5><p>\(i_e = v_{in}/(r_e' + r_e)\) on the emitter side, and \(v_{out} = -i_e\,r_c\) on the collector side.</p></li>
+          <li><h5>Divide</h5><p>The current cancels. Use your \(r_c\) from part b and your \(r_e'\) from part a, and compute it.</p><div class="mbox">\[A_V = -\frac{r_c}{r_e' + r_e} = -\frac{r_c}{r_e' + 120\ \Omega}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">A<sub>V</sub> = −20.15<small>−2629 Ω / (10.49 Ω + 120 Ω) = −2629 / 130.49 = −20.148. The output is about 20 times the input, and inverted.</small></div>
+          <p>For comparison, bypassing \(r_e\) too would give −2629 / 10.49, about −251. The 120 Ω resistor gave up most of the gain. In return, doubling \(r_e'\) now changes the gain by only about 7%, where the bypassed version would lose half.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="zin" data-title="Input impedance">
+    <span class="eyebrow">Topic 5 · finding <span class="lc">Z<sub>in</sub></span></span>
+    <h3>Input impedance</h3>
+    <p><b>Impedance</b> is resistance to AC. The <b>input impedance</b> \(Z_{in}\) is the resistance the signal source sees when it looks into the amplifier: the input voltage divided by the input current.</p>
+    <div class="mbox">\[Z_{in} = \frac{v_{in}}{i_{in}}\]</div>
+    <p>It matters because real sources have some resistance of their own. That resistance and \(Z_{in}\) form a voltage divider. A low \(Z_{in}\) takes a big share of the current and leaves less signal for the amplifier. Higher is better.</p>
+    <p>At the base node, the input current has three ways to go:</p>
+    <ul>
+      <li><b>Up through R1.</b> \(V_{cc}\) is AC ground, so R1 goes to ground.</li>
+      <li><b>Down through R2</b> to ground.</li>
+      <li><b>Into the base</b> of the transistor.</li>
+    </ul>
+    <p>The first two are plain resistors. The third needs a closer look.</p>
+    <h4>Looking into the base</h4>
+    <ol class="steps">
+      <li><h5>The base voltage</h5><p>The base sits on top of the emitter path, so \(v_b = i_e\,(r_e' + r_e)\).</p></li>
+      <li><h5>The base current</h5><p>The base only supplies a small slice of the emitter current: \(i_b = i_e/\beta\).</p></li>
+      <li><h5>Divide</h5><p>\(Z_{in(base)} = v_b / i_b\). The \(i_e\) cancels and β moves to the top.</p></li>
+    </ol>
+    <div class="thm"><span class="eyebrow">Impedance looking into the base</span>\[Z_{in(base)} = \beta\,(r_e' + r_e)\]</div>
+    <p>From the base, every emitter resistance looks β times bigger. That's where swamping helps a lot. Without \(r_e\) the base would show only \(\beta r_e'\), which is small.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a gearbox</span><p>Turning a heavy wheel through a gearbox feels easy, because the gears multiply your effort. The base current is your hand, and β is the gear ratio. The emitter resistance is the heavy wheel, and from the base side it feels β times harder to move. That's what a high impedance means.</p></div>
+    <p>The three paths sit side by side between the base node and ground, so they combine in parallel:</p>
+    <div class="thm"><span class="eyebrow">Amplifier input impedance</span>\[Z_{in} = R_1 \parallel R_2 \parallel \beta\,(r_e' + r_e) = \frac{1}{\dfrac{1}{R_1} + \dfrac{1}{R_2} + \dfrac{1}{\beta(r_e' + r_e)}}\]</div>
+    <div class="panel" id="zinPanel">
+      <div class="panel-head"><span class="t">Three ways into the amplifier · live</span><span class="status" id="zinStatus"></span></div>
+      <div class="schbox short" id="zinSch" style="--ar:1.6"></div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="zinRe"><span>\(r_e\)</span> <b id="zinReOut"></b></label><input type="range" id="zinRe" min="0" max="300" step="5" value="40"></div>
+        <div class="sl"><label for="zinB"><span>β</span> <b id="zinBOut"></b></label><input type="range" id="zinB" min="50" max="400" step="10" value="150"></div>
+      </div>
+      <div class="cursorbox" id="zinReads"></div>
+      <p class="note">An example with R1 = 8.2 kΩ, R2 = 1.5 kΩ and \(r_e'\) = 12 Ω. Dot speed shows how much of the input current takes each path. With \(r_e\) at zero, the base takes a big share and \(Z_{in}\) drops. Raise \(r_e\) and the base path slows to a trickle, leaving the divider to set \(Z_{in}\).</p>
+    </div>
+    <p class="key">Parallel resistances combine to less than the smallest one, so the smallest path sets \(Z_{in}\).</p>
+
+    <article class="prob" id="p1d" data-title="Problem 1d">
+      <div class="prob-head"><span class="pnum">Problem 1d</span><span class="eyebrow">the input impedance</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Calculate \(Z_{in}\)</b> for the same circuit. The hint says it should be between 460 and 480 Ω.</p>
+        <ol class="steps">
+          <li><h5>Stand at the input</h5><p>\(Z_{in}\) is what vin sees through C1, which is a short for AC. \(V_{cc}\) is AC ground, so R1 and R2 both run from the base node to ground.</p></li>
+          <li><h5>Look into the base</h5><p>The emitter's AC resistance is \(r_e' + r_e\), and the base sees it β times bigger. Use your \(r_e'\) from part a.</p><div class="mbox">\[Z_{in(base)} = \beta\,(r_e' + r_e) = 300\,(r_e' + 120\ \Omega)\]</div></li>
+          <li><h5>Line up the three paths</h5><p>R1, R2 and the base all run from the same node to ground, so they're in parallel.</p></li>
+          <li><h5>Combine them</h5><p>Add the three conductances and flip the sum. Compute it.</p><div class="mbox">\[Z_{in} = \frac{1}{\dfrac{1}{3300\ \Omega} + \dfrac{1}{560\ \Omega} + \dfrac{1}{Z_{in(base)}}}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">Z<sub>in</sub> = 473.0 Ω<small>472.97 Ω. \(Z_{in(base)}\) = 300 × 130.49 Ω = 39.15 kΩ, and \(R_1 \parallel R_2\) = 478.8 Ω.</small></div>
+          <p>Check: 473.0 Ω is inside the hint's 460 to 480 Ω. The base is so much larger than the divider that it only pulls \(Z_{in}\) down by about 6 Ω. R2 does most of the deciding.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= PROBLEM 2 ================= -->
+<section class="part" id="part2" data-title="Problem 2 · The π model">
+  <div class="part-head">
+    <div class="part-letter">2</div>
+    <div class="eyebrow">Problem 2 · 12 pts · four parts</div>
+    <h2>The small-signal π model in LTspice</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>For small signals, a transistor acts like two simple parts: a resistor \(\beta r_e'\) from base to emitter, and a current source from collector to emitter that copies the base current, times β. Build those two parts in LTspice, feed in a small sine wave, and the plot shows the gain.</p></div>
+
+  <div class="topic" id="model" data-title="The small-signal model">
+    <span class="eyebrow">Topic 6 · replacing the transistor</span>
+    <h3>The small-signal model</h3>
+    <p>A <b>small-signal model</b> describes only the wiggles. The DC pass has already done its job: it set the current, and the current set \(r_e'\). After that, the DC levels are steady, so the model leaves them out. Every DC source becomes zero, just like in the AC circuit.</p>
+    <p>What's left of the transistor comes down to two facts you've already used.</p>
+    <ul>
+      <li><b>Base to emitter is a resistor.</b> Looking into the base, the junction's \(r_e'\) looks β times bigger, so the model puts a resistor of \(\beta r_e'\) between base and emitter. Many books call it \(r_\pi\).</li>
+      <li><b>Collector to emitter is a controlled current source.</b> The collector current is β times the base current, \(i_c = \beta\,i_b\), whatever the collector voltage does. A source whose value is set by some other current or voltage in the circuit is called a <b>dependent source</b>. It's drawn as a diamond to tell it apart from an ordinary source.</li>
+    </ul>
+    <div class="thm"><span class="eyebrow">Simplified small-signal π model</span>\[\text{base to emitter: } \beta\,r_e' \qquad\qquad \text{collector to emitter: } i_c = \beta\,i_b\]</div>
+    <p>The name comes from the full version, which adds a few more parts and is drawn in the shape of the Greek letter π. The homework uses the simplified version with just these two.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · power steering</span><p>Your hands put a small force on the steering wheel, and a pump adds a much larger force to turn the wheels. The pump's force follows your hands and ignores everything else. The base current is your hands. The dependent source is the pump, always β times stronger.</p></div>
+    <div class="panel" id="modelPanel">
+      <div class="panel-head"><span class="t">From transistor to model · live</span><span class="status" id="modelStatus"></span></div>
+      <div class="heroseg"><div class="seg" id="modelSeg" role="group" aria-label="What to draw"><button type="button" data-k="q" aria-pressed="true">Transistor</button><button type="button" data-k="m" aria-pressed="false">π model</button></div></div>
+      <div class="schbox short" id="modelSch" style="--ar:1.45"></div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="modelB"><span>β</span> <b id="modelBOut"></b></label><input type="range" id="modelB" min="20" max="200" step="5" value="60"></div>
+        <div class="sl"><label for="modelI"><span>DC emitter current \(I_E\)</span> <b id="modelIOut"></b></label><input type="range" id="modelI" min="0.5" max="5" step="0.1" value="1.5"></div>
+      </div>
+      <div class="cursorbox" id="modelReads"></div>
+      <div class="legend"><span><span class="dotsw" style="--c:var(--t1)"></span>base current \(i_b\)</span><span><span class="dotsw" style="--c:var(--t3)"></span>collector current \(i_c = \beta i_b\)</span></div>
+      <p class="note">A 5 mV wiggle drives the base. Switch between the transistor and its model. The terminals stay put and the currents don't change, because the model is a stand-in that behaves the same for small signals. Raise β and the base dots slow down while the collector dots stay the same, because the collector current depends on I<sub>E</sub>. Raise I<sub>E</sub> and both speed up.</p>
+    </div>
+    <details class="quick"><summary><span>Quick check: in Problem 1, what would the base-to-emitter resistor be?</span></summary><div><p>\(\beta\,(r_e' + r_e)\). The external \(r_e\) sits in the emitter path too, so the base sees it multiplied by β as well. That's the \(Z_{in(base)}\) from Problem 1d.</p></div></details>
+    <p class="key">For small signals, a transistor is a resistor \(\beta r_e'\) on the input and a β-times copy of the base current on the output.</p>
+  </div>
+
+  <div class="topic" id="ltspice" data-title="Building it in LTspice">
+    <span class="eyebrow">Topic 7 · the simulator</span>
+    <h3>Building the model in LTspice</h3>
+    <p>LTspice has no part called "dependent current source", but it has something more flexible. The <b>bi</b> component, an <b>Arbitrary Behavioral Current Source</b>, makes whatever current you type as a formula, and the formula can mention other currents in the circuit. \(I(\text{Rin})\) means "the current through Rin right now". So this line makes a current 100 times Rin's current:</p>
+    <pre class="code">I={100*I(Rin)}</pre>
+    <p>The plain <b>current</b> component can't do this. Its value is fixed, or follows a waveform you set in advance, so it can't follow another current. That's why the homework insists on bi.</p>
+    <div class="tbl"><table>
+      <thead><tr><th><span class="lc">π</span> model</th><th>LTspice part</th><th>Value in Figure 2</th></tr></thead>
+      <tbody>
+        <tr><td>Input wiggle \(v_{in}\)</td><td>Vin, the <code>signal</code> source from the Misc folder</td><td>SINE(0 1mV 1kHz)</td></tr>
+        <tr><td>\(\beta\,r_e'\) from base to emitter</td><td>Rin</td><td>1 kΩ</td></tr>
+        <tr><td>\(\beta\,i_b\) from collector to emitter</td><td>B1, a <code>bi</code></td><td>I={100*I(Rin)}, so β = 100</td></tr>
+        <tr><td>The collector's AC load</td><td>rc</td><td>1 kΩ</td></tr>
+        <tr><td>The emitter</td><td>ground</td><td></td></tr>
+      </tbody></table></div>
+    <p>Rin's current plays the part of \(i_b\). That makes 1 kΩ equal to \(\beta r_e'\), so this model stands for a transistor with \(r_e'\) = 10 Ω.</p>
+    <h4>Which way is positive?</h4>
+    <p>The sign of the gain depends on two LTspice conventions, so it pays to know them.</p>
+    <ul>
+      <li><b>\(I(\text{R})\) is positive into pin 1.</b> On a resistor placed upright without rotating, pin 1 is the top. Rotate it 180° and pin 1 is at the bottom, so every value of \(I(\text{Rin})\) changes sign.</li>
+      <li><b>A current source pushes current along its arrow.</b> B1's arrow points down, so it pulls current out of its top node and sends it down to ground.</li>
+    </ul>
+    <p>Put them together in Figure 2. A positive vin pushes current down through Rin, so \(I(\text{Rin})\) is positive. B1 then pulls 100 times that out of the Vout node. That current has to come up through rc from ground, so Vout ends up below ground. The output is upside down, just like a real common-emitter amplifier.</p>
+    <p class="warn"><b>Watch out.</b> If Rin or B1 ends up rotated 180°, the gain comes out positive. The circuit is the same, but LTspice is counting current the other way. Match Figure 2's orientation.</p>
+    <div class="panel" id="ltPanel">
+      <div class="panel-head"><span class="t">The model in a simulator · live</span><span class="status" id="ltStatus"></span></div>
+      <div class="heroseg">
+        <div class="seg" id="ltSegR" role="group" aria-label="Rin orientation"><button type="button" data-k="up" aria-pressed="true">Rin as drawn</button><button type="button" data-k="flip" aria-pressed="false">Rin rotated 180°</button></div>
+        <div class="seg" id="ltSegB" role="group" aria-label="B1 orientation"><button type="button" data-k="up" aria-pressed="true">B1 as drawn</button><button type="button" data-k="flip" aria-pressed="false">B1 rotated 180°</button></div>
+      </div>
+      <div class="schbox short" id="ltSch" style="--ar:1.55"></div>
+      <canvas id="ltCv" class="p2" style="height:300px" aria-label="Two plot panes like LTspice's. The top pane shows the input voltage. The bottom pane shows the output voltage. A vertical cursor can be dragged across both."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="ltB"><span>β in the formula</span> <b id="ltBOut"></b></label><input type="range" id="ltB" min="10" max="200" step="5" value="50"></div>
+        <div class="sl"><label for="ltRin"><span>Rin</span> <b id="ltRinOut"></b></label><input type="range" id="ltRin" min="0" max="9" step="1" value="6"></div>
+        <div class="sl"><label for="ltRc"><span>rc</span> <b id="ltRcOut"></b></label><input type="range" id="ltRc" min="0" max="9" step="1" value="5"></div>
+      </div>
+      <div class="cursorbox" id="ltReads"></div>
+      <p class="note">These start at example values, not the homework's. Drag across the plot to move the cursor, the way LTspice's cursors work. Then rotate Rin or B1 and watch the arrow and the output flip. Rotate both and they cancel.</p>
+    </div>
+    <details class="deeper"><summary>Going further: the LTspice clicks</summary><div>
+      <ul>
+        <li>Open the parts library with <kbd>F2</kbd>. The <code>signal</code> source is in the Misc folder. Type <code>bi</code> to find the behavioral current source, and <code>res</code> for resistors.</li>
+        <li><kbd>Ctrl</kbd>+<kbd>R</kbd> rotates a part while you place it. Twice is 180°, which flips the current sign.</li>
+        <li><kbd>G</kbd> places a ground. <kbd>F4</kbd> places a net label: name the nodes Vin and Vout so the plot names match.</li>
+        <li><kbd>T</kbd> places text, which is how your name goes on the schematic.</li>
+        <li>Right-click a part to set its value. For B1, the value is the whole formula, <code>I={100*I(Rin)}</code>.</li>
+        <li>Simulate → Edit Simulation Cmd (Configure Analysis in newer versions) sets up the transient run.</li>
+        <li>LTspice reads both <code>m</code> and <code>M</code> as milli. Mega is <code>Meg</code>. So <code>1m</code> and <code>1mV</code> both mean 1 millivolt.</li>
+      </ul>
+    </div></details>
+    <p class="key">bi lets one current follow another, which is exactly what \(i_c = \beta i_b\) needs. Orientation decides the sign.</p>
+
+    <article class="prob" id="p2a" data-title="Problem 2a">
+      <div class="prob-head"><span class="pnum">Problem 2a</span><span class="eyebrow">build the schematic</span><span class="pts">4 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Construct the LTspice simplified small-signal π model</b> shown in Figure 2, including your name on your schematic. Model the \(\beta i_b\) dependent source with the bi component and the behavioral equation I = {100*I(Rin)} for β = 100. The Vin source is the <code>signal</code> component in the Misc folder.</p>
+        <ol class="steps">
+          <li><h5>Place the input source</h5><p>Add the <code>signal</code> source from Misc, name it Vin, and ground its bottom.</p></li>
+          <li><h5>Add Rin</h5><p>Place a resistor upright, without rotating it, from the top of Vin to ground. Set it to 1k, name it Rin, and label the top node Vin with <kbd>F4</kbd>.</p></li>
+          <li><h5>Add the dependent source</h5><p>Place a <code>bi</code>, not a <code>current</code>, with its arrow pointing down and its bottom grounded. Set its value to <code>I={100*I(Rin)}</code>.</p></li>
+          <li><h5>Add the collector load</h5><p>Connect rc = 1k from the top of B1 to ground. Label that top node Vout.</p></li>
+          <li><h5>Sign it</h5><p>Press <kbd>T</kbd> and place your name on the schematic.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">The finished schematic<small>Vin and Rin on the left, B1 and rc on the right, everything sharing one ground, with nodes Vin and Vout labeled and your name on it.</small></div>
+          <p>To check your wiring, use View → SPICE Netlist. The lines that matter should match these, with your own node names in the same places:</p>
+          <pre class="code">Vin Vin 0 SINE(0 1mV 1kHz)
+Rin Vin 0 1k
+B1 Vout 0 I={100*I(Rin)}
+rc Vout 0 1k
+.tran 2ms</pre>
+          <p>The order of the two nodes on each line is pin 1 then pin 2. If Rin reads <code>Rin 0 Vin 1k</code>, it's rotated 180°, and your gain will come out with the wrong sign.</p>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="p2b" data-title="Problem 2b">
+      <div class="prob-head"><span class="pnum">Problem 2b</span><span class="eyebrow">simulate and plot</span><span class="pts">4 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Set Vin to SINE(0 1mV 1kHz) and run the transient analysis.</b> Add a second plot pane with Plot Settings → Add Plot Pane, put V(vin) in the top pane and V(vout) in the bottom pane, and annotate the plot with your name using Plot Settings → Notes and Annotations → Place Text.</p>
+        <ol class="steps">
+          <li><h5>Set the sine wave</h5><p>Right-click Vin, choose Advanced, pick SINE, and enter DC offset 0, amplitude 1m and frequency 1k.</p></li>
+          <li><h5>Set the run length</h5><p>Add the command <code>.tran 2ms</code>. A 1 kHz wave takes 1 ms per cycle, so 2 ms shows two full cycles.</p></li>
+          <li><h5>Run and split the plot</h5><p>Run it. Use Plot Settings → Add Plot Pane, then click the Vin node for the top pane and the Vout node for the bottom pane.</p></li>
+          <li><h5>Sign the plot</h5><p>Use Plot Settings → Notes and Annotations → Place Text to put your name on a pane.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">Two panes, two cycles each<small>V(vin) on top swings ±1 mV. V(vout) on the bottom swings ±100 mV, upside down from the input.</small></div>
+          <p>The two waves cross zero at the same moments, but vout peaks exactly when vin bottoms out. If your bottom wave rises with the top one, check the orientation of Rin and B1.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="scope" data-title="Reading gain off a plot">
+    <span class="eyebrow">Topic 8 · from a plot to a number</span>
+    <h3>Reading gain off a plot</h3>
+    <p>Gain is the output divided by the input. On a plot, you read both at the same instant.</p>
+    <ol class="steps">
+      <li><h5>Pick a moment</h5><p>A peak is easiest, because the wave is flat there and small timing errors don't matter.</p></li>
+      <li><h5>Read both traces at that moment</h5><p>Read vin and vout at the same time, including their signs.</p></li>
+      <li><h5>Divide</h5><p>\(A_V = v_{out}/v_{in}\). If one is positive and the other negative, the gain is negative, which means the amplifier inverts.</p></li>
+    </ol>
+    <p>You can also divide the peak-to-peak heights, then add a minus sign if the waves move in opposite directions. Watch the units: if vin is in millivolts and vout in volts, convert one first.</p>
+    <p>In LTspice, click a trace's name above its pane to attach a cursor. Drag the cursor along the trace and a small window shows the time and the value.</p>
+    <div class="panel" id="scopePanel">
+      <div class="panel-head"><span class="t">Read the gain · practice</span><span class="status" id="scopeStatus"></span></div>
+      <canvas id="scopeCv" class="p2" style="height:300px" aria-label="A two-pane plot of a mystery amplifier's input and output, with a draggable cursor."></canvas>
+      <div class="heroseg"><button type="button" class="btn ghost" id="scopeNew">New mystery amplifier</button><button type="button" class="btn" id="scopeShow">Check my reading</button></div>
+      <div class="cursorbox" id="scopeReads"></div>
+      <p class="note">Drag across the plot to move the cursor. Put it on a peak, read both values, divide, and decide the sign. Then check. Each new amplifier has a different gain, and some don't invert.</p>
+    </div>
+    <p class="key">Read both traces at the same instant, divide, and keep the sign.</p>
+
+    <article class="prob" id="p2c" data-title="Problem 2c">
+      <div class="prob-head"><span class="pnum">Problem 2c</span><span class="eyebrow">the gain from the simulation</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Based on your simulated results, determine the voltage gain \(A_V\)</b>, including the sign.</p>
+        <ol class="steps">
+          <li><h5>Read the input at a peak</h5><p>Put a cursor on V(vin) at 0.25 ms, a quarter of the way through the first cycle, where vin is at its positive peak of 1 mV.</p></li>
+          <li><h5>Read the output at the same moment</h5><p>Read V(vout) at the same 0.25 ms. Note whether it's a peak or a trough.</p></li>
+          <li><h5>Divide and keep the sign</h5><p>Compute it, then check it against the model's formula, \(A_V = -\beta\,r_c/R_{in}\).</p><div class="mbox">\[A_V = \frac{v_{out}(0.25\text{ ms})}{v_{in}(0.25\text{ ms})}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">A<sub>V</sub> = −100<small>V(vout) is −100 mV when V(vin) is +1 mV, and −100 mV / 1 mV = −100.</small></div>
+          <p>Check with the model: \(-\beta\,r_c/R_{in}\) = −100 × 1 kΩ / 1 kΩ = −100. It also matches last week's formula: Rin stands for \(\beta r_e'\), so \(r_e'\) = 10 Ω and \(-r_c/r_e'\) = −1000/10 = −100.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="raise" data-title="What sets the gain">
+    <span class="eyebrow">Topic 9 · the gain formula</span>
+    <h3>What sets the gain</h3>
+    <p>The model is simple enough to solve by hand. Follow the signal around it.</p>
+    <ol class="steps">
+      <li><h5>The input current</h5><p>vin sits right across Rin, so \(i_b = v_{in}/R_{in}\).</p></li>
+      <li><h5>The copied current</h5><p>B1 makes \(i_c = \beta\,i_b\).</p></li>
+      <li><h5>The output voltage</h5><p>That current is pulled out of the Vout node, and it comes up through rc from ground: \(v_{out} = -i_c\,r_c\).</p></li>
+    </ol>
+    <div class="thm"><span class="eyebrow">Gain of the small-signal model</span>\[A_V = \frac{v_{out}}{v_{in}} = -\frac{\beta\,r_c}{R_{in}}\]</div>
+    <div class="tbl"><table>
+      <thead><tr><th>Change</th><th>Effect on the gain's size \(|A_V|\)</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr><td>Raise β</td><td>Goes up</td><td>More output current for the same input current</td></tr>
+        <tr><td>Raise \(R_{in}\)</td><td>Goes down</td><td>Less input current for the same input voltage</td></tr>
+        <tr><td>Raise \(r_c\)</td><td>Goes up</td><td>The same output current makes a bigger voltage</td></tr>
+      </tbody></table></div>
+    <p>In a real amplifier each piece has a meaning. \(R_{in}\) is \(\beta r_e'\), so β cancels and the gain is \(-r_c/r_e'\), the same formula as last week. \(r_c\) is the collector resistor in parallel with the load, \(R_C \parallel R_L\).</p>
+    <details class="quick"><summary><span>Quick check: double \(R_{in}\) and leave the rest alone. What happens to the gain?</span></summary><div><p>Its size halves. Half the input current flows, so B1 copies half as much.</p></div></details>
+    <p class="key">Gain is β times the output resistance over the input resistance, with a minus sign for the flip.</p>
+
+    <article class="prob" id="p2d" data-title="Problem 2d">
+      <div class="prob-head"><span class="pnum">Problem 2d</span><span class="eyebrow">raising the gain</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Using a complete sentence or sentences, describe what changes can be made</b> to your LTspice small-signal equivalent circuit to increase the magnitude of the voltage gain, given a fixed β = 100 and a fixed Rin = 1 kΩ.</p>
+        <ol class="steps">
+          <li><h5>Write the gain from the model</h5><p>\(A_V = -\beta\,r_c/R_{in}\), so \(|A_V| = \beta\,r_c/R_{in}\).</p></li>
+          <li><h5>Cross off what's fixed</h5><p>β = 100 and Rin = 1 kΩ can't change, so the factor \(\beta/R_{in}\) is locked.</p></li>
+          <li><h5>See what's left</h5><p>One part in the circuit is still free. Decide which way to move it, and write your answer as a sentence that says why.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">Increase rc<small>|A<sub>V</sub>| = β·rc/Rin is proportional to rc.</small></div>
+          <p>A sentence that answers it: "To increase the magnitude of the voltage gain with β and Rin fixed, increase the resistance of rc, because the gain magnitude βrc/Rin is directly proportional to rc; for example, raising rc from 1 kΩ to 2 kΩ doubles the gain from −100 to −200."</p>
+          <p>In a real amplifier, rc is the collector resistor in parallel with the load, so a larger collector resistor or a larger load resistance does the same thing.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= CHEAT SHEET ================= -->
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">DC pass</span><div class="eqs tall">\(V_B = V_{cc}\dfrac{R_2}{R_1+R_2}\)<br>\(V_E = V_B - 0.7\)<br>\(I_E = \dfrac{V_E}{r_e + R_4}\)</div><p>Caps open, so DC sees both emitter resistors.</p></div>
+    <div class="card"><span class="eyebrow">AC resistances</span><div class="eqs tall">\(r_e' = 25\text{ mV}/I_E\)<br>\(r_c = R_C \parallel R_L\)</div><p>Caps short, \(V_{cc}\) = ground. C3 removes R4, not \(r_e\).</p></div>
+    <div class="card"><span class="eyebrow">Gain with emitter feedback</span><div class="eqs tall">\(A_V = -\dfrac{r_c}{r_e' + r_e}\)</div><p>About \(-r_c/r_e\) when \(r_e \gg r_e'\). Steadier, smaller.</p></div>
+    <div class="card"><span class="eyebrow">Input impedance</span><div class="eqs tall">\(Z_{in(base)} = \beta(r_e' + r_e)\)<br>\(Z_{in} = R_1 \parallel R_2 \parallel Z_{in(base)}\)</div><p>Parallel: add \(1/R\) values, then flip.</p></div>
+    <div class="card"><span class="eyebrow"><span class="lc">π</span> model</span><div class="eqs tall">\(b\) to \(e\): \(\beta r_e'\)<br>\(c\) to \(e\): \(i_c = \beta i_b\)</div><p>In LTspice: <code>bi</code> with <code>I={β*I(Rin)}</code>.</p></div>
+    <div class="card"><span class="eyebrow">Model gain</span><div class="eqs tall">\(A_V = -\dfrac{\beta\,r_c}{R_{in}}\)</div><p>Read from a plot: vout ÷ vin at the same instant, sign included.</p></div>
+  </div>
+  <div class="topic" id="mistakes" data-title="Common mistakes" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Using R4 alone for the DC emitter current. C3 is open at DC, so it's \(r_e + R_4\).</li>
+      <li>Mixing up \(r_e'\), inside the transistor, with \(r_e\), the 120 Ω resistor.</li>
+      <li>Leaving \(r_e\) out of the gain, or putting R4 into it. C3 shorts R4 only.</li>
+      <li>Forgetting β when looking into the base. It's \(\beta(r_e' + r_e)\), not \(r_e' + r_e\).</li>
+      <li>Forgetting R1 and R2 in \(Z_{in}\), or adding them in series. For AC they're both to ground, in parallel.</li>
+      <li>Using LTspice's <code>current</code> source instead of <code>bi</code>. Only bi can follow another current.</li>
+      <li>Rotating Rin or B1 by 180°, which flips the sign of the gain.</li>
+      <li>Typing <code>1M</code> and expecting mega. LTspice reads M as milli. Mega is <code>Meg</code>.</li>
+      <li>Dropping the minus sign on \(A_V\). It's part of the answer.</li>
+    </ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal every answer on this page</summary>
+      <div class="ans"><div class="tbl"><table>
+        <thead><tr><th>Problem</th><th>Answer</th><th>More digits</th></tr></thead>
+        <tbody>
+          <tr><td>1a · \(r_e'\)</td><td>10.49 Ω</td><td>10.486 Ω, from \(I_E\) = 2.384 mA (\(V_B\) = 2.321 V, \(V_E\) = 1.621 V)</td></tr>
+          <tr><td>1b · \(r_c\)</td><td>2.629 kΩ</td><td>2629.0 Ω</td></tr>
+          <tr><td>1c · \(A_V\)</td><td>−20.15</td><td>−20.148</td></tr>
+          <tr><td>1d · \(Z_{in}\)</td><td>473.0 Ω</td><td>472.97 Ω, with \(Z_{in(base)}\) = 39.15 kΩ</td></tr>
+          <tr><td>2a · schematic</td><td>Figure 2 rebuilt, signed</td><td>B1 is a bi with I={100*I(Rin)}</td></tr>
+          <tr><td>2b · plot</td><td>vin ±1 mV on top, vout ±100 mV below</td><td>vout inverted</td></tr>
+          <tr><td>2c · \(A_V\)</td><td>−100</td><td>−β·rc/Rin = −100 × 1k/1k</td></tr>
+          <tr><td>2d · more gain</td><td>Increase rc</td><td>|A<sub>V</sub>| = β·rc/Rin</td></tr>
+        </tbody>
+      </table></div></div></details>
+  </div>
+  <footer><p>Problems, schematics and the hint are from <i>BJT Amplifier HW2</i> (jas, 10/04/2024). Problem 1 uses the homework's simplified analysis: \(V_{BE}\) = 0.7 V, a stiff divider, \(I_C \approx I_E\) and a 25 mV thermal voltage. With 26 mV, \(Z_{in}\) is unchanged to four figures and \(A_V\) is −20.08. Problem 2's values come from the homework's Figure 2. The live demos use example part values that aren't from the homework.</p></footer>
+</section>
+
+</main>

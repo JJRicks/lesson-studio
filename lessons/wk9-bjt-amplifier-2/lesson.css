@@ -1,0 +1,35 @@
+/* Page-specific styles only. Reusable styles belong in engine/css. */
+
+/* schematic boxes inside panels */
+.schbox{background:var(--plot);min-width:0;padding:6px 4px}
+.schbox .sch{height:auto;aspect-ratio:var(--ar,1.25);max-height:440px;margin:0 auto}
+.duo{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);border-bottom:1px solid var(--line)}
+.duo>*{min-width:0}
+.duo>.side{border-left:1px solid var(--line);display:flex;flex-direction:column}
+.duo canvas.p2{flex:1;height:auto;min-height:250px}
+@media (max-width:760px){.duo{grid-template-columns:minmax(0,1fr)}.duo>.side{border-left:0;border-top:1px solid var(--line)}}
+
+/* readouts keep their case: r and R, mV and MV, and beta all mean different things here */
+.cursorbox .k{text-transform:none}
+.lc{text-transform:none}
+.schbox.short .sch{max-height:330px}
+
+.heroseg{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.heroseg .seg{flex-wrap:wrap}
+.legend .sw{background:var(--c)}
+.dotsw{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c);margin-right:6px;vertical-align:middle}
+
+/* the tour's explanation beside the circuit */
+.tourtxt{padding:18px 20px;display:flex;flex-direction:column;gap:10px;justify-content:center;flex:1}
+.tourtxt h4{margin:0;font-size:1.12rem}
+.tourtxt p{margin:0}
+.tourtxt .where{font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tourhit{cursor:pointer;pointer-events:all;fill:transparent;stroke:none}
+
+/* the cheat sheet's stacked fractions need room between lines */
+.cheat .card .eqs.tall{line-height:2.9}
+
+/* this lesson: a scope canvas under a schematic, and buttons in a strip */
+#ltPanel .schbox{border-bottom:1px solid var(--line)}
+.heroseg .btn{margin:0}
+#heroReads{grid-template-columns:repeat(3,minmax(0,1fr))}
