@@ -1,0 +1,892 @@
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#l28">Lesson 28 · Mass</a>
+      <ol>
+        <li><a href="#com-density">Mass from density</a></li>
+        <li><a href="#com-moments">Moments</a></li>
+        <li><a href="#com-center">Center of mass</a></li>
+        <li><a href="#inertia">Moment of inertia</a></li>
+        <li><a href="#com-3d">Solids in 3D</a></li>
+      </ol></li>
+    <li><a class="grp" href="#l29">Lesson 29 · Vector fields</a>
+      <ol>
+        <li><a href="#vf-what">What a field is</a></li>
+        <li><a href="#vf-sketch">Sketching a field</a></li>
+        <li><a href="#vf-types">Radial and rotational</a></li>
+        <li><a href="#vf-unit">Unit fields</a></li>
+        <li><a href="#vf-3d">Fields in space</a></li>
+        <li><a href="#vf-grad">Gradient fields</a></li>
+        <li><a href="#vf-potential">Potential functions</a></li>
+        <li><a href="#vf-cross">Cross-partial test</a></li>
+      </ol></li>
+    <li><a class="grp" href="#l30">Lesson 30 · Line integrals</a>
+      <ol>
+        <li><a href="#li-path">Riding a curve</a></li>
+        <li><a href="#li-scalar">Scalar line integrals</a></li>
+        <li><a href="#li-arc">Arc length</a></li>
+        <li><a href="#li-vector">Work along a path</a></li>
+        <li><a href="#li-expanded">The P dx form</a></li>
+        <li><a href="#li-flux">Flux</a></li>
+        <li><a href="#li-circ">Circulation</a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#mistakes">Common mistakes</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<!-- ================= HERO ================= -->
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Math 215 · Lessons 28–30</div>
+  <h1>Mass, Vector Fields &amp; <span>Line Integrals</span></h1>
+  <p class="lede">This week has three ideas. First, you'll use integrals to find where an uneven plate balances and how hard it is to spin. Next come vector fields, which put an arrow at every point, like a wind map. Last, you'll add things up along a curve: the area of a curtain, the work a wind does on a walker, and how much fluid crosses a line. Every worked example has a 3D walkthrough, and every answer stays hidden until you click.</p>
+  <div class="chips"><span class="chip">Lesson 28 · Center of mass &amp; inertia</span><span class="chip">Lesson 29 · Vector fields</span><span class="chip">Lesson 30 · Line integrals</span></div>
+  <div class="panel">
+    <div class="panel-head"><span class="t">Walk a loop through a moving fluid · live</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <div class="seg" role="group" aria-label="Which field" id="heroSeg"><button aria-pressed="true" data-k="swirl">Whirlpool</button><button aria-pressed="false" data-k="source">Fountain</button><button aria-pressed="false" data-k="wind">Steady wind</button></div>
+        <button class="btn ghost" id="heroPlay" type="button" aria-pressed="true">Pause</button>
+      </div></div>
+    <canvas id="heroCv" class="p2" style="height:400px" aria-label="A vector field drawn as arrows with drifting specks of fluid. A bead walks counterclockwise around a circle and keeps a running total of how much the fluid pushes along the circle and across it."></canvas>
+    <div class="reads" id="heroReads">
+      <div class="read"><div class="k">Field</div><div class="v" id="hF">–</div></div>
+      <div class="read"><div class="k">Push along the loop</div><div class="v" id="hAlong">–</div></div>
+      <div class="read"><div class="k">Flow across the loop</div><div class="v" id="hAcross">–</div></div>
+    </div>
+    <p class="note">The specks drift with the fluid. The bead walks counterclockwise around the circle. Its gold arrow is the fluid's velocity there, and the trail turns green where the fluid pushes the bead forward and red where it pushes back. A whirlpool pushes along the loop. A fountain pushes across it. A steady wind does both, but over a full lap every push is cancelled by an opposite one. Those two totals are <b>circulation</b> and <b>flux</b>, and Lesson 30 shows how to compute them.</p>
+  </div>
+</section>
+
+<section class="topic" aria-labelledby="map-h">
+  <h3 id="map-h">The week at a glance</h3>
+  <div class="grid2">
+    <a class="card" href="#l28" style="text-decoration:none;color:inherit"><span class="eyebrow">Lesson 28</span><h4>Center of mass and inertia</h4><p>Where does an uneven plate balance? How hard is it to spin? Both are double or triple integrals with a distance inside.</p></a>
+    <a class="card" href="#l29" style="text-decoration:none;color:inherit"><span class="eyebrow">Lesson 29</span><h4>Vector fields</h4><p>An arrow at every point. Read them, sketch them, sort them, and spot the ones that are gradients.</p></a>
+    <a class="card" href="#l30" style="text-decoration:none;color:inherit"><span class="eyebrow">Lesson 30</span><h4>Line integrals</h4><p>Add up along a curve: curtain areas, arc length, work, flux and circulation.</p></a>
+  </div>
+</section>
+
+<!-- ================= LESSON 28 ================= -->
+<section class="part" id="l28" data-title="Lesson 28 · Mass">
+  <div class="part-head">
+    <div class="part-letter">28</div>
+    <div class="eyebrow">Lesson 28 · balance and spin</div>
+    <h2>Centers of mass and moments of inertia</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>A plate whose weight is spread unevenly balances at one special point, called its center of mass. Three integrals find it: one for the total mass and two "moments" that measure how far the mass sits from each axis. Square those distances and you get the moment of inertia, which measures how hard the plate is to spin.</p></div>
+
+  <div class="topic" id="com-density" data-title="Mass from density">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>Mass from density</h3>
+    <p>A <b>lamina</b> is a thin, flat plate, thin enough that you can ignore its thickness. Think of a sheet of metal or a cookie. It sits in the \(xy\)-plane and covers a region \(R\).</p>
+    <p>A plate can be heavier in some places than others. Its <b>density</b> \(\rho(x,y)\) (the Greek letter rho) says how much mass sits on each unit of area at the point \((x,y)\). It is measured in units like grams per square centimeter. If the density is the same everywhere, the plate is <b>homogeneous</b>.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a pizza with uneven toppings</span><p>A pizza with all the cheese piled on one side weighs the same per square inch on the crust side as plain dough, and much more on the cheesy side. Density is "weight per square inch" at each spot. To weigh the whole pizza, you'd weigh every small square and add them up.</p></div>
+    <p>That is exactly the recipe for an integral:</p>
+    <ol class="steps">
+      <li><h5>Chop</h5><p>Cut \(R\) into small rectangles, each with area \(\Delta A\).</p></li>
+      <li><h5>Weigh one piece</h5><p>A small piece is almost evenly dense, so its mass is about density × area, \(\rho(x^*,y^*)\,\Delta A\), using any point \((x^*,y^*)\) inside it.</p></li>
+      <li><h5>Add and refine</h5><p>Add up every piece and let the pieces shrink. The sum becomes a double integral.</p></li>
+    </ol>
+    <div class="thm"><span class="eyebrow">Mass of a lamina</span>
+      \[m = \lim_{k,l\to\infty}\sum_{i=1}^{k}\sum_{j=1}^{l}\rho(x^*_{ij},y^*_{ij})\,\Delta A = \iint_R \rho(x,y)\,dA\]
+    </div>
+    <p>Here's a picture that ties this to last week. Draw the surface \(z = \rho(x,y)\) above the plate. Its height is the density, so the mass is the <b>volume under that surface</b>. Every tool you have for volumes works on mass.</p>
+    <p class="key">Mass is the double integral of density. If the density were a constant, it would be density × area.</p>
+
+    <article class="prob" id="ex28-1">
+      <div class="prob-head"><span class="pnum">Example 1</span><span class="eyebrow">Mass of a lamina</span><span class="pts">notes p. 4</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the mass</b> of the lamina on the rectangle with vertices \((0,0)\), \((2,0)\), \((2,3)\) and \((0,3)\), with density \(\rho(x,y) = 3y\sqrt{x}\). Give an exact answer.</p>
+        <ol class="steps">
+          <li><h5>Read the plate</h5><p>The corners give \(0 \le x \le 2\) and \(0 \le y \le 3\). The density grows to the right (the \(\sqrt{x}\)) and toward the top (the \(3y\)).</p></li>
+          <li><h5>Set up the mass integral</h5><div class="mbox">\[m = \int_0^2\!\!\int_0^3 3y\sqrt{x}\,dy\,dx\]</div></li>
+          <li><h5>Split it</h5><p>The density is an \(x\) piece times a \(y\) piece, and every limit is a number. So the double integral splits into two single integrals:</p><div class="mbox">\[m = \left(\int_0^2 \sqrt{x}\,dx\right)\left(\int_0^3 3y\,dy\right)\]</div></li>
+          <li><h5>The \(x\) part</h5><div class="mbox">\[\int_0^2 x^{1/2}\,dx = \frac{2}{3}x^{3/2}\Big|_0^2 = \frac23\cdot 2\sqrt2 = \frac{4\sqrt2}{3}\]</div></li>
+          <li><h5>The \(y\) part, then multiply</h5><div class="mbox">\[\int_0^3 3y\,dy = \frac32 y^2\Big|_0^3 = \frac{27}{2}\]</div><p>Multiply the two parts.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(m = 18\sqrt2 \approx 25.46\)<small>\(\tfrac{4\sqrt2}{3}\cdot\tfrac{27}{2}\). The \(\tfrac{27}{3}\) reduces to 9 and the \(\tfrac{4}{2}\) to 2.</small></div>
+          <p>Sanity check: the densest corner is \((2,3)\), where \(\rho \approx 12.7\). If the whole plate (area 6) had that density, the mass would be about 76. The plate is much lighter near the axes, so 25 is reasonable.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="com-moments" data-title="Moments">
+    <span class="eyebrow">Topic 2 · turning effect</span>
+    <h3>Moments: mass times distance</h3>
+    <p>Before you can find a balance point, you need a way to measure how strongly a weight tries to tip something.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a seesaw</span><p>A small child far from the middle of a seesaw can balance a large adult sitting close in. What matters is weight × distance from the pivot. Physicists call that product a <b>moment</b>.</p></div>
+    <p>For a plate, each small piece has mass \(\rho\,\Delta A\). Its moment about a line is that mass times its distance from the line. Add up all the pieces:</p>
+    <ul>
+      <li>The <b>moment about the \(y\)-axis</b>, \(M_y\), uses the distance from the \(y\)-axis. A point \((x,y)\) is \(x\) units from the \(y\)-axis.</li>
+      <li>The <b>moment about the \(x\)-axis</b>, \(M_x\), uses the distance from the \(x\)-axis, which is \(y\).</li>
+    </ul>
+    <div class="thm"><span class="eyebrow">Moments of a lamina</span>
+      \[M_x = \iint_R y\,\rho(x,y)\,dA \qquad\qquad M_y = \iint_R x\,\rho(x,y)\,dA\]
+    </div>
+    <p class="warn">The letters look swapped, and that trips everyone up. \(M_x\) has a \(y\) inside, and \(M_y\) has an \(x\) inside. The subscript names the axis you measure from. The distance to the \(x\)-axis is \(y\).</p>
+    <p>A distance to the left of the \(y\)-axis is negative \(x\), so mass on opposite sides cancels. That cancelling is what balancing means.</p>
+
+    <article class="prob" id="ex28-2">
+      <div class="prob-head"><span class="pnum">Example 2</span><span class="eyebrow">Moment about the \(y\)-axis</span><span class="pts">notes p. 4</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the moment \(M_y\)</b> about the \(y\)-axis for the lamina on the rectangle with vertices \((3,4)\), \((3,5)\), \((4,5)\) and \((4,4)\), with density \(\rho(x,y) = y\). Give an exact answer.</p>
+        <ol class="steps">
+          <li><h5>Read the plate</h5><p>The corners give \(3 \le x \le 4\) and \(4 \le y \le 5\). The plate is a 1-by-1 square sitting well away from both axes.</p></li>
+          <li><h5>Pick the right distance</h5><p>\(M_y\) measures from the \(y\)-axis, so each piece's lever arm is its \(x\):</p><div class="mbox">\[M_y = \iint_R x\,\rho\,dA = \int_3^4\!\!\int_4^5 x\,y\,dy\,dx\]</div></li>
+          <li><h5>Split it</h5><p>The integrand \(xy\) is an \(x\) piece times a \(y\) piece over a rectangle:</p><div class="mbox">\[M_y = \left(\int_3^4 x\,dx\right)\left(\int_4^5 y\,dy\right)\]</div></li>
+          <li><h5>Each part, then multiply</h5><div class="mbox">\[\int_3^4 x\,dx = \frac{16-9}{2} = \frac72 \qquad \int_4^5 y\,dy = \frac{25-16}{2} = \frac92\]</div><p>Multiply the two parts.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(M_y = \dfrac{63}{4} = 15.75\)<small>\(\tfrac72\cdot\tfrac92\).</small></div>
+          <p>Sanity check: the plate's mass is \(\int_3^4\!\int_4^5 y\,dy\,dx = 4.5\), and every piece is between 3 and 4 units from the \(y\)-axis. So \(M_y\) should land between \(3(4.5) = 13.5\) and \(4(4.5) = 18\). It does.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="com-center" data-title="Center of mass">
+    <span class="eyebrow">Topic 3 · the balance point</span>
+    <h3>Center of mass</h3>
+    <p>The <b>center of mass</b> \((\bar x, \bar y)\) is the point where you could balance the plate on a pin. (Read \(\bar x\) as "x bar.") In a uniform gravity field it's the same as the center of gravity.</p>
+    <p>Here's where the formula comes from. Imagine squeezing all of the mass \(m\) into one point at \(\bar x\). Its moment about the \(y\)-axis would be \(m\,\bar x\). The real plate must tip the same way, so set the two equal: \(m\,\bar x = M_y\). Do the same for \(y\).</p>
+    <div class="thm"><span class="eyebrow">Mass, moments and center of mass</span>
+      \[m = \iint_R \rho\,dA \qquad M_x = \iint_R y\rho\,dA \qquad M_y = \iint_R x\rho\,dA\]
+      \[\bar x = \frac{M_y}{m} \qquad\qquad \bar y = \frac{M_x}{m}\]
+    </div>
+    <p>Another way to read \(\bar x\): it's the <b>average \(x\)</b> of the plate, where heavier spots count more. If the plate is homogeneous, every spot counts equally and the center of mass is the plain geometric center, called the <b>centroid</b>.</p>
+    <div class="panel" id="balPanel">
+      <div class="panel-head"><span class="t">Balance a plate on a pin</span><span class="status" id="balStatus"></span></div>
+      <canvas id="balCv" class="p2" style="height:340px" aria-label="A rectangular plate shaded by density. A pin you can drag sits under it, and an arrow shows which way the plate would tip."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="balA"><span>Extra weight toward the right</span> <b id="balAOut"></b></label><input type="range" id="balA" min="0" max="4" step="0.1" value="1.5"></div>
+        <div class="sl"><label for="balB"><span>Extra weight toward the top</span> <b id="balBOut"></b></label><input type="range" id="balB" min="0" max="4" step="0.1" value="0"></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;padding:0 18px 12px"><button class="btn" id="balSnap" type="button">Move the pin to the balance point</button></div>
+      <div class="cursorbox" id="balReads"></div>
+      <p class="note">The plate covers \(0 \le x \le 4\), \(0 \le y \le 3\), with density \(\rho = (1 + a\,x/4)(1 + b\,y/3)\). Each speck is a grain of mass, so crowded areas are denser. Drag the pin. The red arrow points the way the plate would tip, and it shrinks to nothing at the balance point. The green markers on the edges show \(\bar x\) and \(\bar y\). Watch \(\bar x = M_y/m\) slide right as you add weight on the right.</p>
+    </div>
+
+    <article class="prob" id="ex28-3">
+      <div class="prob-head"><span class="pnum">Example 3</span><span class="eyebrow">Center of mass</span><span class="pts">notes p. 5</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the center of mass</b> \((\bar x, \bar y)\) of the lamina on the rectangle with vertices \((0,0)\), \((3,0)\), \((3,4)\) and \((0,4)\), with density \(\rho(x,y) = xy^3\). Give an exact answer.</p>
+        <ol class="steps">
+          <li><h5>Read the plate and plan</h5><p>\(0 \le x \le 3\) and \(0 \le y \le 4\). You need three integrals: \(m\), \(M_y\) and \(M_x\). Each one splits into an \(x\) part times a \(y\) part.</p></li>
+          <li><h5>Mass</h5><div class="mbox">\[m = \int_0^3 x\,dx\cdot\int_0^4 y^3\,dy = \frac92\cdot 64 = 288\]</div></li>
+          <li><h5>\(M_y\): multiply the density by \(x\)</h5><div class="mbox">\[M_y = \int_0^3 x^2\,dx\cdot\int_0^4 y^3\,dy = 9\cdot 64 = 576\]</div></li>
+          <li><h5>\(M_x\): multiply the density by \(y\)</h5><div class="mbox">\[M_x = \int_0^3 x\,dx\cdot\int_0^4 y^4\,dy = \frac92\cdot\frac{1024}{5} = \frac{4608}{5}\]</div></li>
+          <li><h5>Divide</h5><p>\(\bar x = M_y/m\) and \(\bar y = M_x/m\). Compute them.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\((\bar x, \bar y) = \left(2,\ \dfrac{16}{5}\right) = (2,\ 3.2)\)<small>\(576/288 = 2\) and \(\tfrac{4608}{5}\div 288 = \tfrac{16}{5}\).</small></div>
+          <p>Sanity check: the plain center of the rectangle is \((1.5, 2)\). The density grows with \(x\) and very fast with \(y\) (that's the \(y^3\)), so the balance point moves right a little and up a lot. It does.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="inertia" data-title="Moment of inertia">
+    <span class="eyebrow">Topic 4 · resistance to spinning</span>
+    <h3>Moments of inertia</h3>
+    <p>Mass measures how hard it is to push something into a straight-line motion. The <b>moment of inertia</b> \(I\) measures how hard it is to start something spinning about an axis, or to stop it once it spins.</p>
+    <p>For one small mass \(m\) at distance \(r\) from the axis, \(I = m r^2\). The distance is <b>squared</b>, so mass far from the axis counts a lot. Twice as far means four times the resistance.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a figure skater</span><p>A skater spinning with arms out turns slowly. When they pull their arms in, the same mass moves closer to the axis, the moment of inertia drops, and they spin much faster. A broom is also easy to twirl around its handle and hard to swing around its far end.</p></div>
+    <div class="panel" id="twPanel">
+      <div class="panel-head"><span class="t">Twirl test · same push, different spread</span><span class="status" id="twStatus"></span></div>
+      <canvas id="twCv" class="p2" style="height:280px" aria-label="Two spinning rods seen from above, each with two equal weights. Both get the same push. The rod whose weights sit farther out spins up more slowly."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="twA"><span>Left rod: weight distance</span> <b id="twAOut"></b></label><input type="range" id="twA" min="0.2" max="1" step="0.05" value="0.4"></div>
+        <div class="sl"><label for="twB"><span>Right rod: weight distance</span> <b id="twBOut"></b></label><input type="range" id="twB" min="0.2" max="1" step="0.05" value="0.8"></div>
+      </div>
+      <div class="cursorbox" id="twReads"></div>
+      <p class="note">Each rod holds two 1 kg weights. Both get the same twisting push for 3 seconds, then the test restarts. The spin they reach is the push divided by \(I = 2\cdot 1\cdot r^2\). Set one distance to double the other and the near rod spins four times as fast.</p>
+    </div>
+    <p>For a plate, add up \(r^2\) times the mass of each small piece. The distance \(r\) depends on the axis you spin about:</p>
+    <ul>
+      <li>About the <b>\(x\)-axis</b>, a point \((x,y)\) is \(y\) units away, so \(r^2 = y^2\).</li>
+      <li>About the <b>\(y\)-axis</b>, it's \(x\) units away, so \(r^2 = x^2\).</li>
+      <li>About the <b>origin</b> (spinning flat in the plane, like a record), it's \(\sqrt{x^2+y^2}\) away, so \(r^2 = x^2+y^2\). This one is the <b>polar moment of inertia</b>.</li>
+    </ul>
+    <div class="thm"><span class="eyebrow">Moments of inertia of a lamina</span>
+      \[I_x = \iint_R y^2\rho\,dA \qquad I_y = \iint_R x^2\rho\,dA \qquad I_0 = I_x + I_y = \iint_R (x^2+y^2)\rho\,dA\]
+    </div>
+    <p class="warn">Same swap as before: \(I_x\) has \(y^2\) inside. The subscript names the spin axis, and you measure distance <i>to</i> that axis.</p>
+
+    <article class="prob" id="ex28-4">
+      <div class="prob-head"><span class="pnum">Example 4</span><span class="eyebrow">Moment of inertia</span><span class="pts">notes p. 7</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the moment of inertia \(I_x\)</b> about the \(x\)-axis for the lamina on the square with vertices \((0,0)\), \((0,2)\), \((2,2)\) and \((2,0)\), with density \(\rho(x,y) = x^2y^2\). Give an exact answer.</p>
+        <ol class="steps">
+          <li><h5>The distance to the axis</h5><p>The plate spins about the \(x\)-axis. A point \((x,y)\) is \(y\) units from that axis, so each piece contributes \(y^2\) times its mass:</p><div class="mbox">\[I_x = \iint_R y^2\,\rho\,dA\]</div></li>
+          <li><h5>Set it up</h5><div class="mbox">\[I_x = \int_0^2\!\!\int_0^2 y^2\cdot x^2y^2\,dy\,dx = \int_0^2\!\!\int_0^2 x^2y^4\,dy\,dx\]</div></li>
+          <li><h5>Split it</h5><div class="mbox">\[I_x = \left(\int_0^2 x^2\,dx\right)\left(\int_0^2 y^4\,dy\right)\]</div></li>
+          <li><h5>Each part, then multiply</h5><div class="mbox">\[\int_0^2 x^2\,dx = \frac83 \qquad \int_0^2 y^4\,dy = \frac{32}{5}\]</div><p>Multiply the two parts.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(I_x = \dfrac{256}{15} \approx 17.07\)<small>\(\tfrac83\cdot\tfrac{32}{5}\).</small></div>
+          <p>The units are mass × length². The \(y^4\) shows that the far edge at \(y = 2\) does almost all the resisting.</p>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 1): \(I_y\) for the rectangle \(0 \le x \le 6,\ 0 \le y \le 2\) with \(\rho = 3y\sqrt{x}\).</span></summary><div><p>Spinning about the \(y\)-axis uses \(x^2\): \(\int_0^6 x^{5/2}\,dx\cdot\int_0^2 3y\,dy = \tfrac{432\sqrt6}{7}\cdot 6 = \tfrac{2592\sqrt6}{7} \approx 907.0\), matching the notes. The notes' wording says "\(I_y\) about the \(x\)-axis." \(I_y\) is about the \(y\)-axis, and the printed answer confirms that's what they meant.</p></div></details>
+  </div>
+
+  <div class="topic" id="com-3d" data-title="Solids in 3D">
+    <span class="eyebrow">Topic 5 · one more dimension</span>
+    <h3>Solids in three dimensions</h3>
+    <p>For a solid \(Q\) with density \(\rho(x,y,z)\) (mass per unit volume), everything carries over with triple integrals. The one new idea is what the distances are measured from.</p>
+    <p>In 3D, the distance that tells you how far a point sits "in the \(x\) direction" is its distance from the \(yz\)-plane, the wall where \(x = 0\). So the moment that gives \(\bar x\) is the moment about the \(yz\)-plane.</p>
+    <div class="thm"><span class="eyebrow">Center of mass of a solid</span>
+      \[m = \iiint_Q \rho\,dV\]
+      \[M_{yz} = \iiint_Q x\rho\,dV \qquad M_{xz} = \iiint_Q y\rho\,dV \qquad M_{xy} = \iiint_Q z\rho\,dV\]
+      \[\bar x = \frac{M_{yz}}{m} \qquad \bar y = \frac{M_{xz}}{m} \qquad \bar z = \frac{M_{xy}}{m}\]
+    </div>
+    <p>A trick for remembering: the plane in the subscript is missing one letter, and that missing letter is what goes inside and what you find. \(M_{yz}\) is missing \(x\), so it has \(x\rho\) inside and gives \(\bar x\).</p>
+    <p>Moments of inertia in 3D are about the three <b>axes</b>. The squared distance from \((x,y,z)\) to the \(x\)-axis is \(y^2 + z^2\), since the \(x\) coordinate doesn't move you away from that axis.</p>
+    <div class="thm"><span class="eyebrow">Moments of inertia of a solid</span>
+      \[I_x = \iiint_Q (y^2+z^2)\rho\,dV \qquad I_y = \iiint_Q (x^2+z^2)\rho\,dV \qquad I_z = \iiint_Q (x^2+y^2)\rho\,dV\]
+    </div>
+    <p class="warn">Two typos in the notes' 3D box. It prints \(I_z\) with \((y^2+y^2)\); it should be \((x^2+y^2)\). It also calls these "moments of inertia about the \(yz\)-plane, the \(xz\)-plane and the \(xy\)-plane." They are about the \(x\)-, \(y\)- and \(z\)-axes.</p>
+
+    <article class="prob" id="ex28-5">
+      <div class="prob-head"><span class="pnum">Example 5</span><span class="eyebrow">Center of mass of a solid</span><span class="pts">notes p. 9</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the center of mass</b> of the solid \(Q = \{(x,y,z) \mid 0 \le x \le 3,\ 0 \le y \le 6,\ 0 \le z \le 6\}\) with density \(\rho(x,y,z) = 4x + 6y + 5z\). Use a calculator to evaluate the integrals.</p>
+        <ol class="steps">
+          <li><h5>Mass</h5><p>Work inside out. The inner integral is \(\int_0^6 (4x+6y+5z)\,dz = 24x + 36y + 90\). The middle one gives \(144x + 1188\). The outer one gives the mass:</p><div class="mbox">\[m = \int_0^3\!\!\int_0^6\!\!\int_0^6 (4x+6y+5z)\,dz\,dy\,dx = 4212\]</div></li>
+          <li><h5>\(M_{yz}\): put \(x\) in front</h5><div class="mbox">\[M_{yz} = \iiint_Q x(4x+6y+5z)\,dV = 6642\]</div></li>
+          <li><h5>\(M_{xz}\): put \(y\) in front</h5><div class="mbox">\[M_{xz} = \iiint_Q y(4x+6y+5z)\,dV = 14580\]</div></li>
+          <li><h5>\(M_{xy}\): put \(z\) in front</h5><div class="mbox">\[M_{xy} = \iiint_Q z(4x+6y+5z)\,dV = 14256\]</div></li>
+          <li><h5>Divide each moment by \(m\)</h5><p>\(\bar x = M_{yz}/m\), \(\bar y = M_{xz}/m\), \(\bar z = M_{xy}/m\). Compute them.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\((\bar x, \bar y, \bar z) = \left(\dfrac{41}{26},\ \dfrac{45}{13},\ \dfrac{44}{13}\right) \approx (1.577,\ 3.462,\ 3.385)\)<small>\(6642/4212\), \(14580/4212\), \(14256/4212\), reduced.</small></div>
+          <p>Sanity check: the box's plain center is \((1.5, 3, 3)\). The density grows in every direction, so each coordinate should land a bit past the center. The biggest shift is in \(y\), which has the biggest coefficient (6) and the most room (6 units).</p>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 2): center of mass of \(0 \le x \le 5,\ 0 \le y \le 3,\ 0 \le z \le 4\) with \(\rho = x + 6y + 4z\).</span></summary><div><p>The mass is 1170, and the three moments divided by it give \(\left(\tfrac{305}{117}, \tfrac{45}{26}, \tfrac{266}{117}\right) \approx (2.61, 1.73, 2.27)\), matching the notes.</p></div></details>
+  </div>
+</section>
+
+<!-- ================= LESSON 29 ================= -->
+<section class="part" id="l29" data-title="Lesson 29 · Vector fields">
+  <div class="part-head">
+    <div class="part-letter">29</div>
+    <div class="eyebrow">Lesson 29 · an arrow at every point</div>
+    <h2>Vector fields</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>A vector field attaches an arrow to every point. Wind maps, river currents and gravity are all vector fields. You'll learn to read them, sketch them, sort them into types, and recognize the special ones that come from the gradient of a single function.</p></div>
+
+  <div class="topic" id="vf-what" data-title="What a field is">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>What a vector field is</h3>
+    <p>A <b>vector</b> is an arrow. It has a direction and a length (also called its <b>magnitude</b>). In the plane you write it with two components, \(\langle P, Q\rangle\): go \(P\) units across and \(Q\) units up. The vectors \(\mathbf{i} = \langle 1,0\rangle\) and \(\mathbf{j} = \langle 0,1\rangle\) point along the axes, so \(\langle P,Q\rangle = P\,\mathbf{i} + Q\,\mathbf{j}\).</p>
+    <p>A function you've used before takes a point and gives back a number. A <b>vector field</b> takes a point and gives back a vector. You draw that vector as an arrow with its tail at the point.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a weather map</span><p>A wind map shows a small arrow at each city. The arrow points the way the wind blows there, and a longer arrow means a stronger wind. The map is a vector field. A different city gets a different arrow.</p></div>
+    <div class="thm"><span class="eyebrow">Vector field</span>
+      <p>A <b>vector field</b> \(\mathbf{F}\) in \(\mathbb{R}^2\) assigns a two-dimensional vector \(\mathbf{F}(x,y)\) to each point \((x,y)\) of a set \(D\), called its domain. It has two <b>component functions</b>:</p>
+      \[\mathbf{F}(x,y) = \langle P(x,y),\ Q(x,y)\rangle = P(x,y)\,\mathbf{i} + Q(x,y)\,\mathbf{j}\]
+      <p>\(\mathbf{F}\) is <b>continuous</b> when \(P\) and \(Q\) are continuous.</p>
+    </div>
+    <div class="panel" id="fxPanel">
+      <div class="panel-head"><span class="t">Field explorer · drag the probe</span>
+        <div class="seg" role="group" aria-label="Preset field" id="fxPre"><button aria-pressed="true" data-k="spiral">Spiral</button><button aria-pressed="false" data-k="out">Outward</button><button aria-pressed="false" data-k="swirl">Swirl</button><button aria-pressed="false" data-k="shear">Shear</button><button aria-pressed="false" data-k="saddle">Saddle</button></div></div>
+      <canvas id="fxCv" class="p2" style="height:380px" aria-label="A vector field drawn as arrows on a grid, with drifting specks and a draggable probe point that shows the arrow there."></canvas>
+      <div class="setup" id="fxFormula"></div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="fxA"><span>a (x in P)</span> <b id="fxAOut"></b></label><input type="range" id="fxA" min="-2" max="2" step="0.5" value="1"></div>
+        <div class="sl"><label for="fxB"><span>b (y in P)</span> <b id="fxBOut"></b></label><input type="range" id="fxB" min="-2" max="2" step="0.5" value="-1"></div>
+        <div class="sl"><label for="fxC"><span>c (x in Q)</span> <b id="fxCOut"></b></label><input type="range" id="fxC" min="-2" max="2" step="0.5" value="1"></div>
+        <div class="sl"><label for="fxD"><span>d (y in Q)</span> <b id="fxDOut"></b></label><input type="range" id="fxD" min="-2" max="2" step="0.5" value="1"></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:0 18px 12px">
+        <div class="seg" role="group" aria-label="Arrow lengths" id="fxLen"><button aria-pressed="true" data-k="true">True lengths</button><button aria-pressed="false" data-k="unit">Unit arrows</button></div>
+      </div>
+      <div class="cursorbox" id="fxReads"></div>
+      <p class="note">The field is \(\mathbf{F} = \langle ax + by,\ cx + dy\rangle\). Drag the gold probe anywhere to read \(\mathbf{F}\) there. "Unit arrows" draws every arrow the same length so you can see directions only. That's the idea behind unit fields in Topic 4.</p>
+    </div>
+
+    <article class="prob" id="ex29-1">
+      <div class="prob-head"><span class="pnum">Example 1</span><span class="eyebrow">Evaluate a field at a point</span><span class="pts">notes p. 3</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Let</b> \(\mathbf{F}(x,y) = \dfrac{4x}{y}\,\mathbf{i} + \dfrac{-5x-4y}{x-2y}\,\mathbf{j}\). What vector is attached to the point \((1,-2)\)?</p>
+        <ol class="steps">
+          <li><h5>Name the components</h5><p>\(P(x,y) = \dfrac{4x}{y}\) and \(Q(x,y) = \dfrac{-5x-4y}{x-2y}\). The answer is \(\langle P(1,-2),\ Q(1,-2)\rangle\).</p></li>
+          <li><h5>Plug into \(P\)</h5><div class="mbox">\[P(1,-2) = \frac{4(1)}{-2}\]</div></li>
+          <li><h5>Plug into \(Q\)</h5><div class="mbox">\[Q(1,-2) = \frac{-5(1) - 4(-2)}{1 - 2(-2)} = \frac{-5+8}{1+4}\]</div><p>Simplify both and write the vector.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\mathbf{F}(1,-2) = -2\,\mathbf{i} + \tfrac35\,\mathbf{j} = \langle -2,\ 0.6\rangle\)<small>An arrow starting at \((1,-2)\) that points left and a little up.</small></div>
+          <p>Watch the signs: \(-4(-2) = +8\) on top and \(-2(-2) = +4\) on the bottom.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="vf-sketch" data-title="Sketching a field">
+    <span class="eyebrow">Topic 2 · drawing arrows</span>
+    <h3>Sketching a vector field</h3>
+    <p>To sketch a field by hand:</p>
+    <ol>
+      <li>Pick a handful of easy points, like ones on the axes and the diagonals.</li>
+      <li>Plug each point into \(\mathbf{F}\) to get its vector.</li>
+      <li>Draw that vector as an arrow with its <b>tail at the point</b>.</li>
+      <li>If the arrows are long enough to crash into each other, shrink them all by the same factor. The directions and the relative lengths are what matter.</li>
+    </ol>
+    <p>After a few arrows, a pattern usually jumps out, and you can fill in the rest by eye.</p>
+
+    <article class="prob" id="ex29-2">
+      <div class="prob-head"><span class="pnum">Example 2</span><span class="eyebrow">Sketch a field</span><span class="pts">notes p. 4</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Sketch</b> the vector field \(\mathbf{F}(x,y) = \left\langle \dfrac{x}{2},\ \dfrac{y}{2}\right\rangle\).</p>
+        <ol class="steps">
+          <li><h5>Pick easy points</h5><p>Try \((2,0)\), \((0,2)\), \((-2,0)\), \((0,-2)\), \((2,2)\) and \((-2,-2)\).</p></li>
+          <li><h5>Compute their vectors</h5><p>Halve each coordinate:</p>
+            <div class="tbl"><table><thead><tr><th>Point</th><th>Vector</th></tr></thead><tbody>
+              <tr><td>\((2,0)\)</td><td>\(\langle 1,0\rangle\)</td></tr><tr><td>\((0,2)\)</td><td>\(\langle 0,1\rangle\)</td></tr>
+              <tr><td>\((-2,0)\)</td><td>\(\langle -1,0\rangle\)</td></tr><tr><td>\((0,-2)\)</td><td>\(\langle 0,-1\rangle\)</td></tr>
+              <tr><td>\((2,2)\)</td><td>\(\langle 1,1\rangle\)</td></tr><tr><td>\((-2,-2)\)</td><td>\(\langle -1,-1\rangle\)</td></tr>
+            </tbody></table></div></li>
+          <li><h5>Draw each arrow from its point</h5><p>Put the tail of \(\langle 1,0\rangle\) at \((2,0)\), and so on.</p></li>
+          <li><h5>Look for the pattern</h5><p>Ask two questions. Which way does each arrow point compared with the origin? How does the length change as you move out? Then fill in the rest.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">Every arrow points straight away from the origin, and its length is half the point's distance from the origin.<small>\(\|\mathbf{F}\| = \tfrac12\sqrt{x^2+y^2}\). Near the origin the arrows are tiny. Far out they're long.</small></div>
+          <p>This is a <b>radial</b> field, the first of the two named types in the next topic. At the origin itself the vector is \(\langle 0,0\rangle\), so there's no arrow there.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="vf-types" data-title="Radial and rotational">
+    <span class="eyebrow">Topic 3 · two named shapes</span>
+    <h3>Radial and rotational fields</h3>
+    <div class="grid2">
+      <div class="card"><h4>Radial field</h4><div class="mbox">\[\mathbf{F} = ax\,\mathbf{i} + ay\,\mathbf{j}\]</div><p>Every arrow lies along the line through the origin. If \(a\) is positive, they point away from it. If \(a\) is negative, they point toward it. The length is \(|a|\) times the distance from the origin. Gravity and electric fields from a point charge look like this, though their strength fades with distance.</p></div>
+      <div class="card"><h4>Rotational field</h4><div class="mbox">\[\mathbf{F} = ay\,\mathbf{i} - ax\,\mathbf{j}\]</div><p>Every arrow is tangent to the circle centered at the origin through its point. With this form, a positive \(a\) turns clockwise and a negative \(a\) turns counterclockwise. The length again depends only on the distance from the origin. Storms and whirlpools look like this.</p></div>
+    </div>
+    <p>Why is the rotational one tangent to circles? Dot it with the position vector \(\langle x, y\rangle\), which points straight out from the origin: \(ay\cdot x + (-ax)\cdot y = 0\). A zero dot product means the two are perpendicular. An arrow perpendicular to the radius runs along the circle.</p>
+    <p>Why clockwise for positive \(a\)? Check one point. At \((1,0)\), \(\mathbf{F} = \langle 0, -a\rangle\), which points down. Pointing down on the right side of a circle means turning clockwise.</p>
+    <p class="warn">The notes only list the clockwise-for-positive form. The field \(-y\,\mathbf{i} + x\,\mathbf{j}\) is also rotational. It's the same form with \(a = -1\), and it turns counterclockwise.</p>
+
+    <article class="prob" id="ex29-3">
+      <div class="prob-head"><span class="pnum">Example 3</span><span class="eyebrow">Classify three fields</span><span class="pts">notes p. 5</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Classify</b> each field as radial, rotational, or neither: (a) \(\mathbf{F} = 2y\,\mathbf{i} - 2x\,\mathbf{j}\), (b) \(\mathbf{F} = 2xy\,\mathbf{i} - 5x\,\mathbf{j}\), (c) \(\mathbf{F} = 5x\,\mathbf{i} + 5y\,\mathbf{j}\).</p>
+        <ol class="steps">
+          <li><h5>Keep the two templates in view</h5><p>Radial is \(ax\,\mathbf{i} + ay\,\mathbf{j}\): \(x\) in front of \(\mathbf{i}\), \(y\) in front of \(\mathbf{j}\), same number \(a\). Rotational is \(ay\,\mathbf{i} - ax\,\mathbf{j}\): the letters are swapped and the second term gets a minus sign.</p></li>
+          <li><h5>Field (a)</h5><p>\(P = 2y\) and \(Q = -2x\). Line it up against both templates and see which one fits with a single number \(a\).</p></li>
+          <li><h5>Field (b)</h5><p>\(P = 2xy\) and \(Q = -5x\). Neither template has a product like \(xy\), and the two numbers 2 and 5 differ.</p></li>
+          <li><h5>Field (c)</h5><p>\(P = 5x\) and \(Q = 5y\). Compare with the templates the same way.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">(a) rotational (\(a = 2\), clockwise) · (b) neither · (c) radial (\(a = 5\), pointing outward)<small>(a) matches \(ay\,\mathbf{i} - ax\,\mathbf{j}\). (c) matches \(ax\,\mathbf{i} + ay\,\mathbf{j}\).</small></div>
+          <p>In (b), the arrows are neither tangent to circles nor lined up with the origin. At \((1,1)\) it gives \(\langle 2,-5\rangle\), which is neither along \(\langle 1,1\rangle\) nor perpendicular to it.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="vf-unit" data-title="Unit fields">
+    <span class="eyebrow">Topic 4 · direction only</span>
+    <h3>Unit vector fields</h3>
+    <p>A <b>unit vector</b> has length 1. A <b>unit vector field</b> has length 1 at every point of its domain. It keeps the directions of a field and throws away the strengths.</p>
+    <p>Why would you want that? If you're steering a boat, you may care which way the current flows at each spot and not how fast. A unit field answers exactly that question.</p>
+    <p>To turn any field into a unit field, divide each vector by its own length. This is called <b>normalizing</b>:</p>
+    <div class="mbox">\[\frac{\mathbf{F}}{\|\mathbf{F}\|} = \left\langle \frac{P}{\|\mathbf{F}\|},\ \frac{Q}{\|\mathbf{F}\|},\ \frac{R}{\|\mathbf{F}\|}\right\rangle, \qquad \|\mathbf{F}\| = \sqrt{P^2+Q^2+R^2}\]</div>
+    <p>Normalizing fails wherever \(\mathbf{F}\) is the zero vector, because you can't divide by zero length.</p>
+
+    <article class="prob" id="ex29-4">
+      <div class="prob-head"><span class="pnum">Example 4</span><span class="eyebrow">Is it a unit field?</span><span class="pts">notes p. 5</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Decide</b> whether each is a unit vector field: (a) \(\mathbf{F} = y\,\mathbf{i} - 4x\,\mathbf{j}\), (b) \(\mathbf{F} = \dfrac{y}{\sqrt{x^2+y^2}}\,\mathbf{i} - \dfrac{x}{\sqrt{x^2+y^2}}\,\mathbf{j}\).</p>
+        <ol class="steps">
+          <li><h5>The test</h5><p>Find the length \(\|\mathbf{F}\| = \sqrt{P^2+Q^2}\). It has to equal 1 at every point in the domain. One point where it doesn't is enough to say no.</p></li>
+          <li><h5>Field (a)</h5><div class="mbox">\[\|\mathbf{F}\| = \sqrt{y^2 + 16x^2}\]</div><p>Try two points: \((1,0)\) gives \(\sqrt{16}\), and \((0,1)\) gives \(\sqrt1\).</p></li>
+          <li><h5>Field (b)</h5><div class="mbox">\[\|\mathbf{F}\|^2 = \frac{y^2}{x^2+y^2} + \frac{x^2}{x^2+y^2} = \frac{x^2+y^2}{x^2+y^2}\]</div><p>Simplify, and note where the formula isn't defined.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">(a) No. Its length is 4 at \((1,0)\) and 1 at \((0,1)\). · (b) Yes. Its length is 1 at every point except the origin.<small>(b) is undefined at \((0,0)\), so the origin isn't in its domain.</small></div>
+          <p>Field (b) is the rotational field \(y\,\mathbf{i} - x\,\mathbf{j}\) after normalizing. It still turns clockwise, but every arrow has the same length.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="vf-3d" data-title="Fields in space">
+    <span class="eyebrow">Topic 5 · three components</span>
+    <h3>Vector fields in \(\mathbb{R}^3\)</h3>
+    <p>Everything above works in space with a third component:</p>
+    <div class="mbox">\[\mathbf{F}(x,y,z) = \langle P,\ Q,\ R\rangle = P\,\mathbf{i} + Q\,\mathbf{j} + R\,\mathbf{k}\]</div>
+    <p>Each of \(P\), \(Q\) and \(R\) is a function of \(x\), \(y\) and \(z\), and \(\mathbf{k} = \langle 0,0,1\rangle\) points up. Space fields model gravity around a planet, heat flowing through a block, and water moving through the whole depth of a river. A 2D field can only show one flat slice of a river, such as its surface.</p>
+    <details class="quick"><summary><span>Quick check: what vector does \(\mathbf{F} = \langle xz,\ y,\ x+z\rangle\) attach to \((1,2,3)\)?</span></summary><div><p>\(\langle 1\cdot 3,\ 2,\ 1+3\rangle = \langle 3, 2, 4\rangle\).</p></div></details>
+  </div>
+
+  <div class="topic" id="vf-grad" data-title="Gradient fields">
+    <span class="eyebrow">Topic 6 · fields from a function</span>
+    <h3>Gradient fields</h3>
+    <p>You've already met one kind of vector field. The <b>gradient</b> of a function \(f(x,y)\) is the vector of its partial derivatives:</p>
+    <div class="mbox">\[\nabla f = \langle f_x,\ f_y\rangle \qquad\text{or in 3D}\qquad \nabla f = \langle f_x,\ f_y,\ f_z\rangle\]</div>
+    <p>Recall what it means. Picture \(f\) as the height of a landscape. At each point, \(\nabla f\) points in the steepest uphill direction, it crosses the contour line through that point at a right angle, and its length is how steep the ground is. Do that at every point and you have a vector field.</p>
+    <div class="thm"><span class="eyebrow">Gradient field</span><p>A vector field \(\mathbf{F}\) in \(\mathbb{R}^2\) or \(\mathbb{R}^3\) is a <b>gradient field</b> (also called a <b>conservative field</b>) if there is a scalar function \(f\) with \(\nabla f = \mathbf{F}\).</p></div>
+    <div class="analogy"><span class="eyebrow">Analogy · water on a hillside</span><p>Turn the gradient arrows around and you get the way rain runs off a hill: straight downhill, crossing every contour line at a right angle, fastest where the slope is steepest. The whole flow pattern comes from one thing, the shape of the land. A gradient field is a field that comes from one height function like that.</p></div>
+    <div class="panel" id="grPanel">
+      <div class="panel-head"><span class="t">Gradient field over a contour map</span>
+        <div class="seg" role="group" aria-label="Which landscape" id="grSeg"><button aria-pressed="true" data-k="hill">One hill</button><button aria-pressed="false" data-k="two">Hill and pit</button><button aria-pressed="false" data-k="saddle">Saddle</button></div></div>
+      <canvas id="grCv" class="p2" style="height:380px" aria-label="A contour map of a function, shaded by height, with its gradient arrows on a grid and a draggable probe."></canvas>
+      <div class="cursorbox" id="grReads"></div>
+      <p class="note">Brighter means higher. Each arrow is \(\nabla f\) at its point. Drag the gold probe and the gold contour line through it follows. The probe's arrow always crosses that contour at a right angle and points uphill.</p>
+    </div>
+
+    <article class="prob" id="ex29-5">
+      <div class="prob-head"><span class="pnum">Example 5</span><span class="eyebrow">Find a gradient field</span><span class="pts">notes p. 7</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the gradient vector field</b> of (a) \(f(x,y) = 5x^4y^3 + xy^4\) and (b) \(f(x,y) = 3\cos(x)\sin(y)\).</p>
+        <ol class="steps">
+          <li><h5>(a) Partial in \(x\): treat \(y\) as a constant</h5><p>\(\dfrac{\partial}{\partial x}(5x^4y^3) = 20x^3y^3\) and \(\dfrac{\partial}{\partial x}(xy^4) = y^4\).</p></li>
+          <li><h5>(a) Partial in \(y\): treat \(x\) as a constant</h5><p>\(\dfrac{\partial}{\partial y}(5x^4y^3) = 15x^4y^2\) and \(\dfrac{\partial}{\partial y}(xy^4) = 4xy^3\).</p></li>
+          <li><h5>(b) Partial in \(x\)</h5><p>\(3\sin y\) is a constant multiplier, and the derivative of \(\cos x\) is \(-\sin x\).</p></li>
+          <li><h5>(b) Partial in \(y\)</h5><p>Now \(3\cos x\) is the constant, and the derivative of \(\sin y\) is \(\cos y\). Put each pair of partials into \(\langle f_x,\ f_y\rangle\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">(a) \(\nabla f = \left(20x^3y^3 + y^4\right)\mathbf{i} + \left(15x^4y^2 + 4xy^3\right)\mathbf{j}\)<br>(b) \(\nabla f = -3\sin x\sin y\,\mathbf{i} + 3\cos x\cos y\,\mathbf{j}\)</div>
+          <p>In (b), the landscape is an egg crate of bumps and dips. The 3D view shows the arrows streaming up toward each bump top.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="vf-potential" data-title="Potential functions">
+    <span class="eyebrow">Topic 7 · working backward</span>
+    <h3>Potential functions</h3>
+    <div class="thm"><span class="eyebrow">Potential function</span><p>A function \(f\) is a <b>potential function</b> for \(\mathbf{F}\) if \(\nabla f = \mathbf{F}\).</p></div>
+    <p>The name comes from physics. Gravity is a conservative field, and its potential function is (minus) the potential energy. Lesson 31 will show why this matters: line integrals of conservative fields become easy.</p>
+    <p>Checking a proposed potential is easy. Take its gradient and compare, one component at a time. Finding one from scratch is harder, and comes later.</p>
+    <h4>Is a potential function unique?</h4>
+    <p>Not quite. Adding a constant to \(f\) doesn't change any of its partial derivatives, so \(f\) and \(f + 7\) have the same gradient. That's the only freedom you get, as long as the domain is in one piece:</p>
+    <div class="thm"><span class="eyebrow">Uniqueness of potential functions</span><p>Let \(\mathbf{F}\) be conservative on an open connected domain, with \(\nabla f = \mathbf{F}\) and \(\nabla g = \mathbf{F}\). Then \(f = g + C\) for some constant \(C\).</p></div>
+    <p><b>Connected</b> means you can walk from any point of the domain to any other without leaving it. <b>Open</b> means every point has a little disk around it that's still in the domain, so no boundary edge is included. This mirrors Calculus 1, where two antiderivatives of the same function differ only by a constant.</p>
+
+    <article class="prob" id="ex29-6">
+      <div class="prob-head"><span class="pnum">Example 6</span><span class="eyebrow">Check a potential function</span><span class="pts">notes p. 8</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Is</b> \(f(x,y,z) = x^2yz - \sin(xy)\) a potential function for \(\mathbf{F}(x,y,z) = \langle 2xyz - y\cos(xy),\ x^2z - x\cos(xy),\ x^2y\rangle\)?</p>
+        <ol class="steps">
+          <li><h5>The test</h5><p>Compute \(\nabla f = \langle f_x, f_y, f_z\rangle\) and compare each component with \(\mathbf{F}\). All three must match.</p></li>
+          <li><h5>\(f_x\)</h5><p>Hold \(y\) and \(z\) fixed. The chain rule on \(\sin(xy)\) brings out a \(y\):</p><div class="mbox">\[f_x = 2xyz - y\cos(xy)\]</div><p>Compare with \(P = 2xyz - y\cos(xy)\).</p></li>
+          <li><h5>\(f_y\)</h5><div class="mbox">\[f_y = x^2z - x\cos(xy)\]</div><p>Compare with \(Q = x^2z - x\cos(xy)\).</p></li>
+          <li><h5>\(f_z\)</h5><p>Only the first term has a \(z\): \(f_z = x^2y\). Compare with \(R = x^2y\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">Yes. \(\nabla f = \mathbf{F}\), component by component, so \(f\) is a potential function and \(\mathbf{F}\) is conservative.<small>So is \(x^2yz - \sin(xy) + C\) for any constant \(C\).</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="vf-cross" data-title="Cross-partial test">
+    <span class="eyebrow">Topic 8 · a quick test</span>
+    <h3>The cross-partial test</h3>
+    <p>Given a field, how can you tell whether it could be a gradient without hunting for \(f\)? Use mixed partial derivatives.</p>
+    <p>If \(\mathbf{F} = \langle P, Q\rangle = \nabla f\), then \(P = f_x\) and \(Q = f_y\). Differentiate \(P\) by \(y\) and \(Q\) by \(x\):</p>
+    <div class="mbox">\[P_y = f_{xy} \qquad Q_x = f_{yx}\]</div>
+    <p>Clairaut's theorem says mixed partials are equal when they're continuous, so \(P_y = Q_x\). A gradient field must pass this test.</p>
+    <div class="thm"><span class="eyebrow">Cross-partial property of conservative fields</span>
+      <p>Let \(\mathbf{F}\) have component functions with continuous first partial derivatives on its domain.</p>
+      <ul>
+        <li>If \(\mathbf{F} = \langle P, Q\rangle\) is conservative, then \(P_y = Q_x\).</li>
+        <li>If \(\mathbf{F} = \langle P, Q, R\rangle\) is conservative, then \(P_y = Q_x\), \(Q_z = R_y\) and \(R_x = P_z\).</li>
+      </ul>
+    </div>
+    <p class="warn">The test only works in one direction. If the cross partials differ, the field is definitely <b>not</b> conservative. If they match, the field <b>could be</b> conservative, but this test alone doesn't prove it. (The domain matters too, and later lessons cover that.)</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a paddle wheel <span class="bonus">extra, not in notes</span></span><p>Drop a tiny paddle wheel into a flowing field. If the flow pushes one side of the wheel harder than the other, the wheel spins. The difference \(Q_x - P_y\) measures exactly that spin. A gradient field is "downhill flow", and downhill flow never spins a paddle wheel. You'll meet this quantity again as <b>curl</b>.</p></div>
+
+    <article class="prob" id="ex29-7">
+      <div class="prob-head"><span class="pnum">Example 7</span><span class="eyebrow">Could it be conservative?</span><span class="pts">notes p. 10</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Could</b> each field be conservative? (a) \(\mathbf{F} = \langle 3x^4y^5,\ 3x^5y^4\rangle\), (b) \(\mathbf{F} = \langle x^3\cos y,\ 3y\cos x\rangle\).</p>
+        <ol class="steps">
+          <li><h5>What to compare</h5><p>For \(\mathbf{F} = \langle P, Q\rangle\), find \(P_y\) (differentiate the first component by \(y\)) and \(Q_x\) (differentiate the second by \(x\)).</p></li>
+          <li><h5>Field (a)</h5><p>\(P = 3x^4y^5\), so \(P_y = 15x^4y^4\). \(Q = 3x^5y^4\), so \(Q_x = 15x^4y^4\).</p></li>
+          <li><h5>Field (b)</h5><p>\(P = x^3\cos y\), so \(P_y = -x^3\sin y\). \(Q = 3y\cos x\), so \(Q_x = -3y\sin x\).</p></li>
+          <li><h5>Read the results</h5><p>Equal cross partials allow a conservative field. Unequal ones rule it out.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">(a) Could be conservative (the cross partials agree). · (b) Not conservative (they differ).<small>For (a), \(f = \tfrac35 x^5y^5\) really is a potential: its gradient is \(\langle 3x^4y^5, 3x^5y^4\rangle\).</small></div>
+          <p>For (b), one point where \(P_y \ne Q_x\) is enough. At \((1, \tfrac{\pi}{2})\), \(P_y = -1\) while \(Q_x = -\tfrac{3\pi}{2}\sin 1 \approx -3.97\).</p>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 1): the gradient field of \(f = -8y^3e^{-5xz}\).</span></summary><div><p>\(\nabla f = \langle 40y^3z\,e^{-5xz},\ -24y^2e^{-5xz},\ 40xy^3e^{-5xz}\rangle\), matching the notes. The \(x\) and \(z\) partials each pull a \(-5z\) or \(-5x\) out of the exponent.</p></div></details>
+    <details class="quick"><summary><span>Quick check (notes Practice 2): could \(\langle 4xy,\ 4,\ 4y^2\rangle\) be conservative?</span></summary><div><p>No. \(P_y = 4x\) but \(Q_x = 0\). One failed pair is enough.</p></div></details>
+    <details class="quick"><summary><span>Quick check (notes Practice 3): could \(\langle 3z,\ 3y^2,\ 3x\rangle\) be conservative?</span></summary><div><p>Yes, it could. \(P_y = 0 = Q_x\), \(Q_z = 0 = R_y\), and \(R_x = 3 = P_z\). In fact \(f = 3xz + y^3\) is a potential.</p></div></details>
+  </div>
+</section>
+
+<!-- ================= LESSON 30 ================= -->
+<section class="part" id="l30" data-title="Lesson 30 · Line integrals">
+  <div class="part-head">
+    <div class="part-letter">30</div>
+    <div class="eyebrow">Lesson 30 · adding up along a curve</div>
+    <h2>Line integrals</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>A line integral adds something up along a curve instead of along the \(x\)-axis. The scalar kind finds the area of a curtain hanging between a curve and a surface. The vector kind measures how much a field pushes along your path (work), across it (flux), or all the way around a loop (circulation).</p></div>
+
+  <div class="topic" id="li-path" data-title="Riding a curve">
+    <span class="eyebrow">Topic 1 · the tool you need first</span>
+    <h3>Riding a curve: parameterizations, speed and \(ds\)</h3>
+    <p>A <b>parameterization</b> describes a curve \(C\) as the path of a moving point. At time \(t\), the point is at</p>
+    <div class="mbox">\[\mathbf{r}(t) = \langle x(t),\ y(t),\ z(t)\rangle, \qquad a \le t \le b\]</div>
+    <p>Its derivative \(\mathbf{r}'(t)\) is the <b>velocity</b>. It points along the curve, the way you're moving. Its length \(\|\mathbf{r}'(t)\|\) is the <b>speed</b>.</p>
+    <p>Distance traveled is speed × time. In a tiny time \(dt\), the point covers a tiny length of curve:</p>
+    <div class="mbox">\[ds = \|\mathbf{r}'(t)\|\,dt\]</div>
+    <p>This one line is the bridge for this whole lesson. Every line integral is written with \(ds\) (a bit of length), and you compute it with \(dt\) (a bit of time). The speed converts one into the other.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a car's odometer</span><p>Your odometer doesn't care how you steer. It counts distance. If the speedometer reads 60 mph for one minute, the odometer adds one mile. Speed × time = distance is all \(ds = \|\mathbf{r}'\|\,dt\) says.</p></div>
+  </div>
+
+  <div class="topic" id="li-scalar" data-title="Scalar line integrals">
+    <span class="eyebrow">Topic 2 · a curtain under a surface</span>
+    <h3>Scalar line integrals</h3>
+    <p>In Calculus 1, \(\int_a^b f(x)\,dx\) adds up \(f\) along a stretch of the \(x\)-axis. A <b>scalar line integral</b> adds up a function \(f\) along a curve \(C\) instead.</p>
+    <ol class="steps">
+      <li><h5>Chop the curve</h5><p>Split \(C\) into \(n\) small pieces. Piece \(i\) has length \(\Delta s_i\).</p></li>
+      <li><h5>Sample</h5><p>Pick a point \(P_i^*\) on each piece and evaluate \(f(P_i^*)\).</p></li>
+      <li><h5>Multiply and add</h5><p>Each product \(f(P_i^*)\,\Delta s_i\) is the area of a thin panel standing on that piece. Add them all: \(\sum f(P_i^*)\,\Delta s_i\).</p></li>
+      <li><h5>Refine</h5><p>Let the pieces shrink. The limit is the line integral.</p></li>
+    </ol>
+    <div class="thm"><span class="eyebrow">Scalar line integral</span>
+      \[\int_C f\,ds = \lim_{n\to\infty}\sum_{i=1}^{n} f(P_i^*)\,\Delta s_i\]
+      <p>This works the same way for a curve in the plane with \(f(x,y)\) or a curve in space with \(f(x,y,z)\).</p>
+    </div>
+    <p>Here's the picture when \(f \ge 0\) on a plane curve. Lift \(C\) straight up onto the surface \(z = f(x,y)\). Then hang a curtain from that lifted curve down to the floor. The curtain's area is \(\int_C f\,ds\). Where \(f\) is negative, the curtain hangs below the floor and that part counts as negative area, just like in Calculus 1.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · painting a fence</span><p>A fence follows a winding property line, and its height changes as it goes. The paint you need depends on the fence's area: height × length, added up along the line. That's a scalar line integral, with \(f\) as the height and \(C\) as the property line.</p></div>
+    <div class="panel" id="cuPanel">
+      <div class="panel-head"><span class="t">Build the curtain from panels</span><span class="status" id="cuStatus"></span></div>
+      <canvas id="cuCv" class="p3" style="height:380px" aria-label="A surface over the plane, a curve on the floor, and a curtain of panels standing on the curve up to the surface."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="cuN"><span>Number of pieces n</span> <b id="cuNOut"></b></label><input type="range" id="cuN" min="1" max="40" step="1" value="5"></div>
+      </div>
+      <div class="reads">
+        <div class="read"><div class="k">Pieces</div><div class="v" id="cuReadN">–</div></div>
+        <div class="read"><div class="k">Sum of panels</div><div class="v" id="cuSum">–</div></div>
+        <div class="read"><div class="k">Exact ∫ f ds</div><div class="v" id="cuExact">–</div></div>
+        <div class="read"><div class="k">Curve length</div><div class="v" id="cuLen">–</div></div>
+      </div>
+      <p class="note">The curve is the quarter circle \(\mathbf{r}(t) = \langle 2\cos t, 2\sin t\rangle\), \(0 \le t \le \tfrac{\pi}{2}\), and the surface is \(f(x,y) = \tfrac12 + \tfrac{xy}{2}\). Each panel's height is \(f\) at the middle of its piece. Add pieces and the panel sum closes in on the exact area. Drag to rotate.</p>
+    </div>
+    <p>Computing with \(s\) directly is awkward, so swap to \(t\). The point \(P\) becomes \(\mathbf{r}(t)\), and \(ds\) becomes \(\|\mathbf{r}'(t)\|\,dt\):</p>
+    <div class="thm"><span class="eyebrow">Evaluating a scalar line integral</span>
+      <p>If \(f\) is continuous and \(C\) is a smooth curve with parameterization \(\mathbf{r}(t)\), \(a \le t \le b\), then</p>
+      \[\int_C f\,ds = \int_a^b f(\mathbf{r}(t))\,\|\mathbf{r}'(t)\|\,dt\]
+    </div>
+    <p class="key">Recipe: plug the curve into \(f\), multiply by the speed, and integrate in \(t\).</p>
+
+    <article class="prob" id="ex30-1">
+      <div class="prob-head"><span class="pnum">Example 1</span><span class="eyebrow">Scalar line integral on a line</span><span class="pts">notes p. 5</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find</b> the line integral of \(f(x,y) = -3x - 10\) over the curve \(C\) given by \(x(t) = t\), \(y(t) = -3t - 10\), \(2 \le t \le 4\).</p>
+        <ol class="steps">
+          <li><h5>Plug the curve into \(f\)</h5><p>Only \(x\) appears in \(f\), and \(x = t\):</p><div class="mbox">\[f(\mathbf{r}(t)) = -3t - 10\]</div></li>
+          <li><h5>Find the speed</h5><p>\(\mathbf{r}'(t) = \langle 1, -3\rangle\), so \(\|\mathbf{r}'(t)\| = \sqrt{1 + 9} = \sqrt{10}\). The curve is a straight line traced at constant speed.</p></li>
+          <li><h5>Set it up</h5><div class="mbox">\[\int_C f\,ds = \int_2^4 (-3t - 10)\sqrt{10}\,dt = \sqrt{10}\int_2^4 (-3t - 10)\,dt\]</div></li>
+          <li><h5>Integrate</h5><div class="mbox">\[\sqrt{10}\left[-\tfrac32 t^2 - 10t\right]_2^4\]</div><p>At \(t = 4\) the bracket is \(-24 - 40 = -64\). At \(t = 2\) it's \(-6 - 20 = -26\). Subtract and multiply by \(\sqrt{10}\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\displaystyle\int_C f\,ds = -38\sqrt{10} \approx -120.17\)<small>\(\sqrt{10}\,(-64 + 26)\).</small></div>
+          <p>Negative makes sense. Along this whole segment \(f\) is between \(-22\) and \(-16\), so the curtain hangs entirely below the floor.</p>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="ex30-2">
+      <div class="prob-head"><span class="pnum">Example 2</span><span class="eyebrow">Scalar line integral with a substitution</span><span class="pts">notes p. 5</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find</b> the line integral of \(f(x,y) = 4x\cos(y)\) over the curve \(\mathbf{r}(t) = \langle \sin t,\ t\rangle\), \(\tfrac{\pi}{6} \le t \le \tfrac{\pi}{3}\).</p>
+        <ol class="steps">
+          <li><h5>Plug the curve into \(f\)</h5><p>\(x = \sin t\) and \(y = t\), so \(f(\mathbf{r}(t)) = 4\sin t\cos t\).</p></li>
+          <li><h5>Find the speed</h5><p>\(\mathbf{r}'(t) = \langle \cos t, 1\rangle\), so \(\|\mathbf{r}'(t)\| = \sqrt{\cos^2 t + 1}\).</p></li>
+          <li><h5>Set it up</h5><div class="mbox">\[\int_C f\,ds = \int_{\pi/6}^{\pi/3} 4\sin t\cos t\,\sqrt{1 + \cos^2 t}\,dt\]</div></li>
+          <li><h5>Substitute \(u = 1 + \cos^2 t\)</h5><p>Then \(du = -2\cos t\sin t\,dt\), so \(4\sin t\cos t\,dt = -2\,du\). The limits move too: \(t = \tfrac{\pi}{6}\) gives \(u = 1 + \tfrac34 = \tfrac74\), and \(t = \tfrac{\pi}{3}\) gives \(u = 1 + \tfrac14 = \tfrac54\).</p><div class="mbox">\[\int_{7/4}^{5/4} -2\sqrt{u}\,du = \int_{5/4}^{7/4} 2\sqrt{u}\,du = \frac43\Big[u^{3/2}\Big]_{5/4}^{7/4}\]</div><p>Evaluate. It helps that \(\left(\tfrac74\right)^{3/2} = \tfrac{7\sqrt7}{8}\).</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\displaystyle\int_C f\,ds = \frac{7\sqrt7 - 5\sqrt5}{6} \approx 1.223\)<small>\(\tfrac43\left(\tfrac{7\sqrt7}{8} - \tfrac{5\sqrt5}{8}\right)\).</small></div>
+          <p>Sanity check: the curve is about 0.62 long and \(f\) stays between about 1.7 and 2 on it, so the area should be a bit over 1. It is.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="li-arc" data-title="Arc length">
+    <span class="eyebrow">Topic 3 · the simplest curtain</span>
+    <h3>Arc length as a line integral</h3>
+    <p>Set \(f = 1\). The curtain is then exactly 1 unit tall everywhere, so its area equals the length of its base. That base is the curve:</p>
+    <div class="mbox">\[\text{Arc length} = \int_C 1\,ds = \int_a^b \|\mathbf{r}'(t)\|\,dt\]</div>
+    <p>It's the odometer again: add up speed × time.</p>
+
+    <article class="prob" id="ex30-3">
+      <div class="prob-head"><span class="pnum">Example 3</span><span class="eyebrow">Arc length</span><span class="pts">notes p. 6</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the length</b> of the curve \(\mathbf{r}(t) = \left\langle \dfrac{5t^2}{2} - 4,\ 2t^2 - 10,\ 5\right\rangle\), \(t \in [0, 6]\).</p>
+        <ol class="steps">
+          <li><h5>The formula</h5><div class="mbox">\[L = \int_0^6 \|\mathbf{r}'(t)\|\,dt\]</div></li>
+          <li><h5>Differentiate</h5><p>The constants \(-4\), \(-10\) and \(5\) disappear: \(\mathbf{r}'(t) = \langle 5t,\ 4t,\ 0\rangle\).</p></li>
+          <li><h5>Find the speed</h5><div class="mbox">\[\|\mathbf{r}'(t)\| = \sqrt{25t^2 + 16t^2} = \sqrt{41}\,t\]</div><p>The square root of \(t^2\) is \(t\) here because \(t \ge 0\).</p></li>
+          <li><h5>Integrate</h5><div class="mbox">\[L = \sqrt{41}\int_0^6 t\,dt = \sqrt{41}\left[\frac{t^2}{2}\right]_0^6\]</div><p>Evaluate.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(L = 18\sqrt{41} \approx 115.26\)<small>\(\sqrt{41}\cdot 18\).</small></div>
+          <p>A check you can do without calculus: \(x\) and \(y\) both depend on \(t^2\) in the same way, so the curve is a straight segment in the plane \(z = 5\). It runs from \((-4,-10,5)\) to \((86,62,5)\), and \(\sqrt{90^2 + 72^2} \approx 115.26\).</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="li-vector" data-title="Work along a path">
+    <span class="eyebrow">Topic 4 · fields along a path</span>
+    <h3>Vector line integrals: work</h3>
+    <p>Now let a vector field \(\mathbf{F}\), like a force or a wind, act on a particle moving along \(C\). How much <b>work</b> does the field do?</p>
+    <p>From physics, the work done by a constant force over a straight move is force × distance, counting only the part of the force that points along the move. Push straight against a wall and you do no work on a cart rolling beside it. That "part along the move" is a dot product with the unit tangent vector \(\mathbf{T}\), which points the way you're going:</p>
+    <div class="mbox">\[\text{work on one small piece} \approx \mathbf{F}(P_i^*)\cdot\mathbf{T}(P_i^*)\,\Delta s_i\]</div>
+    <div class="analogy"><span class="eyebrow">Analogy · biking in the wind</span><p>A tailwind pushes you along and helps. A headwind fights you. A crosswind blowing straight across your path neither helps nor hurts your forward progress. Only the part of the wind along your direction of travel counts.</p></div>
+    <h4>Direction matters</h4>
+    <p>Riding the same road the other way turns a tailwind into a headwind. So a vector line integral needs a chosen direction along \(C\), called its <b>orientation</b>. A curve with a chosen direction is an <b>oriented curve</b>. Reversing the orientation flips the sign of the answer.</p>
+    <p>A <b>closed curve</b> ends where it starts. It has a parameterization with \(\mathbf{r}(a) = \mathbf{r}(b)\) that traces it exactly once, like a loop around a track.</p>
+    <div class="thm"><span class="eyebrow">Vector line integral</span>
+      \[\int_C \mathbf{F}\cdot\mathbf{T}\,ds = \lim_{n\to\infty}\sum_{i=1}^{n}\mathbf{F}(P_i^*)\cdot\mathbf{T}(P_i^*)\,\Delta s_i\]
+    </div>
+    <p>Now convert to \(t\). The unit tangent is \(\mathbf{T} = \dfrac{\mathbf{r}'(t)}{\|\mathbf{r}'(t)\|}\) and \(ds = \|\mathbf{r}'(t)\|\,dt\). The two speeds cancel:</p>
+    <div class="mbox">\[\int_C \mathbf{F}\cdot\mathbf{T}\,ds = \int_a^b \mathbf{F}(\mathbf{r}(t))\cdot\frac{\mathbf{r}'(t)}{\|\mathbf{r}'(t)\|}\,\|\mathbf{r}'(t)\|\,dt = \int_a^b \mathbf{F}(\mathbf{r}(t))\cdot\mathbf{r}'(t)\,dt\]</div>
+    <p>The short name for this is \(\displaystyle\int_C \mathbf{F}\cdot d\mathbf{r}\), where \(d\mathbf{r} = \mathbf{r}'(t)\,dt\).</p>
+    <p class="key">Recipe: plug the curve into \(\mathbf{F}\), dot with the velocity \(\mathbf{r}'(t)\), and integrate in \(t\). No square roots needed.</p>
+    <div class="panel" id="llAPanel">
+      <div class="panel-head"><span class="t">Line lab · along or across</span><span class="status" id="llAStatus"></span></div>
+      <canvas id="llACv" class="p2" style="height:380px" aria-label="A vector field, an oriented path, and a bead moving along the path with the field and tangent arrows drawn at the bead."></canvas>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:12px 18px 0">
+        <div class="seg" role="group" aria-label="Field" id="llAField"><button aria-pressed="true" data-k="swirl">Swirl</button><button aria-pressed="false" data-k="source">Outward</button><button aria-pressed="false" data-k="wind">Wind</button><button aria-pressed="false" data-k="shear">Shear</button></div>
+        <div class="seg" role="group" aria-label="Path" id="llAPath"><button aria-pressed="true" data-k="arc">Arc</button><button aria-pressed="false" data-k="line">Line</button><button aria-pressed="false" data-k="loop">Loop</button></div>
+        <div class="seg" role="group" aria-label="Measure" id="llAMode"><button aria-pressed="true" data-k="along">Along (work)</button><button aria-pressed="false" data-k="across">Across (flux)</button></div>
+        <button class="btn ghost" id="llARev" type="button">Reverse direction</button>
+      </div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="llAT"><span>Bead position (share of the path)</span> <b id="llATOut"></b></label><input type="range" id="llAT" min="0" max="1000" step="1" value="1000"></div>
+      </div>
+      <div class="cursorbox" id="llAReads"></div>
+      <p class="note">Green stretches of path add to the total and red stretches subtract. The gold arrow is \(\mathbf{F}\) at the bead. The blue arrow is the unit direction you're measuring against: \(\mathbf{T}\) for work, or the normal \(\mathbf{N}\) for flux. Their dot product is the bar's height on the right. Reverse the direction and every color flips.</p>
+    </div>
+
+    <article class="prob" id="ex30-4">
+      <div class="prob-head"><span class="pnum">Example 4</span><span class="eyebrow">Work along a parabola</span><span class="pts">notes p. 9</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> \(\displaystyle\int_C \mathbf{F}\cdot d\mathbf{r}\) where \(\mathbf{F}(x,y) = -3x^2\,\mathbf{i} + y\,\mathbf{j}\) and \(C\) is \(\mathbf{r}(t) = t\,\mathbf{i} + t^2\,\mathbf{j}\), \(0 \le t \le 1\).</p>
+        <ol class="steps">
+          <li><h5>Plug the curve into \(\mathbf{F}\)</h5><p>\(x = t\) and \(y = t^2\):</p><div class="mbox">\[\mathbf{F}(\mathbf{r}(t)) = \langle -3t^2,\ t^2\rangle\]</div></li>
+          <li><h5>Velocity</h5><p>\(\mathbf{r}'(t) = \langle 1,\ 2t\rangle\).</p></li>
+          <li><h5>Dot them</h5><div class="mbox">\[\mathbf{F}(\mathbf{r}(t))\cdot\mathbf{r}'(t) = -3t^2(1) + t^2(2t) = -3t^2 + 2t^3\]</div></li>
+          <li><h5>Integrate from 0 to 1</h5><div class="mbox">\[\int_0^1 (-3t^2 + 2t^3)\,dt = \left[-t^3 + \frac{t^4}{2}\right]_0^1\]</div><p>Evaluate.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\displaystyle\int_C \mathbf{F}\cdot d\mathbf{r} = -\frac12\)<small>\(-1 + \tfrac12\).</small></div>
+          <p>Negative work means the field fights the motion overall. Its \(-3x^2\) part pushes left while you move right. Walk the parabola backward, from \((1,1)\) to \((0,0)\), and the answer becomes \(+\tfrac12\).</p>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="ex30-5">
+      <div class="prob-head"><span class="pnum">Example 5</span><span class="eyebrow">Work in an inverse-square field</span><span class="pts">notes p. 9</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Evaluate</b> \(\displaystyle\int_C \mathbf{F}\cdot d\mathbf{r}\) where \(\mathbf{F}(x,y) = \dfrac{\langle x, y\rangle}{(x^2+y^2)^{3/2}}\) and \(C\) is \(\mathbf{r}(t) = \langle 2t^2,\ -5t^2\rangle\), \(1 \le t \le 2\).</p>
+        <ol class="steps">
+          <li><h5>Simplify the bottom on the curve</h5><p>\(x^2 + y^2 = 4t^4 + 25t^4 = 29t^4\). Raise it to the \(\tfrac32\): \((29t^4)^{3/2} = 29\sqrt{29}\,t^6\).</p><div class="mbox">\[\mathbf{F}(\mathbf{r}(t)) = \frac{\langle 2t^2,\ -5t^2\rangle}{29\sqrt{29}\,t^6}\]</div></li>
+          <li><h5>Velocity</h5><p>\(\mathbf{r}'(t) = \langle 4t,\ -10t\rangle\).</p></li>
+          <li><h5>Dot them</h5><div class="mbox">\[\frac{2t^2(4t) + (-5t^2)(-10t)}{29\sqrt{29}\,t^6} = \frac{58t^3}{29\sqrt{29}\,t^6} = \frac{2}{\sqrt{29}\,t^3}\]</div></li>
+          <li><h5>Integrate from 1 to 2</h5><div class="mbox">\[\frac{2}{\sqrt{29}}\int_1^2 t^{-3}\,dt = \frac{2}{\sqrt{29}}\left[-\frac{1}{2t^2}\right]_1^2\]</div><p>Evaluate.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\displaystyle\int_C \mathbf{F}\cdot d\mathbf{r} = \frac{3}{4\sqrt{29}} = \frac{3\sqrt{29}}{116} \approx 0.1393\)<small>\(\tfrac{2}{\sqrt{29}}\left(-\tfrac18 + \tfrac12\right)\).</small></div>
+          <p>Positive makes sense. The path runs straight out from the origin, from \((2,-5)\) to \((8,-20)\), and this field pushes straight out, like a repelling charge. It weakens fast, so the total is small.</p>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="li-expanded" data-title="The P dx form">
+    <span class="eyebrow">Topic 5 · another way to write it</span>
+    <h3>The expanded form \(P\,dx + Q\,dy + R\,dz\)</h3>
+    <p>Write the field as \(\mathbf{F} = \langle P, Q, R\rangle\) and the small step along the curve as \(d\mathbf{r} = \langle dx, dy, dz\rangle\). Their dot product is</p>
+    <div class="mbox">\[\mathbf{F}\cdot d\mathbf{r} = P\,dx + Q\,dy + R\,dz \qquad\text{so}\qquad \int_C \mathbf{F}\cdot d\mathbf{r} = \int_C P\,dx + Q\,dy + R\,dz\]</div>
+    <p>Same integral, different handwriting. To compute it, write everything in terms of \(t\). Replace \(x\), \(y\), \(z\) with their formulas, and replace each differential using the derivative: \(dx = x'(t)\,dt\), \(dy = y'(t)\,dt\), \(dz = z'(t)\,dt\).</p>
+    <p class="key">When you see \(\int_C P\,dx + Q\,dy + R\,dz\), read off \(\mathbf{F} = \langle P, Q, R\rangle\). It's a work integral.</p>
+
+    <article class="prob" id="ex30-6">
+      <div class="prob-head"><span class="pnum">Example 6</span><span class="eyebrow">Expanded form</span><span class="pts">notes p. 10</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find</b> \(\displaystyle\int_C z\,dx + x\,dy + y\,dz\), where \(C\) is \(\mathbf{r}(t) = \langle t^2,\ \sqrt t,\ t\rangle\), \(1 \le t \le 4\).</p>
+        <ol class="steps">
+          <li><h5>Read off the pieces</h5><p>The field is \(\mathbf{F} = \langle z, x, y\rangle\). On the curve, \(x = t^2\), \(y = \sqrt t\) and \(z = t\).</p></li>
+          <li><h5>Differentials</h5><p>\(dx = 2t\,dt\), \(dy = \dfrac{1}{2\sqrt t}\,dt\), and \(dz = dt\).</p></li>
+          <li><h5>Substitute</h5><div class="mbox">\[z\,dx = t\cdot 2t\,dt = 2t^2\,dt \qquad x\,dy = t^2\cdot\frac{1}{2\sqrt t}\,dt = \tfrac12 t^{3/2}\,dt \qquad y\,dz = t^{1/2}\,dt\]</div></li>
+          <li><h5>Integrate each from 1 to 4</h5><div class="mbox">\[\int_1^4 2t^2\,dt = 42 \qquad \int_1^4 \tfrac12 t^{3/2}\,dt = \tfrac15\Big[t^{5/2}\Big]_1^4 = \tfrac{31}{5} \qquad \int_1^4 t^{1/2}\,dt = \tfrac23\Big[t^{3/2}\Big]_1^4 = \tfrac{14}{3}\]</div><p>Add the three.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\displaystyle\int_C z\,dx + x\,dy + y\,dz = \frac{793}{15} \approx 52.87\)<small>\(42 + \tfrac{31}{5} + \tfrac{14}{3} = \tfrac{630 + 93 + 70}{15}\).</small></div>
+          <p>Almost all of it comes from \(z\,dx\), because the curve moves 15 units in \(x\) and only 1 in \(y\) and 3 in \(z\).</p>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 1): \(\int_C -24x^2yz\,dx - 5z\,dy - 8xy\,dz\) on \(\mathbf{r}(t) = \langle t, t^2, t^3\rangle\), \(0 \le t \le 1\).</span></summary><div><p>With \(dx = dt\), \(dy = 2t\,dt\), \(dz = 3t^2\,dt\), the integrand is \(-24t^7 - 10t^4 - 24t^5\). Its integral is \(-3 - 2 - 4 = -9\). The notes print \(9\), but every term is negative on \(0 \le t \le 1\), so the answer must be negative. Running the curve backward would give \(+9\), so the notes likely dropped the sign.</p></div></details>
+  </div>
+
+  <div class="topic" id="li-flux" data-title="Flux">
+    <span class="eyebrow">Topic 6 · flow across a curve</span>
+    <h3>Flux</h3>
+    <p>Work measures how much a field pushes <b>along</b> a curve. <b>Flux</b> measures how much it flows <b>across</b> it. Swap the unit tangent \(\mathbf{T}\) for a unit <b>normal</b> \(\mathbf{N}\), which points straight across the curve:</p>
+    <div class="mbox">\[\text{Flux} = \int_C \mathbf{F}\cdot\mathbf{N}\,ds\]</div>
+    <p>If \(\mathbf{F}\) is the velocity of a fluid and \(C\) is a screen or membrane, the flux is how much fluid passes through the screen per unit time.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a fishing net in a river</span><p>Hold a net across a river and lots of water passes through it. Turn the net so it lines up with the current and almost nothing passes through. Water running along the net doesn't count. Only the part of the flow aimed across the net does.</p></div>
+    <p>Which side counts as "across"? The notes use the normal \(\mathbf{n}(t) = \langle y'(t),\ -x'(t)\rangle\). That's the velocity turned a quarter turn clockwise, so it points to the <b>right of the direction of travel</b>. For a loop traced counterclockwise, the right side is the outside, so positive flux means flow outward.</p>
+    <div class="thm"><span class="eyebrow">Flux across a curve</span>
+      <p>Let \(C\) be smooth with parameterization \(\mathbf{r}(t) = \langle x(t), y(t)\rangle\), \(a \le t \le b\), and let \(\mathbf{n}(t) = \langle y'(t),\ -x'(t)\rangle\). The flux of \(\mathbf{F}\) across \(C\) is</p>
+      \[\int_C \mathbf{F}\cdot\mathbf{N}\,ds = \int_C \mathbf{F}\cdot\frac{\mathbf{n}(t)}{\|\mathbf{n}(t)\|}\,ds = \int_a^b \mathbf{F}(\mathbf{r}(t))\cdot\mathbf{n}(t)\,dt\]
+    </div>
+    <p>The same cancellation happens as before: \(\|\mathbf{n}\| = \|\mathbf{r}'\|\), so it cancels with the speed in \(ds\).</p>
+    <div class="panel" id="llBPanel">
+      <div class="panel-head"><span class="t">Line lab · flux across a loop</span><span class="status" id="llBStatus"></span></div>
+      <canvas id="llBCv" class="p2" style="height:380px" aria-label="A vector field and a closed loop, with a bead measuring how much of the field crosses the loop."></canvas>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:12px 18px 0">
+        <div class="seg" role="group" aria-label="Field" id="llBField"><button aria-pressed="false" data-k="swirl">Swirl</button><button aria-pressed="true" data-k="source">Outward</button><button aria-pressed="false" data-k="wind">Wind</button><button aria-pressed="false" data-k="shear">Shear</button></div>
+        <div class="seg" role="group" aria-label="Path" id="llBPath"><button aria-pressed="false" data-k="arc">Arc</button><button aria-pressed="false" data-k="line">Line</button><button aria-pressed="true" data-k="loop">Loop</button></div>
+        <div class="seg" role="group" aria-label="Measure" id="llBMode"><button aria-pressed="false" data-k="along">Along (work)</button><button aria-pressed="true" data-k="across">Across (flux)</button></div>
+        <button class="btn ghost" id="llBRev" type="button">Reverse direction</button>
+      </div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="llBT"><span>Bead position (share of the path)</span> <b id="llBTOut"></b></label><input type="range" id="llBT" min="0" max="1000" step="1" value="1000"></div>
+      </div>
+      <div class="cursorbox" id="llBReads"></div>
+      <p class="note">The same lab, set to measure flow across. The blue arrow is now \(\mathbf{N}\), pointing to the right of travel. An outward field crossing a counterclockwise loop gives positive flux. Try "Swirl": it flows along the loop, never across, and the flux is zero.</p>
+    </div>
+
+    <article class="prob" id="ex30-7">
+      <div class="prob-head"><span class="pnum">Example 7</span><span class="eyebrow">Flux across a circle</span><span class="pts">notes p. 12</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Calculate the flux</b> of \(\mathbf{F} = \langle -x,\ -y\rangle\) across the circle \(\mathbf{r}(t) = \langle -3\cos t,\ -3\sin t\rangle\), \(0 \le t \le 2\pi\).</p>
+        <ol class="steps">
+          <li><h5>Which way does it travel?</h5><p>\(\mathbf{r}(0) = (-3, 0)\) and \(\mathbf{r}(\tfrac{\pi}{2}) = (0, -3)\). Going from the left side to the bottom is counterclockwise. So the right of travel is the outside.</p></li>
+          <li><h5>Velocity and normal</h5><p>\(x' = 3\sin t\) and \(y' = -3\cos t\), so</p><div class="mbox">\[\mathbf{n}(t) = \langle y',\ -x'\rangle = \langle -3\cos t,\ -3\sin t\rangle\]</div><p>At \(t = 0\) that's \(\langle -3, 0\rangle\), pointing left, away from the center. Outward, as expected.</p></li>
+          <li><h5>Plug the curve into \(\mathbf{F}\)</h5><div class="mbox">\[\mathbf{F}(\mathbf{r}(t)) = \langle 3\cos t,\ 3\sin t\rangle\]</div><p>This points toward the center. The fluid drains inward.</p></li>
+          <li><h5>Dot them</h5><div class="mbox">\[\mathbf{F}\cdot\mathbf{n} = -9\cos^2 t - 9\sin^2 t = -9\]</div></li>
+          <li><h5>Integrate</h5><div class="mbox">\[\int_0^{2\pi} -9\,dt\]</div><p>Evaluate.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\displaystyle\int_C \mathbf{F}\cdot\mathbf{N}\,ds = -18\pi \approx -56.55\)<small>\(-9\cdot 2\pi\).</small></div>
+          <p>Negative flux means net flow is inward, against the outward normal. Check it another way: on the circle the field has strength 3 and points straight in, and the circle's length is \(6\pi\). So \(-3\cdot 6\pi = -18\pi\).</p>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 2): flux of \(\langle -5y,\ 2x\rangle\) across \(\mathbf{r}(t) = \langle t, t^2\rangle\), \(0 \le t \le 2\), to the right of travel.</span></summary><div><p>\(\mathbf{n} = \langle 2t, -1\rangle\) and \(\mathbf{F} = \langle -5t^2, 2t\rangle\), so \(\mathbf{F}\cdot\mathbf{n} = -10t^3 - 2t\). Integrating from 0 to 2 gives \(-40 - 4 = -44\), matching the notes.</p></div></details>
+  </div>
+
+  <div class="topic" id="li-circ" data-title="Circulation">
+    <span class="eyebrow">Topic 7 · around a loop</span>
+    <h3>Circulation</h3>
+    <p>When \(C\) is a closed curve, the work integral has its own name, <b>circulation</b>, and its own symbol with a circle on the integral sign:</p>
+    <div class="mbox">\[\oint_C \mathbf{F}\cdot\mathbf{T}\,ds = \oint_C \mathbf{F}\cdot d\mathbf{r}\]</div>
+    <p>The circle reminds you that \(C\) has no endpoints. Circulation measures how much the field tends to carry you around the loop. A whirlpool has a lot of circulation. A steady wind has none, because what it gives on one side of the loop it takes back on the other.</p>
+    <p class="warn">A closed curve still has a direction. Circulation counterclockwise and circulation clockwise have opposite signs. If a problem doesn't say, the convention is counterclockwise.</p>
+
+    <article class="prob" id="ex30-8">
+      <div class="prob-head"><span class="pnum">Example 8</span><span class="eyebrow">Circulation around a circle</span><span class="pts">notes p. 12</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Let</b> \(\mathbf{F} = \langle 2y,\ -2x\rangle\) and let \(C\) be the unit circle oriented counterclockwise. <b>Calculate the circulation</b> of \(\mathbf{F}\) along \(C\).</p>
+        <ol class="steps">
+          <li><h5>Parameterize the circle</h5><p>The standard counterclockwise unit circle is \(\mathbf{r}(t) = \langle \cos t,\ \sin t\rangle\), \(0 \le t \le 2\pi\).</p></li>
+          <li><h5>Plug the curve into \(\mathbf{F}\)</h5><div class="mbox">\[\mathbf{F}(\mathbf{r}(t)) = \langle 2\sin t,\ -2\cos t\rangle\]</div></li>
+          <li><h5>Velocity</h5><p>\(\mathbf{r}'(t) = \langle -\sin t,\ \cos t\rangle\).</p></li>
+          <li><h5>Dot them</h5><div class="mbox">\[\mathbf{F}\cdot\mathbf{r}' = -2\sin^2 t - 2\cos^2 t = -2\]</div></li>
+          <li><h5>Integrate around once</h5><div class="mbox">\[\oint_C \mathbf{F}\cdot d\mathbf{r} = \int_0^{2\pi} -2\,dt\]</div><p>Evaluate.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">\(\displaystyle\oint_C \mathbf{F}\cdot d\mathbf{r} = -4\pi \approx -12.57\)<small>\(-2\cdot 2\pi\).</small></div>
+          <p>This is the rotational field with \(a = 2\), which turns clockwise. You walk counterclockwise, straight into it the whole way, so the circulation is negative.</p>
+        </div></details>
+      </div>
+    </article>
+    <details class="quick"><summary><span>Quick check (notes Practice 3): circulation of \(\langle -y,\ x\rangle\) around the unit circle, counterclockwise.</span></summary><div><p>\(\mathbf{F}\cdot\mathbf{r}' = \sin^2 t + \cos^2 t = 1\), so the circulation is \(2\pi\), matching the notes. This field turns counterclockwise, with you.</p></div></details>
+  </div>
+</section>
+
+<!-- ================= CHEAT SHEET ================= -->
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">Lamina</span><div class="eqs">\(m = \iint_R \rho\,dA\)</div><div class="eqs">\(M_x = \iint_R y\rho\,dA\)</div><div class="eqs">\(M_y = \iint_R x\rho\,dA\)</div><div class="eqs">\(\bar x = M_y/m,\ \ \bar y = M_x/m\)</div></div>
+    <div class="card"><span class="eyebrow">Inertia (plate)</span><div class="eqs">\(I_x = \iint_R y^2\rho\,dA\)</div><div class="eqs">\(I_y = \iint_R x^2\rho\,dA\)</div><div class="eqs">\(I_0 = I_x + I_y\)</div><p>Subscript = the axis. Use the distance to it.</p></div>
+    <div class="card"><span class="eyebrow">Solid</span><div class="eqs">\(m = \iiint_Q \rho\,dV\)</div><div class="eqs">\(\bar x = \tfrac{M_{yz}}{m},\ \bar y = \tfrac{M_{xz}}{m},\ \bar z = \tfrac{M_{xy}}{m}\)</div><div class="eqs">\(I_z = \iiint_Q (x^2+y^2)\rho\,dV\)</div></div>
+    <div class="card"><span class="eyebrow">Vector field types</span><div class="eqs">radial: \(ax\,\mathbf{i} + ay\,\mathbf{j}\)</div><div class="eqs">rotational: \(ay\,\mathbf{i} - ax\,\mathbf{j}\)</div><div class="eqs">unit: \(\|\mathbf{F}\| = 1\); normalize \(\mathbf{F}/\|\mathbf{F}\|\)</div></div>
+    <div class="card"><span class="eyebrow">Conservative</span><div class="eqs">\(\mathbf{F} = \nabla f\), \(f\) = potential</div><div class="eqs">2D test: \(P_y = Q_x\)</div><div class="eqs">3D: \(P_y = Q_x,\)</div><div class="eqs">\(Q_z = R_y,\ R_x = P_z\)</div><p>Unequal ⇒ not conservative. Equal ⇒ maybe.</p></div>
+    <div class="card"><span class="eyebrow">Scalar line integral</span><div class="eqs tall">\(\displaystyle\int_C f\,ds\)</div><div class="eqs tall">\(\displaystyle= \int_a^b f(\mathbf{r}(t))\,\|\mathbf{r}'(t)\|\,dt\)</div><div class="eqs">arc length: \(f = 1\)</div></div>
+    <div class="card"><span class="eyebrow">Work</span><div class="eqs tall">\(\displaystyle\int_C \mathbf{F}\cdot d\mathbf{r}\)</div><div class="eqs tall">\(\displaystyle= \int_a^b \mathbf{F}(\mathbf{r}(t))\cdot\mathbf{r}'(t)\,dt\)</div><div class="eqs">\(= \int_C P\,dx + Q\,dy + R\,dz\)</div></div>
+    <div class="card"><span class="eyebrow">Flux</span><div class="eqs tall">\(\displaystyle\int_C \mathbf{F}\cdot\mathbf{N}\,ds\)</div><div class="eqs tall">\(\displaystyle= \int_a^b \mathbf{F}(\mathbf{r}(t))\cdot\langle y', -x'\rangle\,dt\)</div><p>Normal points right of travel.</p></div>
+    <div class="card"><span class="eyebrow">Circulation</span><div class="eqs tall">\(\displaystyle\oint_C \mathbf{F}\cdot d\mathbf{r}\)</div><p>Work around a closed loop. Counterclockwise unless told otherwise.</p></div>
+  </div>
+  <div class="topic" id="mistakes" data-title="Common mistakes" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Swapping the moments. \(M_x\) has \(y\) inside, \(M_y\) has \(x\) inside. Same for \(I_x\) and \(I_y\).</li>
+      <li>Dividing by the wrong thing. \(\bar x = M_y/m\), and \(m\) is the mass, not the area, unless the density is 1.</li>
+      <li>Forgetting the density inside a moment. \(M_y = \iint x\rho\,dA\), not \(\iint x\,dA\).</li>
+      <li>Using \(y^2\) for \(I_z\) of a solid twice over, as the notes' typo does. It's \(x^2 + y^2\).</li>
+      <li>Drawing an arrow from the origin instead of from its point. Each arrow's tail sits at the point it belongs to.</li>
+      <li>Treating equal cross partials as proof. They only allow a conservative field.</li>
+      <li>Forgetting the speed \(\|\mathbf{r}'(t)\|\) in a scalar line integral, or adding one to a work integral, where it cancels.</li>
+      <li>Ignoring orientation. Reversing a path flips the sign of work, flux and circulation. Scalar line integrals don't care about direction.</li>
+      <li>Forgetting to change the limits after a substitution like \(u = 1 + \cos^2 t\).</li>
+    </ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal every answer on this page</summary>
+      <div class="ans">
+        <div class="tbl"><table>
+          <thead><tr><th>Lesson</th><th>Problem</th><th>Answer</th></tr></thead>
+          <tbody>
+            <tr><td>28</td><td>Example 1: mass, \(\rho = 3y\sqrt x\)</td><td>\(18\sqrt2 \approx 25.46\)</td></tr>
+            <tr><td>28</td><td>Example 2: \(M_y\), \(\rho = y\)</td><td>\(\tfrac{63}{4}\)</td></tr>
+            <tr><td>28</td><td>Example 3: center of mass, \(\rho = xy^3\)</td><td>\(\left(2, \tfrac{16}{5}\right)\)</td></tr>
+            <tr><td>28</td><td>Example 4: \(I_x\), \(\rho = x^2y^2\)</td><td>\(\tfrac{256}{15}\)</td></tr>
+            <tr><td>28</td><td>Example 5: solid, \(\rho = 4x+6y+5z\)</td><td>\(\left(\tfrac{41}{26}, \tfrac{45}{13}, \tfrac{44}{13}\right)\)</td></tr>
+            <tr><td>29</td><td>Example 1: \(\mathbf{F}(1,-2)\)</td><td>\(\langle -2, \tfrac35\rangle\)</td></tr>
+            <tr><td>29</td><td>Example 2: sketch \(\langle x/2, y/2\rangle\)</td><td>outward, length half the distance</td></tr>
+            <tr><td>29</td><td>Example 3: classify</td><td>rotational · neither · radial</td></tr>
+            <tr><td>29</td><td>Example 4: unit fields</td><td>(a) no · (b) yes, away from the origin</td></tr>
+            <tr><td>29</td><td>Example 5: gradients</td><td>\(\langle 20x^3y^3 + y^4,\ 15x^4y^2 + 4xy^3\rangle\); \(\langle -3\sin x\sin y,\ 3\cos x\cos y\rangle\)</td></tr>
+            <tr><td>29</td><td>Example 6: potential?</td><td>yes</td></tr>
+            <tr><td>29</td><td>Example 7: conservative?</td><td>(a) could be · (b) not</td></tr>
+            <tr><td>30</td><td>Example 1: \(\int_C(-3x-10)\,ds\)</td><td>\(-38\sqrt{10} \approx -120.17\)</td></tr>
+            <tr><td>30</td><td>Example 2: \(\int_C 4x\cos y\,ds\)</td><td>\(\tfrac{7\sqrt7 - 5\sqrt5}{6} \approx 1.223\)</td></tr>
+            <tr><td>30</td><td>Example 3: arc length</td><td>\(18\sqrt{41} \approx 115.26\)</td></tr>
+            <tr><td>30</td><td>Example 4: work on the parabola</td><td>\(-\tfrac12\)</td></tr>
+            <tr><td>30</td><td>Example 5: inverse-square work</td><td>\(\tfrac{3}{4\sqrt{29}} \approx 0.1393\)</td></tr>
+            <tr><td>30</td><td>Example 6: \(z\,dx + x\,dy + y\,dz\)</td><td>\(\tfrac{793}{15} \approx 52.87\)</td></tr>
+            <tr><td>30</td><td>Example 7: flux across the circle</td><td>\(-18\pi\)</td></tr>
+            <tr><td>30</td><td>Example 8: circulation</td><td>\(-4\pi\)</td></tr>
+          </tbody></table></div>
+      </div></details>
+  </div>
+  <footer>
+    <p>Examples follow your Math 215 guided notes (Lessons 28–30), in their order. Every answer was checked with a computer algebra system. The notes' printed practice answers all agree except Lesson 30 Practice 1, where the notes print \(9\) and the integral is \(-9\). The notes don't print answers for the in-lesson examples, so those rest on the computer check. The notes also have three wording slips in Lesson 28 (\(I_y\) "about the \(x\)-axis", the \(I_z\) formula, and 3D inertias "about the planes"), each flagged where it comes up. The interactives use their own made-up plates, fields and curves so they don't give away a worked example.</p>
+  </footer>
+</section>
+
+</main>

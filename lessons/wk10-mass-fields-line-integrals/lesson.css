@@ -1,0 +1,5 @@
+/* Page-specific styles only. Reusable styles belong in engine/css. */
+.cheat .card .eqs.tall{line-height:2.9}
+.read .k,.cursorbox .k{text-transform:none;letter-spacing:.03em}   /* these labels hold variables: uppercase would turn m into M and x into X */
+.cursorbox .v .katex{font-size:1em}
+#fxFormula .katex-display{margin:.2em 0}

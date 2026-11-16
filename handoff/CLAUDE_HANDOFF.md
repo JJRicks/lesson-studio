@@ -207,6 +207,14 @@ Label options: `c`, `dx`, `dy` (offset in pixels, which draws a leader line unle
 - Keep labels few, and drop old ones as new ones arrive.
 - Translucent surfaces go at opacity .2 to .4 for context, and .7 to .95 for the subject.
 
+**Framing the camera.** On a laptop the stage is about 2.1:1 (`clamp(250px, 38vh, 360px)` tall, 26° FOV). At distance `d` it shows about `.46d` of height and `.92d` of width, in scaled units. Fit both. Flat, wide scenes run out of width first. Tall ones (a box, a surface, a curtain) run out of height first, and need a bigger `d` than the width suggests: wk10's box needed 6 where 5.2 looked right from the width. Other camera facts:
+- A step's `cam` merges onto the previous step's, so a scene can start close on a small subject, pull back for context, then close in again (wk10 `ex28-2`).
+- `cam.at` is in maths coordinates and gets multiplied by `k.scale`. With a z-scale of 20, an `at` z of .4 aims 8 units up and the scene vanishes from the frame. Keep it tiny.
+- Labels clamp to the stage edges, so one anchored off-screen sits on the edge over other things. Anchor it on-screen and push it sideways with `dx` and `line: false`.
+- Rotating an object pivots about its own origin, so build it centred where it should spin.
+
+**Field and line-integral helpers.** wk10's `scenes/a-helpers.js` has helpers to copy for any lesson on vector fields or curves. `arrows` draws a whole field of arrows as one object, and `.set(fn)` re-aims them. `floorField` lays a 2D field on the floor. `pathRig` draws a curve with a bead, its velocity, the field at the bead and the field's tangent part, plus an optional height stick and curtain; call `.at(t)` in `update`. `curtain` stands a wall on a curve up to a height `h(t)`, for a scalar line integral, and `.upto(t)` grows it along the curve. `fin` draws a one-variable factor as an area standing on a straight edge, which shows a separable double integral as two factors. `paddle` is a paddle wheel with `.spin(angle)`, for circulation. `cloud` scatters one dot per grain of mass. `ticks` marks parameter values on a curve, `along(r, a, b, n)` samples a curve, and `aset` sets an arrow that might have zero length, which three.js can't aim.
+
 ### 8b. 2D circuit steppers
 
 A scene with `view: "2d"` draws an SVG inside `box: [x0, y0, w, h]` (viewBox units, y down). The step fields (`add drop set from win dur cap`) work the same, and there's no camera. `update(P, k, t)` also gets the time, for flicker and AC.
@@ -258,7 +266,7 @@ These all build to `dist/` and never touch a delivered page.
 
 **A passing `check.py` doesn't mean the page is right.** Open every contact sheet and read it like a student, step by step. Sheets show each step's end state at real size. Fix these on sight: labels colliding, objects cropped by the frame, a plane seen edge-on when its face matters, a scene too small in its frame, a caption describing something the picture doesn't show, a colour named in a caption that doesn't match what's drawn, and a label too pale to read. The test agent made about a dozen fixes on a one-example lesson after `check.py` had already passed, so expect that.
 
-`sheets.py` and `shot.py` only capture a demo's default state. Check every toggle, and every slider at both ends, with a scratch script that injects clicks and `input` events before the screenshot. Pass `--force-prefers-reduced-motion` to `chrome()` so an animated state jumps to its finish (the demo's handler needs `if (reduce) p = want`). Time-driven canvases need `probe()` and `canvas.toDataURL()`. The wk8 BJT amplifier's tangent line was only wrong at the top of its slider.
+`sheets.py` and `shot.py` only capture a demo's default state. Check every toggle, and every slider at both ends, with a script that injects clicks and `input` events before the screenshot. Copy wk10's `states.py`: list each state as a section selector plus actions, and it runs them all in one real-time page to collect script errors and missing controls, then screenshots each state with the rest of the page hidden. Pass `--force-prefers-reduced-motion` to `chrome()` so an animated state jumps to its finish (the demo's handler needs `if (reduce) p = want`). Time-driven canvases need `probe()` and `canvas.toDataURL()`. The wk8 BJT amplifier's tangent line was only wrong at the top of its slider.
 
 Then look at every section of the page itself with `shot.py`, in both themes and at 500px. Report honestly what you couldn't test: audio you couldn't hear, touch on a real phone, real GPUs (headless Chrome uses software rendering), and motion you only saw as stills.
 
@@ -289,6 +297,9 @@ Then look at every section of the page itself with `shot.py`, in both themes and
 - **Plot3D extras.** `frame:false` drops the floor and box. `text:[{p,s,col,dx,dy}]` adds labels.
 - **A solid that must hide what's inside needs `o:1`.** Below .995 opacity an object doesn't write depth, so later objects draw over it.
 - **A `.quick` summary is a flex row.** Wrap its text and math in one `<span>`, or each piece becomes its own column.
+- **A dash pattern restarts on every `moveTo`.** A marching-squares contour drawn as hundreds of tiny segments shows solid however it's dashed, so don't call it dashed in the text.
+- **Long `\displaystyle` integrals wrap mid-expression in a cheat-sheet card.** Put the left side and `= ...` in separate `.eqs` lines.
+- **macOS has no `timeout` command.** Use a Python `subprocess` timeout instead.
 
 If you edit `engine/` or `tools/`:
 - Under `--virtual-time-budget` Chrome fires almost no animation frames, so animations look broken when they aren't. `tools/common.py probe()` runs in real time and reports over a local POST for this reason. Headless viewports are also about 143px shorter than `--window-size`, with a 500px minimum width.

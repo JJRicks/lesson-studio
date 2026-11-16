@@ -1,0 +1,6 @@
+{
+  "title": "Mass, Vector Fields & Line Integrals",
+  "brand": "Mass, Fields & Line Integrals",
+  "libs": ["katex", "plot3d", "stepper3d"],
+  "output": "/Users/joelr/Documents/BYUI Assignments/Semester 7/215 Week10/mass-vector-fields-line-integrals-lesson.html"
+}
