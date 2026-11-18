@@ -1,5 +1,6 @@
 <nav class="toc" id="toc" aria-label="Lesson contents">
   <ol>
+    <li><a href="#bigpic">The big picture</a></li>
     <li><a class="grp" href="#part1">Part 1 · Topic name</a>
       <ol>
         <li><a href="#topic1">First topic</a></li>
@@ -23,6 +24,15 @@
   <div class="chips"><span class="chip">First topic</span><span class="chip">Second topic</span></div>
 </section>
 
+<!-- THE BIG PICTURE: the one problem this week's material solves, and one sentence on how each part fits into it. Required. -->
+<section class="topic" id="bigpic" data-title="The big picture">
+  <span class="eyebrow">Start here · no prior knowledge needed</span>
+  <h3>The big picture</h3>
+  <p>The problem this material solves, and what goes wrong without it. Use a concrete number where you can.</p>
+  <ul><li><b>Part 1</b> is how this part tackles that problem.</li></ul>
+  <p class="key">The week in one sentence.</p>
+</section>
+
 <!-- PART: one per lesson or homework section, in the document's order. -->
 <section class="part" id="part1" data-title="Part 1">
   <div class="part-head">
@@ -30,13 +40,15 @@
     <div class="eyebrow">Part 1 · what it covers</div>
     <h2>Part title</h2>
   </div>
-  <div class="big"><span class="eyebrow">The big idea</span><p>The whole part in two sentences, before any detail.</p></div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>The payoff in two sentences: what this part lets you do, before any detail.</p></div>
 
-  <!-- TOPIC: overview, then first principles, then analogy, then the formal statement, then an interactive. -->
+  <!-- TOPIC: what it is, why we care, then first principles, analogy, the formal statement, and an interactive. -->
   <div class="topic" id="topic1" data-title="First topic">
     <span class="eyebrow">Topic 1 · from first principles</span>
     <h3>Topic title</h3>
-    <p>Build the idea from nothing, using short sentences. Inline maths looks like \(z = x + y\).</p>
+    <p><b>What it is.</b> Say in plain words what this thing is and what it does.</p>
+    <p><b>Why we care.</b> Say what problem it solves, what goes wrong without it, and where it shows up in real life. Give a number where you can.</p>
+    <p>Then build the idea from nothing, using short sentences. Inline maths looks like \(z = x + y\).</p>
     <div class="analogy"><span class="eyebrow">Analogy · a short name</span><p>A concrete everyday picture of the idea.</p></div>
     <div class="thm"><span class="eyebrow">Definition or theorem</span><p>The formal statement from the source.</p>\[\iint_R f(x,y)\,dA\]</div>
     <p class="key">The one sentence to remember.</p>

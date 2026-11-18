@@ -24,7 +24,17 @@ On a page that explained the steps but not the reasons:
 
 > there's quite a bit about what to *do*, but not as much about what any of it actually *means* and *why* we care
 
-So every topic says what problem the idea solves and what goes wrong without it, with a number where possible. `lessons/wk10-additional-bjt-circuits/` shows this. Its hero shows a weak sensor's wave reaching a speaker at 1%, then 45% through a follower, then 93% through a Darlington. Its cascade topic shows the homework's own amplifier falling from a gain of −164 to −6 with no follower.
+And on the rebuilt page:
+
+> really want to lock it in, I love this style
+
+**This is a standing rule for every lesson: the *what* and the *why we care* come before any *how*.** `lessons/wk10-additional-bjt-circuits/` is the model to copy.
+
+- **The page opens with the big picture.** Right after the hero comes a "big picture" topic. It names the one problem the week's material solves and says, in a sentence each, how every part or problem fits into it. The hero's demo shows that problem live. wk10's hero shows a weak sensor's wave reaching a speaker at 1% when wired straight, 45% through a follower, and 93% through a Darlington.
+- **Every topic answers two questions before any formula.** *What is it?* That means plain words for what the thing is and does. *Why do we care?* That means the problem it solves, what goes wrong without it, and where it shows up in real devices.
+- **Make the "why" concrete, with a number where possible, and use the homework's own circuit when that's not a spoiler.** wk10's cascade topic shows the homework's amplifier falling from a gain of −164 to −6 when the load is hung on it directly. Its regulator topic shows an op-amp supplying microamps while the load draws most of an amp.
+- **Each part's big-idea box states the payoff, not just the topic.** "Feed one follower's emitter into another's base, and a tiny input current controls amps" beats "This part covers Darlington pairs."
+- **Worked steps can stay procedural.** The topic before them carries the meaning. Where it helps, an answer reveal ends with one line on what the number means, such as "about 137 times the input, upside down" or "600 mA, far more than the op-amp could supply by itself."
 
 On lessons for fun:
 
@@ -50,7 +60,7 @@ If the source teaches a method without an example, add one from a standard textb
 
 **3. Solve and verify, before designing anything.** Put every answer through `lessons/<slug>/verify.py`, using SymPy or numerics. Check them against any hint ranges and printed solutions. For simulator homework, reproduce the model yourself, as `gallery/bjt-characterization-lesson.html` did by solving LTspice's transistor models. For a physical device, fit a small model to datasheet numbers, report how close it lands, and drive the animations from it so the visuals are physically real. If an answer sits near a threshold, carry full digits and say which convention you used, both in the reveal and to Joel.
 
-**4. Plan.** List topics in document order. For each one, write the big idea, the first-principles build-up, an everyday analogy, the interactive, and the worked examples. Ask what the reader should be able to do on the page, not only read.
+**4. Plan.** Start with the week's story: the one problem the material solves, and how each part fits into it. Then list topics in document order. For each one, write what it is, why we care (with a concrete consequence or number), the big idea, the first-principles build-up, an everyday analogy, the interactive, and the worked examples. If you can't say why a topic matters, research it before writing. Ask what the reader should be able to do on the page, not only read.
 
 **5. Write `body.html`.** See section 5.
 
@@ -66,7 +76,7 @@ If the source teaches a method without an example, add one from a standard textb
 
 Copy the markup from `lessons/_starter/body.html`, which has working examples of the common components. `lessons/wk8-multivariable/body.html` shows the rest: `.seg`, `.btn`, `canvas.p3`, `.cursorbox`, `.legend`, `.sw`, `.badge` and `.setup`.
 
-Every topic runs: **big idea → first principles → analogy → formal statement → interactive → worked examples**. Worked examples sit right after the topic they belong to.
+The page opens **hero → the big picture → foundations → parts**. Every topic runs: **what it is → why we care → first principles → analogy → formal statement → interactive → worked examples**. See section 2 for what "why we care" needs to contain. Worked examples sit right after the topic they belong to.
 
 | class | use |
 |---|---|
@@ -99,6 +109,7 @@ Inside an interactive:
 | `.note`, `.legend`, `.sw`, `.badge`, `.setup` | caption text, colour key, colour swatch, status pill, a text strip inside a panel |
 
 Writing rules:
+- Say what each thing is and why it matters before showing how to compute it. A topic that only explains the steps is unfinished.
 - Assume no prior knowledge, and define every term the first time.
 - Use short, plain sentences, the way a knowledgeable person would explain it out loud.
 - Say what the reader sees and does, and name things as they'd recognize them.
@@ -270,6 +281,8 @@ These all build to `dist/` and never touch a delivered page.
 **`check.py`** covers script errors, KaTeX failures, leftover raw TeX, sideways overflow, a reveal on every example, scenes matched to examples, step counts, unknown object names, answers showing too early, and the real stepping and lock flow in real-time Chrome.
 
 **`spoilers.json`** drives the early-answer scan. Each example id lists regexes checked against its scene's pre-answer captions and labels and its card outside the reveal. `_page` is required: it lists regexes checked across the whole page outside reveals, so put each answer's distinctive form there, like `"53\\.4"`. Captions are scanned as raw TeX, and other text as rendered text plus TeX source. Keep patterns specific, or they'll match real step content.
+
+**Read for meaning before you read for layout.** For every topic, point to the sentence that says what it is and the sentence that says why we care. Check that the big-picture topic names every part of the page. If any of these is missing, write it before polishing anything else.
 
 **A passing `check.py` doesn't mean the page is right.** Open every contact sheet and read it like a student, step by step. Sheets show each step's end state at real size. Fix these on sight: labels colliding, objects cropped by the frame, a plane seen edge-on when its face matters, a scene too small in its frame, a caption describing something the picture doesn't show, a colour named in a caption that doesn't match what's drawn, and a label too pale to read. The test agent made about a dozen fixes on a one-example lesson after `check.py` had already passed, so expect that.
 
