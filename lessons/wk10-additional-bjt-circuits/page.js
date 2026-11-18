@@ -142,14 +142,16 @@ function plotBg(c, W, H) { c.fillStyle = rgbS(T.plot); c.fillRect(0, 0, W, H); }
     s.res([100, 24], [100, 80], { len: 34 }); if (mode === "buf") s.node([100, 24]); s.wire([[100, 80], q.C]); s.node([100, 80]); s.wire([q.E, [100, 196]]); s.gnd([100, 196]);
     s.text([84, 44], "RC", { anchor: "end", cls: "sm" }); s.text([84, 60], "4.7 kΩ", { anchor: "end", cls: "sm" });
     s.text([86, 208], "emitter bypassed", { anchor: "end", cls: "sm" });
+    /* the speaker hangs off a coupling capacitor, so the load carries only the signal and leaves the DC bias alone */
+    const cc = (x0, y) => { s.wire([[x0, y], [284, y]]); s.cap([284, y], [318, y], { pol: true }); s.wire([[318, y], [360, y]]); s.text([301, y - 24], "C", { anchor: "middle", cls: "sm" }); };
     const lo = (x, y) => { s.res([x, y], [x, 196], { len: 34 }); s.gnd([x, 196]); s.node([x, y]); s.text([x + 16, y + 44], "speaker", { cls: "sm" }); s.text([x + 16, y + 60], "100 Ω", { cls: "sm" }); };
     if (mode === "none") { s.wire([[100, 80], [360, 80]]); const fo = s.net([360, 80], { w: 34 }); s.text(fo, "out", { anchor: "middle", cls: "sm" }); }
-    else if (mode === "direct") { s.wire([[100, 80], [360, 80]]); lo(360, 80); }
+    else if (mode === "direct") { cc(100, 80); lo(360, 80); }
     else {
       const B = [220, 80]; s.wire([[100, 80], B]); const q2 = s.bjt(B); s.wire([q2.C, [240, 24]]); s.node([240, 24]);
       s.text([248, 58], "Q2 · follower", { cls: "sm" });
       s.wire([q2.E, [240, 130]]); s.node([240, 130]); s.res([240, 130], [240, 196], { len: 34 }); s.gnd([240, 196]); s.text([226, 166], "1 kΩ", { anchor: "end", cls: "sm" });
-      s.wire([[240, 130], [360, 130]]); lo(360, 130);
+      cc(240, 130); lo(360, 130);
     }
   }
   function scope() {
