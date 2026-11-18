@@ -122,6 +122,15 @@ class Schem {
     this.path(`M${x} ${y}L${x + s * 10} ${y - h}H${x + s * w}L${x + s * (w + 12)} ${y}L${x + s * w} ${y + h}H${x + s * 10}Z`, "w body");
     return [x + s * (w + 12) / 2 + s * 4, y];
   }
+  /* op-amp: a triangle pointing right whose left edge is centred on c. The + input sits on top unless o.flip.
+     o.h is the edge height and o.w the length. Returns its pins { P (+ input), N (− input), O (output) }. */
+  opamp(c, o = {}) {
+    const [x, y] = c, h = o.h || 64, w = o.w || 70, d = h * .27, s = o.flip ? 1 : -1;
+    this.path(`M${x} ${y - h / 2}L${x} ${y + h / 2}L${x + w} ${y}Z`, "w body");
+    const P = [x, y + s * d], N = [x, y - s * d];
+    this.path(`M${x + 6} ${P[1]}H${x + 15}M${x + 10.5} ${P[1] - 4.5}V${P[1] + 4.5}M${x + 6} ${N[1]}H${x + 15}`, "w thin");
+    return { P, N, O: [x + w, y] };
+  }
   coil(a, b, o = {}) {                               // inductor: n bumps between a and b, bulging to the side o.side (1 or -1)
     const [ux, uy, L] = unitDir(a, b), n = o.n || 4, body = Math.min(L - 10, o.len || 84), s = (L - body) / 2, r = body / n / 2, sw = (o.side || 1) > 0 ? 1 : 0;
     const at = t => [a[0] + ux * t, a[1] + uy * t];

@@ -20,6 +20,12 @@ On worked examples:
 
 > For each of the worked examples, would you be able to create a steppable labeled and simple 3D animation to really help visualize what is happening and how each part comes into play?
 
+On a page that explained the steps but not the reasons:
+
+> there's quite a bit about what to *do*, but not as much about what any of it actually *means* and *why* we care
+
+So every topic says what problem the idea solves and what goes wrong without it, with a number where possible. `lessons/wk10-additional-bjt-circuits/` shows this. Its hero shows a weak sensor's wave reaching a speaker at 1%, then 45% through a follower, then 93% through a Darlington. Its cascade topic shows the homework's own amplifier falling from a gain of −164 to −6 with no follower.
+
 On lessons for fun:
 
 > Fully animated and interactive ... I love what you did with the electron particle generator, that sort of thing is lovely
@@ -143,7 +149,8 @@ Where to find things:
 - **`gallery/bjt-characterization-lesson.html`**: **`class Plot`**, LTspice-style plots with draggable cursors, the electron-flow canvas, `.dc` command decoders, and "run the sweep" animations.
 - **`gallery/bjt-calculation-lesson.html`**: **`playground()`**, a live circuit with sliders, animated current flow and a load-line chart.
 - **`lessons/wk7-bjt-led-relay-drivers/`**: the circuits reference. Live SVG schematics with current dots in `page.js` (a pin-flip hero, a pnp sweep, a relay cutaway with hysteresis, a flyback scope), Gummel-Poon BJT and LED solvers in `shared.js`, and six 2D steppers.
-- **Schematic kit** (`engine/js/schematic.js`, add `"schematic"` to `libs`): `new Schem(svgGroup)` draws parts in viewBox units, y down: `res`, `diode`, `led(a, k, {c})` with `.set(brightness)`, `bjt(B, {pnp})` returning pins `{B, C, E}`, `vsrc` and `vac` returning `{top, bot}`, `isrc(c, {dep, up})` (a current source, a diamond when `dep`) returning `{top, bot, flip(up)}`, `cap(a, b, {pol})`, `gnd`, `net(p, {w, left})` (an LTspice net flag), `coil`, `lever(pivot, len)` with `.set(deg)`, `lamp` with `.set`, `rect`, `text`, `wire`, `node`, `arrow`. `flow(pts, {c, gap})` makes moving current dots: set `.speed`, then call `Schem.tick(flows, dt)` each frame. Classes `w`, `tint` (colour from `--c`), `fillc`, `soft`, `sm`.
+- **Schematic kit** (`engine/js/schematic.js`, add `"schematic"` to `libs`): `new Schem(svgGroup)` draws parts in viewBox units, y down: `res`, `diode`, `led(a, k, {c})` with `.set(brightness)`, `bjt(B, {pnp})` returning pins `{B, C, E}`, `vsrc` and `vac` returning `{top, bot}`, `isrc(c, {dep, up})` (a current source, a diamond when `dep`) returning `{top, bot, flip(up)}`, `cap(a, b, {pol})`, `gnd`, `net(p, {w, left})` (an LTspice net flag), `opamp(c, {h, w, flip})` (a triangle whose left edge is centred on `c`, + input on top) returning pins `{P, N, O}`, `coil`, `lever(pivot, len)` with `.set(deg)`, `lamp` with `.set`, `rect`, `text`, `wire`, `node`, `arrow`. `flow(pts, {c, gap})` makes moving current dots: set `.speed`, then call `Schem.tick(flows, dt)` each frame. Classes `w`, `tint` (colour from `--c`), `fillc`, `soft`, `sm`.
+- **Check your answer before revealing** (`CHECK` at the end of `lessons/wk10-additional-bjt-circuits/page.js`): a small form above each reveal. It accepts an answer that matches to three significant figures, plus an alternate such as the exact β + 1 version with its own message. It also catches a flipped sign and a factor of 1000. The targets live in the script, so they don't count as spoilers.
 - **`shared.js`** in a lesson folder is copied into both the `page.js` closure and the stepper closure. Put circuit drawings and solvers there so the hero and the worked examples draw the same circuit.
 
 Gallery pages are plain HTML, so read their source and copy what you need into `page.js`. Repeated code worth keeping belongs in `engine/`.
@@ -297,6 +304,7 @@ Then look at every section of the page itself with `shot.py`, in both themes and
 - **Plot3D extras.** `frame:false` drops the floor and box. `text:[{p,s,col,dx,dy}]` adds labels.
 - **A solid that must hide what's inside needs `o:1`.** Below .995 opacity an object doesn't write depth, so later objects draw over it.
 - **A `.quick` summary is a flex row.** Wrap its text and math in one `<span>`, or each piece becomes its own column.
+- **β or β + 1.** The ECEN 350 course takes I_B ≈ I_E/β and Z_in(base) = β(r_e′ + r_e). Give that as the answer, show the exact β + 1 value next to it in the reveal and the answer key, and accept both in any answer checker. The two differ by about 1% per transistor, so a Darlington's answers differ by 2%.
 - **A dash pattern restarts on every `moveTo`.** A marching-squares contour drawn as hundreds of tiny segments shows solid however it's dashed, so don't call it dashed in the text.
 - **Long `\displaystyle` integrals wrap mid-expression in a cheat-sheet card.** Put the left side and `= ...` in separate `.eqs` lines.
 - **macOS has no `timeout` command.** Use a Python `subprocess` timeout instead.

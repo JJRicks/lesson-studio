@@ -1,0 +1,590 @@
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#bigpic">Start here</a>
+      <ol>
+        <li><a href="#bigpic">The big picture</a></li>
+        <li><a href="#rules">Two transistor rules</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part1">Problem 1 · Emitter follower</a>
+      <ol>
+        <li><a href="#follow">Why it's a follower</a></li>
+        <li><a href="#twice">Draw it twice</a></li>
+        <li class="prob"><a href="#p1a">1a · r<sub>e1</sub></a></li>
+        <li><a href="#rprime">The inside resistance</a></li>
+        <li class="prob"><a href="#p1b">1b · r′<sub>e1</sub></a></li>
+        <li><a href="#zin">Input impedance</a></li>
+        <li class="prob"><a href="#p1c">1c · Z<sub>in</sub></a></li>
+        <li><a href="#av">The gain</a></li>
+        <li class="prob"><a href="#p1d">1d · A<sub>V</sub></a></li>
+      </ol></li>
+    <li><a class="grp" href="#part2">Problem 2 · Cascade</a>
+      <ol>
+        <li><a href="#buffer">Why add a follower</a></li>
+        <li><a href="#q2">Q2's resistances</a></li>
+        <li class="prob"><a href="#p2a">2a · r<sub>e2</sub></a></li>
+        <li class="prob"><a href="#p2b">2b · r′<sub>e2</sub></a></li>
+        <li><a href="#chain">Gains multiply</a></li>
+        <li class="prob"><a href="#p2c">2c · A<sub>V,CC</sub></a></li>
+        <li class="prob"><a href="#p2d">2d · A<sub>V,total</sub></a></li>
+      </ol></li>
+    <li><a class="grp" href="#part3">Problem 3 · Darlington</a>
+      <ol>
+        <li><a href="#darl">Two transistors as one</a></li>
+        <li class="prob"><a href="#p3">3 · I<sub>in</sub></a></li>
+      </ol></li>
+    <li><a class="grp" href="#part4">Problem 4 · Regulator</a>
+      <ol>
+        <li><a href="#reg">Brains and muscle</a></li>
+        <li><a href="#setv">Setting the voltage</a></li>
+        <li class="prob"><a href="#p4a">4a · V<sub>out</sub></a></li>
+        <li><a href="#trace">Back to the op-amp</a></li>
+        <li class="prob"><a href="#p4b">4b · I<sub>Rload</sub></a></li>
+        <li class="prob"><a href="#p4c">4c · I<sub>out</sub> of U1</a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#mistakes">Common mistakes</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Week 10 · Additional BJT Circuits HW · 25 pts</div>
+  <h1>Followers, <span>Darlingtons</span> and Regulators</h1>
+  <p class="lede">Last week's amplifier made a small voltage bigger. This week's circuits do a transistor's other job. They copy a voltage almost exactly and supply the current a heavy load needs, so the signal source doesn't have to. You'll go from one emitter follower, to an amplifier that can drive a small load, to two transistors stacked into a Darlington, to a voltage regulator where an op-amp does the thinking and the transistors do the lifting. Every idea starts from scratch, and every answer stays hidden until you click.</p>
+  <div class="chips"><span class="chip">Problem 1 · emitter follower: r<sub>e</sub>, r′<sub>e</sub>, Z<sub>in</sub>, A<sub>V</sub></span><span class="chip">Problem 2 · amplifier plus follower</span><span class="chip">Problem 3 · Darlington input current</span><span class="chip">Problem 4 · op-amp regulator</span></div>
+  <div class="panel" id="hero">
+    <div class="panel-head"><span class="t">A weak source meets a heavy load · live</span><span class="status" id="heroStatus"></span></div>
+    <div class="heroseg"><div class="seg" id="heroSeg" role="group" aria-label="How the sensor connects to the speaker">
+      <button type="button" data-k="direct" aria-pressed="true">Wire it straight</button>
+      <button type="button" data-k="one" aria-pressed="false">One follower</button>
+      <button type="button" data-k="darl" aria-pressed="false">Darlington</button>
+    </div></div>
+    <div class="duo">
+      <div class="schbox" id="heroSch" style="--ar:1.57"></div>
+      <div class="side"><canvas id="heroCv" class="p2" aria-label="Two waves. The dashed one is the voltage the sensor makes. The solid one is the voltage that reaches the speaker."></canvas></div>
+    </div>
+    <div class="cursorbox" id="heroReads"></div>
+    <div class="legend"><span><span class="dotsw" style="--c:var(--cursor)"></span>current from the sensor</span><span><span class="dotsw" style="--c:var(--t3)"></span>current from the 12 V supply</span><span><span class="dotsw" style="--c:var(--t1)"></span>Q1's emitter into Q2's base</span></div>
+    <p class="note">The sensor makes a 1 V wave, but it has 10 kΩ of resistance inside it. Wired straight to a 100 Ω speaker, the two form a voltage divider and only 1% of the wave arrives. Try one follower, then a Darlington. The transistors copy the voltage and pull the speaker's current from the 12 V supply, so the sensor barely supplies anything. Dot speed follows current on a log scale. The transistors' DC bias parts are left out to keep the drawing simple.</p>
+  </div>
+</section>
+
+<section class="topic" id="bigpic" data-title="The big picture">
+  <span class="eyebrow">Start here · no prior knowledge needed</span>
+  <h3>The big picture: voltage and muscle</h3>
+  <p>Every signal comes from something: a sensor, a microphone, an amplifier stage. Each one can make a voltage. Each one also has some resistance inside it, and that inside resistance limits how much current it can push out.</p>
+  <p>A <b>heavy load</b> is one with low resistance, like a 100 Ω speaker or a 10 Ω heater. It wants a lot of current. Connect one to a weak source and the source's inside resistance and the load form a <b>voltage divider</b>. Most of the voltage is lost inside the source before it reaches the load. That's the "Wire it straight" setting above.</p>
+  <p>Every problem this week fixes that the same way. A transistor goes between the source and the load. It copies the voltage, and it fetches the current from a power supply, so the source only has to supply a trickle.</p>
+  <ul>
+    <li><b>Problem 1</b> is one transistor doing that job, a circuit called an <b>emitter follower</b>.</li>
+    <li><b>Problem 2</b> puts a follower after last week's kind of amplifier, so its big gain survives a 150 Ω load.</li>
+    <li><b>Problem 3</b> stacks two followers into a <b>Darlington pair</b>, for loads that need amps.</li>
+    <li><b>Problem 4</b> puts a Darlington under an op-amp's control, which makes a <b>voltage regulator</b>.</li>
+  </ul>
+  <div class="analogy"><span class="eyebrow">Analogy · a porter</span><p>You walk through an airport and choose the route. A porter follows a step behind, pushing the cart with every suitcase. Your legs set the path, and the porter's arms carry the weight. In these circuits the input sets the voltage, and the transistor carries the current, using energy from the power supply.</p></div>
+  <p class="key">A follower keeps the voltage and multiplies the current the source can deliver.</p>
+</section>
+
+<section class="topic" id="rules" data-title="Two transistor rules">
+  <span class="eyebrow">Start here · the only two rules you need</span>
+  <h3>Two transistor rules you'll use all page</h3>
+  <p>A <b>bipolar junction transistor</b> (BJT) has three legs: the <b>base</b>, the <b>collector</b> and the <b>emitter</b>. Every transistor here is an <b>NPN</b> type, drawn with an arrow pointing out of the emitter. Current goes in at the collector and the base, and all of it comes out of the emitter.</p>
+  <p><b>Rule 1 · a small base current controls a big one.</b> A small current into the base lets a much bigger current flow from collector to emitter. The ratio is the <b>current gain</b> β (beta), usually somewhere from 50 to 300, so \(I_C = \beta I_B\). The emitter carries both currents, so \(I_E = I_C + I_B = (\beta + 1) I_B\).</p>
+  <p>β is big, so β and β + 1 differ by about 1%. This course usually takes the shortcut \(I_E \approx I_C\), which means \(I_B \approx I_E/\beta\). Problems 1c, 3 and 4c show both versions, and they never differ by more than 2%.</p>
+  <p><b>Rule 2 · the base-emitter junction is a diode.</b> When it conducts, it holds about 0.7 V. So the emitter always sits about 0.7 V below the base.</p>
+  <div class="mbox">\[I_E = (\beta + 1)\,I_B \approx \beta\,I_B \qquad\qquad V_E = V_B - 0.7\text{ V}\]</div>
+  <p class="key">The emitter sits 0.7 V below the base and carries about β times the base current.</p>
+  <details class="quick"><summary>Quick check: a base sits at 3.0 V. Where's the emitter?</summary><div><p>At 2.3 V, one diode drop below.</p></div></details>
+  <details class="quick"><summary>Quick check: with \(I_B\) = 20 µA and β = 150, about how much current leaves the emitter?</summary><div><p>About 3.0 mA, from 150 × 20 µA. The exact β + 1 version gives 3.02 mA.</p></div></details>
+</section>
+
+<section class="part" id="part1" data-title="Problem 1 · Emitter follower">
+  <div class="part-head">
+    <div class="part-letter">1</div>
+    <div class="eyebrow">Problem 1 · 8 pts</div>
+    <h2>The emitter follower</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Take the output from the emitter instead of the collector. The output then copies the input almost exactly, and the transistor supplies about β times more current than the source does.</p></div>
+
+  <div class="topic" id="follow" data-title="Why it's a follower">
+    <span class="eyebrow">Topic 1 · from first principles</span>
+    <h3>Why it's called a follower</h3>
+    <p>In Problem 1's circuit, the input goes to the base. The collector connects straight to the 15 V supply. The output comes off the emitter, through a capacitor C1, to a load resistor RL.</p>
+    <p>Rule 2 says the emitter sits 0.7 V below the base. Raise the base by 1 V and the emitter rises by about 1 V. Lower it and the emitter follows it down. That's where the name comes from. The <b>voltage gain</b>, the output's change divided by the input's change, comes out just under 1.</p>
+    <p>What a follower adds is current. The load's current flows from the 15 V supply, in at the collector and out of the emitter. The input supplies only the base current, which is about β times smaller. A follower amplifies current and leaves the voltage alone.</p>
+    <p>The collector sits at a fixed supply voltage, so it never wiggles. For the signal it acts like ground, which gives the circuit its other name, <b>common collector</b> (CC).</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a forklift</span><p>A forklift driver nudges a lever an inch, and the forks lift a ton of bricks to exactly the height the lever asks for. The lever sets the height, and the engine does the lifting. A follower's base sets the voltage, and the 15 V supply provides the current.</p></div>
+    <p class="key">Output follows input, the gain is just under 1, and the supply provides the load's current.</p>
+  </div>
+
+  <div class="topic" id="twice" data-title="Draw it twice">
+    <span class="eyebrow">Topic 2 · DC and AC</span>
+    <h3>Draw the circuit twice: DC and AC</h3>
+    <p>A signal in these circuits rides on top of a steady voltage. The steady part is the <b>DC bias</b>, which keeps the transistor partly on. The <b>AC signal</b> is the small wiggle on top. In Problem 1 the base sits at 6.1 V DC, and the signal wiggles it a little above and below that.</p>
+    <p>The two parts follow different rules, so you work them out separately, in two drawings of the same circuit.</p>
+    <ul>
+      <li><b>The DC view.</b> Capacitors are open circuits, because a charged capacitor blocks steady current. Anything past C1 drops out.</li>
+      <li><b>The AC view.</b> Capacitors are wires, because the big coupling capacitors pass a wiggle easily. DC supplies become ground, because a voltage that never changes has no wiggle.</li>
+    </ul>
+    <div class="analogy"><span class="eyebrow">Analogy · two photos of a busy road</span><p>A long-exposure photo blurs the cars into the steady flow of traffic. A fast snapshot freezes one car's wobble in its lane. It's the same road, with two pictures answering two questions. DC is the long exposure and AC is the snapshot.</p></div>
+    <p>In the AC view, look at the follower's emitter. The signal has two ways to reach ground: down through RE, or across C1, which is now a wire, and down through RL. Two resistors that run from the same node to ground are in <b>parallel</b>. Each one gives the current another way out, so together they resist less than either one alone.</p>
+    <div class="mbox">\[r_e = R_E \parallel R_L = \frac{R_E\,R_L}{R_E + R_L}\]</div>
+    <p>This is \(r_e\), the <b>external AC emitter resistance</b>, written without a prime.</p>
+    <p class="key">DC view: capacitors are open. AC view: capacitors are wires and supplies are ground.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p1a" data-title="Problem 1a">
+      <div class="prob-head"><span class="pnum">Problem 1a</span><span class="eyebrow">the external AC emitter resistance</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(r_{e1}\)</b> for the follower: a 15 V supply, a 6.1 V DC bias at the base, β = 110, \(R_E\) = 2.7 kΩ and \(R_L\) = 360 Ω through C1. (The homework's figure labels the emitter V<sub>E2</sub>. There's only one transistor, so it's Q1's emitter.)</p>
+        <ol class="steps">
+          <li><h5>Switch to the AC view</h5><p>C1 becomes a wire and the 15 V supply becomes ground.</p></li>
+          <li><h5>Find the paths to ground</h5><p>From the emitter, the signal can go straight down RE, or across C1 and down RL.</p></li>
+          <li><h5>Combine them in parallel</h5><p>Compute it.</p><div class="mbox">\[r_{e1} = R_E \parallel R_L = \frac{(2700)(360)}{2700 + 360}\ \Omega\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">r<sub>e1</sub> = 317.6 Ω<small>Just under the 360 Ω load, as a parallel pair always is.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="rprime" data-title="The inside resistance">
+    <span class="eyebrow">Topic 3 · inside the transistor</span>
+    <h3>The transistor's own resistance, \(r_e'\)</h3>
+    <p>The signal meets a second, smaller resistance on its way out, and this one is inside the transistor.</p>
+    <p>The base-emitter junction is a diode, and a diode's current climbs very steeply with its voltage. Roughly every extra 60 mV multiplies the current by 10. So a small wiggle in \(V_{BE}\) makes a wiggle in \(I_E\), and the ratio of the two wiggles acts like a resistance. It's called \(r_e'\), the <b>AC emitter resistance</b>, written with a prime.</p>
+    <p>Its size depends on where the diode is sitting. The more DC current flows, the steeper the curve and the smaller \(r_e'\) gets. At room temperature it works out to</p>
+    <div class="mbox">\[r_e' = \frac{25\text{ mV}}{I_E}\]</div>
+    <p>where \(I_E\) is the DC emitter current. The 25 mV is the <b>thermal voltage</b>, set by temperature. So finding \(r_e'\) always starts in the DC view, by finding \(I_E\).</p>
+    <details class="deeper"><summary>Go deeper: where the 25 mV comes from</summary><div><p>A diode follows \(I = I_S\,e^{V/V_T}\), where \(V_T = kT/q \approx 25\text{ mV}\) near room temperature. Its slope is \(dI/dV = I/V_T\), so a small wiggle sees a resistance of \(V_T/I\). That's \(r_e'\).</p></div></details>
+    <div class="warn"><b>Watch out.</b> The two names differ only by a prime. \(r_e'\), with the prime, is 25 mV/\(I_E\) and lives inside the transistor. \(r_e\), with no prime, is \(R_E \parallel R_L\) and lives outside it. Last week's lesson used the same names.</div>
+    <p class="key">\(r_e'\) is set by the DC current. \(r_e\) is set by the resistors.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p1b" data-title="Problem 1b">
+      <div class="prob-head"><span class="pnum">Problem 1b</span><span class="eyebrow">the transistor's AC emitter resistance</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(r_{e1}'\)</b> for the same follower.</p>
+        <ol class="steps">
+          <li><h5>Switch to the DC view</h5><p>C1 is open, so RL carries no DC. All of the emitter current goes down RE.</p></li>
+          <li><h5>Find the emitter voltage</h5><p>The emitter sits 0.7 V below the 6.1 V base.</p></li>
+          <li><h5>Find the emitter current</h5><p>Use Ohm's law on RE: \(I_E = V_E/2700\ \Omega\).</p></li>
+          <li><h5>Divide 25 mV by it</h5><p>Compute it.</p><div class="mbox">\[r_{e1}' = \frac{25\text{ mV}}{I_E}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">r′<sub>e1</sub> = 12.50 Ω<small>\(V_E\) = 5.4 V and \(I_E\) = 5.4 V / 2.7 kΩ = 2.000 mA, so 25 mV / 2.000 mA = 12.50 Ω.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="zin" data-title="Input impedance">
+    <span class="eyebrow">Topic 4 · what the source feels</span>
+    <h3>Input impedance</h3>
+    <p>The <b>input impedance</b> \(Z_{in}\) is the resistance a source sees when it looks into a circuit: the input voltage divided by the input current. <b>Impedance</b> is the word for resistance to AC.</p>
+    <p>It matters because every source has its own resistance inside, and that resistance forms a divider with \(Z_{in}\). A big \(Z_{in}\) draws almost no current and leaves almost all of the signal for the circuit. That's how the follower rescued the sensor in the demo at the top.</p>
+    <p>Work it out from the two rules. Wiggle the base by \(v_b\). The emitter follows, so the same wiggle sits across \(r_e'\) and \(r_e\) in series, and the signal current is \(i_e = v_b/(r_e' + r_e)\). The base supplies only \(i_b = i_e/\beta\) of that. Divide one by the other.</p>
+    <div class="thm"><span class="eyebrow">Impedance looking into the base</span>\[Z_{in(base)} = \frac{v_b}{i_b} = \beta\,(r_e' + r_e)\]</div>
+    <p>From the base, every ohm in the emitter looks β times bigger. In Problem 1 the source connects straight to the base, with no bias resistors beside it, so \(Z_{in}\) is \(Z_{in(base)}\). The exact version uses β + 1, and the course formula uses β.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a pulley block</span><p>Lift a heavy crate with a pulley block that has ten loops of rope. You pull ten times farther, but you only feel a tenth of the weight. From where you stand, the crate seems ten times lighter. The base feels the emitter's current divided by β, so the emitter's resistance looks β times bigger.</p></div>
+    <p class="key">A follower makes its load look β times bigger to the source.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p1c" data-title="Problem 1c">
+      <div class="prob-head"><span class="pnum">Problem 1c</span><span class="eyebrow">input impedance at the base</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(Z_{in}\)</b>, the input impedance the source sees at the base.</p>
+        <ol class="steps">
+          <li><h5>Follow the signal current</h5><p>A wiggle at the base drives \(i_e\) through \(r_{e1}'\) inside Q1, then \(r_{e1}\) outside it, in series.</p></li>
+          <li><h5>Count the base current</h5><p>The base supplies only \(i_b = i_e/110\). The 15 V supply provides the rest.</p></li>
+          <li><h5>Divide</h5><p>\(Z_{in} = v_b/i_b\), so \(i_e\) cancels. Use your answers to parts a and b, and compute it.</p><div class="mbox">\[Z_{in} = 110\,(r_{e1}' + r_{e1})\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">Z<sub>in</sub> = 36.32 kΩ<small>110 × (12.50 Ω + 317.6 Ω). With the exact β + 1 = 111 it's 36.65 kΩ, which is also a fair answer.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="av" data-title="The gain">
+    <span class="eyebrow">Topic 5 · voltage gain</span>
+    <h3>Why the gain is a little under 1</h3>
+    <p>The signal current \(i_e\) flows through \(r_e'\) and then \(r_e\). The base wiggle is \(i_e(r_e' + r_e)\), but the output is taken below \(r_e'\), so it only gets \(i_e\,r_e\). The two resistances split the wiggle like a voltage divider.</p>
+    <div class="thm"><span class="eyebrow">Emitter follower gain</span>\[A_V = \frac{v_{out}}{v_{in}} = \frac{r_e}{r_e + r_e'}\]</div>
+    <p>\(r_e'\) is usually a few ohms and \(r_e\) is usually hundreds, so the gain lands around 0.9 to 0.99. The output rises when the input rises, so the gain is positive and the wave isn't flipped.</p>
+    <p>Two things push the gain closer to 1. A lighter load makes \(r_e\) bigger, and more bias current makes \(r_e'\) smaller. Try both below.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a slightly springy tow rope</span><p>A truck tows a car on a rope that stretches a little. The car follows the truck, but the rope stretches whenever the car drags. The harder the car drags, the more the rope stretches and the more the car lags behind. \(r_e'\) is the stretch in the rope, and a heavy load is a car with its brakes on.</p></div>
+    <div class="panel" id="splitPanel">
+      <div class="panel-head"><span class="t">Where the base wiggle goes</span><span class="status">practice values · RE = 1 kΩ · β = 100</span></div>
+      <canvas id="splitCv" class="p2" style="height:240px" aria-label="A bar split into the share of the base wiggle lost inside the transistor, in red, and the share that reaches the load, in green. Below it, the base wave and the output wave."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="splitI"><span>DC emitter current \(I_E\)</span> <b id="splitIOut"></b></label><input type="range" id="splitI" min="0" max="1000" value="250"></div>
+        <div class="sl"><label for="splitR"><span>Load \(R_L\)</span> <b id="splitROut"></b></label><input type="range" id="splitR" min="0" max="1000" value="300"></div>
+      </div>
+      <div class="cursorbox" id="splitReads"></div>
+      <p class="note">Slide the load down toward 22 Ω and the red sliver grows, because a heavy load shrinks \(r_e\) and drags the gain down. Slide the current up and \(r_e'\) shrinks, so more of the wiggle gets through. \(Z_{in}\) moves too: a heavier load is harder to drive, even through a follower.</p>
+    </div>
+    <p class="key">\(A_V = r_e/(r_e + r_e')\): the outside resistance's share of the total.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p1d" data-title="Problem 1d">
+      <div class="prob-head"><span class="pnum">Problem 1d</span><span class="eyebrow">the follower's voltage gain</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(A_V\)</b>, the voltage gain from the base to the load. The hint says it's between 0.95 and 0.99.</p>
+        <ol class="steps">
+          <li><h5>Follow the signal current</h5><p>One current \(i_e\) flows through \(r_{e1}'\) and then \(r_{e1}\), so the base wiggle splits between them.</p></li>
+          <li><h5>Take the output share</h5><p>The output is taken below \(r_{e1}'\), so it gets only the \(r_{e1}\) share.</p></li>
+          <li><h5>Divide</h5><p>Use your answers to parts a and b, and compute it.</p><div class="mbox">\[A_V = \frac{r_{e1}}{r_{e1} + r_{e1}'}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">A<sub>V</sub> = 0.9621<small>317.6 / (317.6 + 12.50). It's positive, so the output moves in step with the input, and it's inside the hint's range.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" id="part2" data-title="Problem 2 · Cascade">
+  <div class="part-head">
+    <div class="part-letter">2</div>
+    <div class="eyebrow">Problem 2 · 8 pts</div>
+    <h2>An amplifier with a follower on its output</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Last week's common-emitter amplifier has plenty of voltage gain but can't drive a heavy load. Put a follower after it, and each stage does the job it's good at.</p></div>
+
+  <div class="topic" id="buffer" data-title="Why add a follower">
+    <span class="eyebrow">Topic 6 · why we care</span>
+    <h3>Why an amplifier needs a follower</h3>
+    <p>Recall last week's <b>common-emitter</b> (CE) stage, which takes its output from the collector. Its gain is \(-r_c/r_e'\), where \(r_c\) is everything the collector sees to AC ground: the collector resistor in parallel with whatever is connected to the output.</p>
+    <p>That's the catch. Connect a heavy load to the collector and it lands in parallel with the collector resistor, so \(r_c\) collapses and the gain goes with it. In this homework's circuit, Q1 with nothing attached would have a gain of about −164. Hang the 150 Ω load straight on its collector and \(r_c\) drops to about 144 Ω, so the gain falls to about −6.</p>
+    <p>Now put a follower in between. Q1's collector sees the follower's input impedance, \(\beta(r_e' + r_e)\), which is tens of kilohms, so Q1 hardly notices it. The follower then drives the 150 Ω load with a gain just under 1, and most of the big gain survives.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a singer and a sound system</span><p>A trained singer shapes the melody, but can't fill a stadium alone. A sound system adds no melody of its own. It copies the singer and supplies the power. The CE stage is the singer, and the follower is the sound system.</p></div>
+    <div class="panel" id="bufPanel">
+      <div class="panel-head"><span class="t">Give a CE stage a heavy load</span><span class="status" id="bufStatus"></span></div>
+      <div class="heroseg"><div class="seg" id="bufSeg" role="group" aria-label="What's connected to the amplifier's output">
+        <button type="button" data-k="none" aria-pressed="true">Nothing attached</button>
+        <button type="button" data-k="direct" aria-pressed="false">Speaker on the collector</button>
+        <button type="button" data-k="buf" aria-pressed="false">Follower in between</button>
+      </div></div>
+      <div class="schbox short" id="bufSch" style="--ar:2.03"></div>
+      <canvas id="bufCv" class="p2" style="height:170px" aria-label="Three small scopes: the input, the wave at Q1's collector, and the wave at the output, drawn on one shared scale."></canvas>
+      <div class="cursorbox" id="bufReads"></div>
+      <p class="note">A practice CE stage with \(R_C\) = 4.7 kΩ, \(r_e'\) = 20 Ω and its emitter fully bypassed. With nothing attached its gain is −235. A 100 Ω speaker on the collector drags that down to about −5. With a follower in between, Q1 sees about 14 kΩ instead of 100 Ω, and the speaker gets a gain of about −168. All three waves after the input share one scale.</p>
+    </div>
+    <p class="key">Use a CE stage for voltage gain and a follower to drive the load.</p>
+  </div>
+
+  <div class="topic" id="q2" data-title="Q2's resistances">
+    <span class="eyebrow">Topic 7 · the second stage</span>
+    <h3>Q2's two resistances</h3>
+    <p>Problem 2 gives you the first stage's results, so all the new work is on Q2. Q2's base connects to Q1's collector with a plain wire, with no capacitor in between. That's called <b>direct coupling</b>. Q2's base sits at whatever DC voltage Q1's collector has, \(V_{C1}\) = 5.9 V, and the amplified signal arrives on the same wire.</p>
+    <p>From there it's Problem 1 again. In the AC view, Q2's emitter has two paths to ground, RE2 and RL through C2, so \(r_{e2} = R_{E2} \parallel R_L\). In the DC view, C2 is open, the emitter sits 0.7 V below the base, all of \(I_{E2}\) goes down RE2, and \(r_{e2}' = 25\text{ mV}/I_{E2}\).</p>
+    <details class="deeper"><summary>Go deeper: does the −144 already include Q2?</summary><div><p>Yes. Q1's gain depends on everything its collector sees, and that includes Q2's input impedance. The homework gives −144 with Q2 attached, so use it as it is. If you work Q1 out yourself, its collector lands at 5.89 V, which matches the given 5.9 V.</p></div></details>
+    <p class="key">With direct coupling, Q1's collector voltage is Q2's base bias.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p2a" data-title="Problem 2a">
+      <div class="prob-head"><span class="pnum">Problem 2a</span><span class="eyebrow">Q2's external AC emitter resistance</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(r_{e2}\)</b> for the cascade: a 10 V supply, \(V_{C1}\) = 5.9 V, \(A_{V,CE}\) = −144, \(R_{E2}\) = 1.5 kΩ and \(R_L\) = 150 Ω through C2. Both transistors are 2N3904s.</p>
+        <ol class="steps">
+          <li><h5>Switch to the AC view</h5><p>The capacitors become wires and the 10 V supply becomes ground.</p></li>
+          <li><h5>Find the paths to ground</h5><p>From Q2's emitter, the signal can go straight down RE2, or across C2 and down RL.</p></li>
+          <li><h5>Combine them in parallel</h5><p>Compute it.</p><div class="mbox">\[r_{e2} = R_{E2} \parallel R_L = \frac{(1500)(150)}{1500 + 150}\ \Omega\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">r<sub>e2</sub> = 136.4 Ω<small>The 150 Ω load does most of the deciding.</small></div>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="p2b" data-title="Problem 2b">
+      <div class="prob-head"><span class="pnum">Problem 2b</span><span class="eyebrow">Q2's AC emitter resistance</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(r_{e2}'\)</b>.</p>
+        <ol class="steps">
+          <li><h5>Read Q2's base voltage</h5><p>A plain wire joins it to Q1's collector, so it sits at 5.9 V. At DC, C2 is open and RL drops out.</p></li>
+          <li><h5>Drop 0.7 V</h5><p>\(V_{E2} = 5.9 - 0.7\) volts.</p></li>
+          <li><h5>Find the emitter current</h5><p>All of it flows down RE2: \(I_{E2} = V_{E2}/1500\ \Omega\). Keep all its digits.</p></li>
+          <li><h5>Divide 25 mV by it</h5><p>Compute it.</p><div class="mbox">\[r_{e2}' = \frac{25\text{ mV}}{I_{E2}}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">r′<sub>e2</sub> = 7.212 Ω<small>\(V_{E2}\) = 5.2 V and \(I_{E2}\) = 5.2 V / 1.5 kΩ = 3.467 mA, so 25 mV / 3.467 mA = 7.212 Ω.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="chain" data-title="Gains multiply">
+    <span class="eyebrow">Topic 8 · stages in a row</span>
+    <h3>Gains in a row multiply</h3>
+    <p>Q2 is a follower, so its gain is the same divider as in Problem 1: \(A_{V,CC} = r_{e2}/(r_{e2} + r_{e2}')\).</p>
+    <p>For the whole amplifier, follow the signal. Q1 multiplies the input by \(A_{V,CE}\) to make \(v_{c1}\). Q2 multiplies \(v_{c1}\) by \(A_{V,CC}\) to make the output. Chain the two ratios and \(v_{c1}\) cancels.</p>
+    <div class="thm"><span class="eyebrow">Cascaded gain</span>\[A_{V,total} = \frac{v_{c1}}{v_{in}}\cdot\frac{v_{out}}{v_{c1}} = A_{V,CE}\,A_{V,CC}\]</div>
+    <p>Signs multiply too. The CE stage flips the wave, which is where its minus sign comes from, and the follower doesn't flip it back. One flip in the chain makes the total negative.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · changing money twice</span><p>Change dollars to euros, then euros to yen. Multiply the two exchange rates and you get dollars to yen, and the euros drop out. Stage gains chain the same way, and the voltage between the stages drops out.</p></div>
+    <p class="key">The total gain is the product of the stage gains, and each inverting stage adds a minus sign.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p2c" data-title="Problem 2c">
+      <div class="prob-head"><span class="pnum">Problem 2c</span><span class="eyebrow">the follower stage's gain</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(A_{V,CC}\)</b>, the voltage gain of the follower stage.</p>
+        <ol class="steps">
+          <li><h5>Find where the signal enters</h5><p>The amplified signal leaves Q1's collector and arrives at Q2's base.</p></li>
+          <li><h5>Split it</h5><p>Q2's signal current flows through \(r_{e2}'\) and then \(r_{e2}\), so the base wiggle splits between them.</p></li>
+          <li><h5>Take the output share</h5><p>Use your answers to parts a and b, and compute it.</p><div class="mbox">\[A_{V,CC} = \frac{r_{e2}}{r_{e2} + r_{e2}'}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">A<sub>V,CC</sub> = 0.9498<small>136.4 / (136.4 + 7.212). Positive and just under 1, like any follower.</small></div>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="p2d" data-title="Problem 2d">
+      <div class="prob-head"><span class="pnum">Problem 2d</span><span class="eyebrow">the whole amplifier's gain</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(A_{V,total}\)</b>, the gain from the input to the load. The hint says its size is between 132 and 142.</p>
+        <ol class="steps">
+          <li><h5>Start with Q1</h5><p>Q1 multiplies the input by −144 and flips it.</p></li>
+          <li><h5>Then Q2</h5><p>Q2 multiplies that by your \(A_{V,CC}\) and keeps it the same way up.</p></li>
+          <li><h5>Multiply</h5><p>Keep the sign, and compute it.</p><div class="mbox">\[A_{V,total} = (-144)\,A_{V,CC}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">A<sub>V,total</sub> = −136.8<small>(−144)(0.9498). Its size, 136.8, is inside the hint. The output is about 137 times the input, upside down.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" id="part3" data-title="Problem 3 · Darlington">
+  <div class="part-head">
+    <div class="part-letter">3</div>
+    <div class="eyebrow">Problem 3 · 2 pts</div>
+    <h2>The Darlington pair</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Feed one follower's emitter into another's base. Their current gains multiply, so a tiny input current can control amps.</p></div>
+
+  <div class="topic" id="darl" data-title="Two transistors as one">
+    <span class="eyebrow">Topic 9 · why we care</span>
+    <h3>Two transistors acting as one</h3>
+    <p>Some loads need more current than one transistor can provide from a weak source. A small motor that draws 2 A, driven through a transistor with β = 100, needs 20 mA at the base. That's right at the limit of a typical microcontroller pin.</p>
+    <p>The fix is the <b>Darlington pair</b>. Q1's emitter feeds Q2's base directly, and both collectors go to the supply. Every bit of Q1's emitter current becomes Q2's base current. Each transistor multiplies the current by its β, so the pair multiplies it by about \(\beta_1\beta_2\).</p>
+    <div class="mbox">\[I_{E2} \approx \beta_2\,I_{B2} = \beta_2\,I_{E1} \approx \beta_2\,\beta_1\,I_{B1} \qquad\Longrightarrow\qquad I_{B1} \approx \frac{I_{E2}}{\beta_1\,\beta_2}\]</div>
+    <p>With β = 100 each, that's a current gain of 10,000. The 2 A motor now needs only 0.2 mA at the input.</p>
+    <p>There's a price. The path from input to output crosses two base-emitter junctions, so the output sits 1.4 V below the input instead of 0.7 V. So you walk forward for voltages, taking off 0.7 V twice, and backward for currents, dividing by β twice.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a pilot valve</span><p>Big hydraulic machines don't move their main valve by hand. A small lever moves a small <b>pilot valve</b>, which uses fluid pressure to move the big valve, which steers the main flow. Each stage multiplies the force. Q1 is the pilot valve and Q2 is the main valve.</p></div>
+    <div class="panel" id="darPanel">
+      <div class="panel-head"><span class="t">How much current does the input need?</span><span class="status">practice values</span></div>
+      <div class="heroseg"><div class="seg" id="darSeg" role="group" aria-label="One transistor or a Darlington pair">
+        <button type="button" data-k="one" aria-pressed="true">One transistor</button>
+        <button type="button" data-k="two" aria-pressed="false">Darlington pair</button>
+      </div></div>
+      <canvas id="darCv" class="p2" style="height:230px" aria-label="Bars on a log scale for the load current, the middle current and the input current, with a dashed line at 20 milliamps."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="darI"><span>Load current</span> <b id="darIOut"></b></label><input type="range" id="darI" min="0" max="1000" value="950"></div>
+        <div class="sl"><label for="darB"><span>β of each transistor</span> <b id="darBOut"></b></label><input type="range" id="darB" min="30" max="300" value="100"></div>
+      </div>
+      <div class="cursorbox" id="darReads"></div>
+      <p class="note">The bars sit on a log scale, so each grid step is ten times the last. The dashed line is about the most a typical microcontroller pin can supply. With one transistor, a big load pushes the base current past it. Switch to the Darlington and the input current drops by another factor of β.</p>
+    </div>
+    <p class="key">A Darlington multiplies the current gain by another β and costs a second 0.7 V.</p>
+    <details class="quick"><summary>Quick check: a Darlington with β = 50 in each transistor drives a 1 A load. About how much input current does it need?</summary><div><p>1 A / (50 × 50) = 0.4 mA.</p></div></details>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p3" data-title="Problem 3">
+      <div class="prob-head"><span class="pnum">Problem 3</span><span class="eyebrow">the Darlington's input current</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(I_{in}\)</b>, the current the 8 V source supplies. Both transistors have β = 120, both collectors connect to 12 V, and the load is 10 Ω.</p>
+        <ol class="steps">
+          <li><h5>Walk the voltage down</h5><p>From the 8 V base, cross two junctions to reach the output.</p><div class="mbox">\[V_{out} = 8 - 0.7 - 0.7\ \text{V}\]</div></li>
+          <li><h5>Find the load current</h5><p>The load is the only way out of Q2's emitter, so \(I_{E2} = V_{out}/10\ \Omega\).</p></li>
+          <li><h5>Back through Q2</h5><p>Q2's base needs \(I_{E2}/120\), and all of it comes from Q1's emitter.</p></li>
+          <li><h5>Back through Q1</h5><p>Q1's base needs that divided by 120 again, and Q1's base current is \(I_{in}\). Compute it.</p><div class="mbox">\[I_{in} = \frac{I_{E2}}{120 \cdot 120}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">I<sub>in</sub> = 45.83 µA<small>\(V_{out}\) = 6.6 V, \(I_{E2}\) = 0.66 A and \(I_{B2}\) = 5.5 mA. With the exact β + 1 = 121 at each step, it's 45.08 µA. The two differ by under 2%, so check which one your instructor wants. Both collectors at 12 V sit well above their emitters, so both transistors are on.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" id="part4" data-title="Problem 4 · Regulator">
+  <div class="part-head">
+    <div class="part-letter">4</div>
+    <div class="eyebrow">Problem 4 · 7 pts</div>
+    <h2>A voltage regulator</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>An op-amp decides what the output voltage should be, and a Darlington supplies the current. Feedback holds the output steady whatever the load does.</p></div>
+
+  <div class="topic" id="reg" data-title="Brains and muscle">
+    <span class="eyebrow">Topic 10 · what a regulator does</span>
+    <h3>Brains and muscle</h3>
+    <p>Almost every circuit needs a steady supply voltage, even while its current demand jumps around. A <b>voltage regulator</b> makes one from a rougher, higher supply, which here is 12 V.</p>
+    <p>Problem 4's regulator has two parts. The <b>op-amp</b> U1 is the brain. It compares a sample of the output with a steady 4.0 V <b>reference</b> and decides how hard to drive. The Darlington is the muscle. It carries the load current from the 12 V supply, so U1 only has to supply a tiny base current.</p>
+    <p>An op-amp has two inputs, + and −. It amplifies the difference between them, \(V_+ - V_-\), by a huge factor, often 100,000 or more, and its inputs draw almost no current.</p>
+    <p>Here the output is wired back to the − input through R1 and R2. If the output sags, \(V_-\) drops below \(V_+\), and U1 drives Q1's base harder, which lifts the output. If the output rises too far, U1 backs off. That correcting loop is <b>negative feedback</b>. It settles where the two inputs match, because any difference would be amplified into a correction.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · cruise control</span><p>You set 65 mph. The controller watches the speedometer, presses the gas harder uphill and eases off downhill. The engine does the work, and the controller only decides how much. The reference is the set speed, the divider is the speedometer, U1 is the controller, and the Darlington and 12 V supply are the engine.</p></div>
+    <p><b>Check yourself.</b> The load suddenly draws more current and the output dips a little. What does U1 do?</p>
+    <div class="mcq" data-answer="a">
+      <button type="button" data-k="a" data-fb="Right. \(V_-\) falls below \(V_+\), so U1's output rises, and the two followers lift the output with it."><b>a.</b><span>It raises the voltage at Q1's base.</span></button>
+      <button type="button" data-k="b" data-fb="That would pull the output down further. A lower output means a lower \(V_-\), which makes U1's output rise."><b>b.</b><span>It lowers the voltage at Q1's base.</span></button>
+      <button type="button" data-k="c" data-fb="The reference is fixed. U1 can only change its own output."><b>c.</b><span>It raises the 4.0 V reference.</span></button>
+      <p class="mcq-fb" aria-live="polite"></p>
+    </div>
+    <p class="key">Negative feedback drives U1 until \(V_- = V_+\).</p>
+  </div>
+
+  <div class="topic" id="setv" data-title="Setting the voltage">
+    <span class="eyebrow">Topic 11 · the output voltage</span>
+    <h3>Setting the output voltage</h3>
+    <p>Once feedback has settled, \(V_- = V_+ = V_{ref}\). R1 and R2 form a voltage divider from the output to ground, and the − input sits at their junction. No current goes into the − input, so the same current flows through both resistors, and the junction sits at R2's share of the output.</p>
+    <div class="thm"><span class="eyebrow">Regulator output</span>\[V_- = V_{out}\,\frac{R_2}{R_1 + R_2} = V_{ref} \qquad\Longrightarrow\qquad V_{out} = V_{ref}\left(1 + \frac{R_1}{R_2}\right)\]</div>
+    <p>The two 0.7 V drops don't appear in that formula. The feedback loop measures the output itself, after both junctions, so U1's output rises to 1.4 V above \(V_{out}\) to cover them.</p>
+    <p>That only works while U1 has room. Its output can't go above its own 12 V supply, and real op-amps usually stop a volt or so short. If \(V_{out}\) + 1.4 V would need more than that, the loop loses control.</p>
+    <div class="warn"><b>Watch out.</b> Don't subtract 1.4 V from \(V_{out}\). Feedback senses the output after both junctions, and U1 raises its own output to make up for them.</div>
+    <div class="panel" id="regPanel">
+      <div class="panel-head"><span class="t">A regulator you can load down</span><span class="status" id="regStatus"></span></div>
+      <div class="schbox" id="regSch" style="--ar:1.31"></div>
+      <div class="ctlgrid">
+        <div class="sl"><label for="regV"><span>Reference \(V_{ref}\)</span> <b id="regVOut"></b></label><input type="range" id="regV" min="1" max="5" step="0.05" value="2.5"></div>
+        <div class="sl"><label for="regR1"><span>Top resistor R1</span> <b id="regR1Out"></b></label><input type="range" id="regR1" min="0" max="30" step="0.5" value="10"></div>
+        <div class="sl"><label for="regL"><span>Load RL</span> <b id="regLOut"></b></label><input type="range" id="regL" min="0" max="1000" value="500"></div>
+      </div>
+      <div class="cursorbox" id="regReads"></div>
+      <p class="setup" id="regMsg"></p>
+      <p class="note">A practice regulator with R2 = 10 kΩ and transistor gains of 50 and 100. Drag the load from 200 Ω down to 2 Ω. The output holds still while the load current climbs, and U1's current stays tiny. Then raise \(V_{ref}\) or R1 until U1 runs out of room.</p>
+    </div>
+    <details class="deeper"><summary>Go deeper: where the wasted power goes</summary><div><p>Q2 has the whole gap between 12 V and the output across it, with the full load current through it. In the practice regulator at its starting settings, that's (12 − 5) V × 0.25 A ≈ 1.75 W of heat in Q2, more than the 1.25 W the load gets. That's why linear regulators need heat sinks, and why phone chargers use switching regulators instead.</p></div></details>
+    <p class="key">\(V_{out} = V_{ref}(1 + R_1/R_2)\), as long as U1 has room above it.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p4a" data-title="Problem 4a">
+      <div class="prob-head"><span class="pnum">Problem 4a</span><span class="eyebrow">the regulated output voltage</span><span class="pts">3 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(V_{out}\)</b>. U1 has a 4.0 V reference on its + input, R1 = 10 kΩ runs from the output to the − input, R2 = 20 kΩ runs from the − input to ground, and the load is 10 Ω. Q1 has β = 80 and Q2 has β = 110. The homework wants your assumptions and at least two steps.</p>
+        <ol class="steps">
+          <li><h5>State the assumptions</h5><p>U1 is ideal: negative feedback makes \(V_- = V_+\), and its inputs draw no current. U1's output stays below 12 V. Each junction drops 0.7 V.</p></li>
+          <li><h5>Find the divider current</h5><p>\(V_-\) = 4.0 V, and that's the voltage across R2, so \(I_{div} = 4.0\text{ V}/20\text{ k}\Omega\).</p></li>
+          <li><h5>Add R1's drop</h5><p>The same current flows through R1, since none enters the − input. Compute it.</p><div class="mbox">\[V_{out} = 4.0\text{ V} + I_{div}\,(10\text{ k}\Omega) = 4.0\text{ V}\left(1 + \frac{10\text{ k}\Omega}{20\text{ k}\Omega}\right)\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">V<sub>out</sub> = 6.000 V<small>\(I_{div}\) = 0.2 mA and R1 drops 2.0 V. Check the assumption: U1's output is 6.0 + 1.4 = 7.4 V, below 12 V, so U1 has room.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="trace" data-title="Back to the op-amp">
+    <span class="eyebrow">Topic 12 · why the transistors are there</span>
+    <h3>Following the current back to the op-amp</h3>
+    <p>Two currents leave Q2's emitter: the load current, and the small current down the R1 and R2 divider. Add them to get \(I_{E2}\).</p>
+    <p>Then walk backward through the Darlington, as in Problem 3. Q2's base needs \(I_{E2}/\beta_2\), which comes from Q1's emitter. Q1's base needs that divided by \(\beta_1\), and Q1's base current is exactly what flows out of U1's output pin.</p>
+    <div class="mbox">\[I_{out,U1} = I_{B1} \approx \frac{I_{E2}}{\beta_1\,\beta_2} = \frac{I_{Rload} + I_{div}}{\beta_1\,\beta_2}\]</div>
+    <p>This is the payoff of the whole design. Most op-amps can only supply a few tens of milliamps. With the Darlington in place, U1 supplies microamps while the load draws most of an amp.</p>
+    <p class="key">The load's current divided by \(\beta_1\beta_2\) is all the op-amp has to supply.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p4b" data-title="Problem 4b">
+      <div class="prob-head"><span class="pnum">Problem 4b</span><span class="eyebrow">the load current</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(I_{Rload}\)</b>, the current through the 10 Ω load.</p>
+        <ol class="steps">
+          <li><h5>Find the voltage across the load</h5><p>The load runs from the output node to ground, so your \(V_{out}\) from part a sits across it.</p></li>
+          <li><h5>Use Ohm's law</h5><p>Compute it.</p><div class="mbox">\[I_{Rload} = \frac{V_{out}}{10\ \Omega}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">I<sub>Rload</sub> = 0.6000 A<small>That's 600 mA, far more than U1 could supply by itself.</small></div>
+        </div></details>
+      </div>
+    </article>
+
+    <article class="prob" id="p4c" data-title="Problem 4c">
+      <div class="prob-head"><span class="pnum">Problem 4c</span><span class="eyebrow">the op-amp's output current</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(I_{out}\) of U1</b>, the current out of the op-amp's output pin. The hint says it's between 65 and 75 µA.</p>
+        <ol class="steps">
+          <li><h5>Add up what leaves Q2's emitter</h5><p>The load current from part b, plus the 0.2 mA divider current.</p></li>
+          <li><h5>Back through Q2</h5><p>Divide by β<sub>2</sub> = 110 to get Q2's base current, which is Q1's emitter current.</p></li>
+          <li><h5>Back through Q1</h5><p>Divide by β<sub>1</sub> = 80. That's U1's output current. Compute it.</p><div class="mbox">\[I_{out} = \frac{I_{Rload} + 0.2\text{ mA}}{110 \cdot 80}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">I<sub>out</sub> = 68.20 µA<small>0.6002 A / 8800, inside the hint's 65 to 75 µA. With the exact β + 1 values, 111 and 81, it's 66.76 µA, also inside the hint. Leaving out the 0.2 mA divider current changes the answer by only 0.03%.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">Transistor rules</span><div class="eqs">\(V_E = V_B - 0.7\text{ V}\)</div><div class="eqs">\(I_E = (\beta + 1) I_B \approx \beta I_B\)</div></div>
+    <div class="card"><span class="eyebrow">Two views</span><p>DC: capacitors are open.</p><p>AC: capacitors are wires and DC supplies are ground.</p></div>
+    <div class="card"><span class="eyebrow">Emitter resistances</span><div class="eqs">\(r_e = R_E \parallel R_L\)</div><div class="eqs">\(r_e' = 25\text{ mV}/I_E\)</div></div>
+    <div class="card"><span class="eyebrow">Emitter follower</span><div class="eqs">\(A_V = r_e/(r_e + r_e')\)</div><div class="eqs">\(Z_{in(base)} = \beta\,(r_e' + r_e)\)</div></div>
+    <div class="card"><span class="eyebrow">Cascade</span><div class="eqs">\(A_{V,total} = A_{V,CE}\,A_{V,CC}\)</div><p>One inverting stage makes the total negative.</p></div>
+    <div class="card"><span class="eyebrow">Darlington</span><div class="eqs">\(V_{out} = V_{in} - 1.4\text{ V}\)</div><div class="eqs">\(I_{B1} \approx I_{E2}/(\beta_1\beta_2)\)</div></div>
+    <div class="card"><span class="eyebrow">Regulator voltage</span><div class="eqs">\(V_- = V_+\)</div><div class="eqs">\(V_{out} = V_{ref}(1 + R_1/R_2)\)</div></div>
+    <div class="card"><span class="eyebrow">Regulator currents</span><div class="eqs">\(I_{E2} = I_{load} + I_{div}\)</div><div class="eqs">\(I_{out,U1} \approx I_{E2}/(\beta_1\beta_2)\)</div></div>
+    <div class="card"><span class="eyebrow">β or β + 1?</span><p>The course uses β. The exact answer uses β + 1. They differ by about 1% per transistor.</p></div>
+  </div>
+  <div class="topic" id="mistakes" data-title="Common mistakes" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Mixing up \(r_e\) and \(r_e'\). The primed one is the transistor's own 25 mV/\(I_E\). The other is \(R_E \parallel R_L\).</li>
+      <li>Putting RL into the DC current. C1 and C2 block DC, so \(I_E\) flows only through the emitter resistor.</li>
+      <li>Forgetting β in \(Z_{in}\). From the base, the emitter's resistance looks β times bigger.</li>
+      <li>Expecting voltage gain from a follower. Its gain is always a little under 1, and positive.</li>
+      <li>Adding stage gains. They multiply, signs included.</li>
+      <li>Taking off only one 0.7 V in a Darlington. There are two junctions in the path.</li>
+      <li>Taking 1.4 V off a regulator's output. Feedback measures the output after both junctions.</li>
+      <li>Forgetting that U1's output needs room. It sits 1.4 V above \(V_{out}\) and has to stay below its supply.</li>
+    </ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal every answer on this page</summary>
+      <div class="ans"><div class="tbl"><table>
+        <thead><tr><th>Problem</th><th>Answer</th><th>Exact β + 1 version</th></tr></thead>
+        <tbody>
+          <tr><td>1a · \(r_{e1}\)</td><td>317.6 Ω</td><td></td></tr>
+          <tr><td>1b · \(r_{e1}'\)</td><td>12.50 Ω</td><td></td></tr>
+          <tr><td>1c · \(Z_{in}\)</td><td>36.32 kΩ</td><td>36.65 kΩ</td></tr>
+          <tr><td>1d · \(A_V\)</td><td>0.9621</td><td></td></tr>
+          <tr><td>2a · \(r_{e2}\)</td><td>136.4 Ω</td><td></td></tr>
+          <tr><td>2b · \(r_{e2}'\)</td><td>7.212 Ω</td><td></td></tr>
+          <tr><td>2c · \(A_{V,CC}\)</td><td>0.9498</td><td></td></tr>
+          <tr><td>2d · \(A_{V,total}\)</td><td>−136.8</td><td></td></tr>
+          <tr><td>3 · \(I_{in}\)</td><td>45.83 µA</td><td>45.08 µA</td></tr>
+          <tr><td>4a · \(V_{out}\)</td><td>6.000 V</td><td></td></tr>
+          <tr><td>4b · \(I_{Rload}\)</td><td>0.6000 A</td><td></td></tr>
+          <tr><td>4c · \(I_{out}\) of U1</td><td>68.20 µA</td><td>66.76 µA</td></tr>
+        </tbody>
+      </table></div></div></details>
+  </div>
+  <footer><p>Problems, circuits and given values come from <i>Additional BJT Circuits HW</i>. Every answer uses the course's conventions: \(V_{BE}\) = 0.7 V, \(r_e'\) = 25 mV/\(I_E\), and β wherever the exact formula has β + 1. A script reworked each one and checked it against the homework's hint ranges, and every check passes. The interactive demos use their own practice values.</p></footer>
+</section>
+
+</main>

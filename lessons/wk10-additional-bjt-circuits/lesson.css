@@ -1,0 +1,35 @@
+/* Page-specific styles only. Reusable styles belong in engine/css. */
+
+/* schematic boxes inside panels (from the wk9 lesson) */
+.schbox{background:var(--plot);min-width:0;padding:6px 4px}
+.schbox .sch{height:auto;aspect-ratio:var(--ar,1.25);max-height:440px;margin:0 auto}
+.schbox.short .sch{max-height:300px}
+.duo{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);border-bottom:1px solid var(--line)}
+.duo>*{min-width:0}
+.duo>.side{border-left:1px solid var(--line);display:flex;flex-direction:column}
+.duo canvas.p2{flex:1;height:auto;min-height:240px}
+@media (max-width:760px){.duo{grid-template-columns:minmax(0,1fr)}.duo>.side{border-left:0;border-top:1px solid var(--line)}}
+#bufPanel .schbox{border-bottom:1px solid var(--line)}
+
+/* readouts keep their case: r and R, mV and MV, and beta all mean different things here */
+.cursorbox .k{text-transform:none}
+.lc{text-transform:none}
+.heroseg{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.heroseg .seg{flex-wrap:wrap}
+.dotsw{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c);margin-right:6px;vertical-align:middle}
+#heroReads,#splitReads,#bufReads,#darReads{grid-template-columns:repeat(4,minmax(0,1fr))}
+#regReads{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:640px){#heroReads,#splitReads,#bufReads,#darReads,#regReads{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* check your answer before revealing */
+details.check form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:2px 0 0}
+details.check label{display:flex;flex-direction:column;gap:5px;font-size:.88rem;color:var(--muted)}
+details.check input{font:inherit;font-family:var(--f-mono);padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);width:11em}
+details.check input:focus{outline:2px solid var(--accent);outline-offset:1px}
+details.check .btn{margin:0}
+.checkmsg{margin:10px 0 0;min-height:1.3em;font-size:.93rem}
+.checkmsg.ok{color:var(--good)}
+.checkmsg.no{color:var(--bad)}
+
+/* the cheat sheet's stacked fractions need room between lines */
+.cheat .card .eqs.tall{line-height:2.9}
