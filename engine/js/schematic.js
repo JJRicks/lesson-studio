@@ -80,6 +80,20 @@ class Schem {
     if (pnp) this.head(t(E2, E1, .62), E2, 10); else this.head(t(E1, E2, .9), E1, 10);
     return { B, C, E };
   }
+  /* enhancement-mode MOSFET, the 3-terminal LTspice symbol. G is the outer end of the gate lead, and the body sits to its
+     right (o.left mirrors it). The broken channel bar means "enhancement": no channel until the gate makes one. o.p draws a
+     p-channel arrow (pointing out of the channel), and o.sTop puts the source on top, where a p-channel part's source goes.
+     Returns its pins { G, D, S } and thru, the path current takes from the drain down through the channel to the source. */
+  mosfet(G, o = {}) {
+    const [x, y] = G, sx = o.left ? -1 : 1, sy = o.sTop ? -1 : 1, P = (dx, dy) => [x + sx * dx, y + sy * dy];
+    this.wire([G, P(15, 0)]);
+    this.wire([P(15, -21), P(15, 21)], "w bar");
+    for (const [a, b] of [[-23, -11], [-6, 6], [11, 23]]) this.wire([P(25, a), P(25, b)], "w bar");
+    const D = P(44, -40), S = P(44, 40);
+    this.wire([P(25, -17), P(44, -17), D]); this.wire([P(25, 17), P(44, 17), S]); this.wire([P(25, 0), P(44, 0), P(44, 17)]);
+    if (o.p) this.head(P(42, 0), P(27, 0), 9); else this.head(P(27, 0), P(42, 0), 9);
+    return { G, D, S, thru: [D, P(44, -17), P(25, -17), P(25, 17), P(44, 17), S] };
+  }
   vsrc(c, o = {}) {                                  // DC source, + on top; returns { top, bot }
     const r = o.r || 19;
     svgEl("circle", { cx: c[0], cy: c[1], r, class: "w body" }, this.g);

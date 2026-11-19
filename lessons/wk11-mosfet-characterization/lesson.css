@@ -1,0 +1,36 @@
+/* Page-specific styles only. Reusable styles belong in engine/css. */
+
+/* schematic boxes inside panels (from the wk9 and wk10 lessons) */
+.schbox{background:var(--plot);min-width:0;padding:6px 4px}
+.schbox .sch{height:auto;aspect-ratio:var(--ar,1.25);max-height:420px;margin:0 auto}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);border-bottom:1px solid var(--line)}
+.duo>*{min-width:0}
+.duo>.side{border-left:1px solid var(--line);display:flex;flex-direction:column}
+.duo canvas.p2{flex:1;height:auto;min-height:260px}
+@media (max-width:760px){.duo{grid-template-columns:minmax(0,1fr)}.duo>.side{border-left:0;border-top:1px solid var(--line)}}
+#mirSch,#symFig{border-bottom:1px solid var(--line)}
+
+/* readouts keep their case: Id and ID, mA and MA, VGS and Vgs all mean different things here */
+.cursorbox .k{text-transform:none}
+.lc{text-transform:none}
+.heroseg{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+.heroseg .seg{flex-wrap:wrap}
+.heroseg .chk{display:flex;gap:7px;align-items:center;font-size:.88rem;color:var(--muted);cursor:pointer}
+.heroseg .chk input{accent-color:var(--accent);width:15px;height:15px}
+.panel-head .btn{margin-left:auto}
+.dotsw{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c);margin-right:6px;vertical-align:middle}
+.dotsw.sq{border-radius:2px;width:12px}
+.holesw{display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--muted);margin-right:6px;vertical-align:middle}
+#heroReads,#thrReads,#famReads,#mirReads,#cmosReads{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:640px){#heroReads,#thrReads,#famReads,#mirReads,#cmosReads{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.setup.mono{font-family:var(--f-mono);font-size:.82rem}
+
+/* check your answer before revealing (from wk10) */
+details.check form{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:2px 0 0}
+details.check label{display:flex;flex-direction:column;gap:5px;font-size:.88rem;color:var(--muted)}
+details.check input{font:inherit;font-family:var(--f-mono);padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);width:11em}
+details.check input:focus{outline:2px solid var(--accent);outline-offset:1px}
+details.check .btn{margin:0}
+.checkmsg{margin:10px 0 0;min-height:1.3em;font-size:.93rem}
+.checkmsg.ok{color:var(--good)}
+.checkmsg.no{color:var(--bad)}

@@ -1,0 +1,10 @@
+{
+  "title": "MOSFETs: Current Controlled by Voltage",
+  "brand": "MOSFET Characterization",
+  "libs": [
+    "katex",
+    "schematic",
+    "stepper2d"
+  ],
+  "output": "/Users/joelr/Documents/BYUI Assignments/Semester 7/mosfet-characterization-lesson.html"
+}

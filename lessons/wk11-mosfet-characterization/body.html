@@ -1,0 +1,419 @@
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#bigpic">Start here</a>
+      <ol>
+        <li><a href="#bigpic">The big picture</a></li>
+        <li><a href="#what">What a MOSFET is</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part1">Problem 1 · 2N7002 threshold</a>
+      <ol>
+        <li><a href="#vt">Threshold voltage</a></li>
+        <li><a href="#diode">Drain tied to gate</a></li>
+        <li><a href="#sweep">Sweeps and cursors</a></li>
+        <li class="prob"><a href="#p1">1 · V<sub>T</sub> of the 2N7002</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part2">Problem 2 · 2N7002 curves</a>
+      <ol>
+        <li><a href="#regions">Three regions</a></li>
+        <li><a href="#nested">Two-source sweeps</a></li>
+        <li class="prob"><a href="#p2">2 · the curve family</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part3">Problem 3 · BSS84 threshold</a>
+      <ol>
+        <li><a href="#pmos">The p-channel mirror</a></li>
+        <li class="prob"><a href="#p3">3 · |V<sub>T</sub>| of the BSS84</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part4">Problem 4 · BSS84 curves</a>
+      <ol>
+        <li><a href="#cmos">Why both kinds: CMOS</a></li>
+        <li class="prob"><a href="#p4">4 · the curve family</a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#mistakes">Common mistakes</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Week 11 · MOSFET HW 1 · 18 pts</div>
+  <h1>MOSFETs: Current Controlled by <span>Voltage</span></h1>
+  <p class="lede">Every transistor so far has been a BJT, which needs a steady current into its base to stay on. This week's part, the MOSFET, is steered by voltage alone. Its control terminal, the gate, sits on a layer of glass, so no steady current flows into it at all. The homework measures two of them in LTspice: the n-channel 2N7002 and its p-channel opposite, the BSS84. For each one you'll find the gate voltage where it turns on, and draw the family of curves that shows how it behaves at every voltage.</p>
+  <div class="chips"><span class="chip">Problem 1 · 2N7002 threshold</span><span class="chip">Problem 2 · 2N7002 curve family</span><span class="chip">Problem 3 · BSS84 threshold</span><span class="chip">Problem 4 · BSS84 curve family</span></div>
+  <div class="panel" id="hero">
+    <div class="panel-head"><span class="t">Inside an n-channel MOSFET · live</span><span class="status" id="heroStatus"></span></div>
+    <canvas id="heroCv" class="p2" style="height:300px" aria-label="A cross-section of an n-channel MOSFET. Electrons crowd two n-type wells, the source and the drain. When the gate voltage passes the threshold, a thin sheet of electrons forms under the gate and joins them, and electrons stream from source to drain."></canvas>
+    <div class="ctlgrid">
+      <div class="sl"><label for="heroG"><span>V<sub>GS</sub>, gate to source</span> <b id="heroGOut"></b></label><input type="range" id="heroG" min="0" max="5" step="0.01" value="3"></div>
+      <div class="sl"><label for="heroD"><span>V<sub>DS</sub>, drain to source</span> <b id="heroDOut"></b></label><input type="range" id="heroD" min="0" max="8" step="0.01" value="1"></div>
+    </div>
+    <div class="cursorbox" id="heroReads"></div>
+    <div class="legend"><span><span class="dotsw" style="--c:var(--cursor)"></span>electrons</span><span><span class="holesw"></span>holes</span><span><span class="dotsw sq" style="--c:var(--accent)"></span>gate, with its + charge</span></div>
+    <p class="note">Start with V<sub>GS</sub> at 0. The source and drain are two pools of electrons with nothing between them. Raise V<sub>GS</sub>: near 1.5 V a thin sheet of electrons forms under the gate and bridges the two, and current flows. Then raise V<sub>DS</sub>. The sheet thins toward the drain until it pinches off, and the current stops growing. The gate current stays at zero the whole time. This demo runs LTspice's model of the BSS123, a cousin of the homework's 2N7002, so it won't give away any answers.</p>
+  </div>
+</section>
+
+<section class="topic" id="bigpic" data-title="The big picture">
+  <span class="eyebrow">Start here · no prior knowledge needed</span>
+  <h3>The big picture: a switch you hold with voltage</h3>
+  <p>A transistor lets a small signal control a big current. A microcontroller pin turns on a motor, a microphone's tiny voltage drives a speaker, and one logic gate flips the next. The BJTs from the last few weeks do this well, but they charge a fee. Their base needs a steady current the whole time they're on. With β = 100, holding 500 mA on costs 5 mA at the base, for as long as it stays on. Last week's regulator needed two transistors stacked into a Darlington just to shrink the op-amp's share to 68 µA.</p>
+  <p>A <b>MOSFET</b> drops the fee. Its gate is a metal plate resting on a very thin layer of glass, silicon dioxide, so current has no path in. You put a voltage on the gate, and the gate's electric field opens a path between the other two terminals. Once the gate is charged, holding the transistor on costs nothing. That's why a phone's processor can hold billions of them without melting, and why the switches inside phone chargers and laptop power supplies are MOSFETs.</p>
+  <p>Before you design with a transistor, you need to know its personality. Datasheets give ranges, because no two parts come out of the factory alike. This homework measures that personality in LTspice, with two pictures of each part:</p>
+  <ul>
+    <li><b>Problem 1</b> sweeps the 2N7002's gate voltage to find its <b>threshold</b>, the voltage where it turns on.</li>
+    <li><b>Problem 2</b> draws the 2N7002's <b>family of curves</b>, which shows where it behaves like a switch and where it behaves like a current source.</li>
+    <li><b>Problem 3</b> finds the threshold of the BSS84, a <b>p-channel</b> MOSFET. It's the n-channel's mirror image, with every voltage and current flipped.</li>
+    <li><b>Problem 4</b> draws the BSS84's family, and the topic before it shows why circuits use both kinds together.</li>
+  </ul>
+  <div class="analogy"><span class="eyebrow">Analogy · two kinds of tap</span><p>A BJT is like the spring-loaded tap in a public restroom. Water runs only while you keep pressing, so holding it open costs you effort the whole time. A MOSFET is an ordinary kitchen tap. Turn the handle once and it stays where you left it. Here, effort means current. A BJT's base current never stops, while a MOSFET's gate takes a quick sip of charge when you change it, and then nothing.</p></div>
+  <p class="key">A MOSFET is controlled by its gate voltage, and its gate draws no steady current.</p>
+</section>
+
+<section class="topic" id="what" data-title="What a MOSFET is">
+  <span class="eyebrow">Start here · from first principles</span>
+  <h3>What a MOSFET is</h3>
+  <p><b>What it is.</b> MOSFET stands for metal–oxide–semiconductor field-effect transistor. The first three words name its layers from the top down: a <b>metal</b> gate, a thin <b>oxide</b> (glass) insulator, and the <b>semiconductor</b>, silicon. "Field effect" says how it works. The gate's electric field does the controlling, and no current is involved.</p>
+  <p><b>Why we care.</b> It's a switch that stays off until you say otherwise, that you turn on with a voltage, and that costs nothing to hold on. That's the combination digital logic and power switching both need.</p>
+  <p>You'll wire up three terminals:</p>
+  <ul>
+    <li>The <b>source</b> (S) is where the charge carriers come from.</li>
+    <li>The <b>drain</b> (D) is where they leave.</li>
+    <li>The <b>gate</b> (G) decides whether they can get from one to the other.</li>
+  </ul>
+  <p>A fourth connection, the <b>body</b>, is the slab of silicon everything is built in. In parts like the 2N7002 it's tied to the source inside the package, so you never wire it. Here's how the n-channel kind works. Follow along in the demo at the top of the page.</p>
+  <ol>
+    <li>The body is <b>p-type</b> silicon. It has been doped so it's full of mobile positive charges called <b>holes</b>.</li>
+    <li>The source and drain are two wells of <b>n-type</b> silicon, packed with free electrons. Between them lies p-type body, and an n–p–n stack like that blocks current in both directions. With 0 V on the gate, the part is off.</li>
+    <li>Put a positive voltage on the gate. The gate and the silicon under it act like the two plates of a capacitor. The gate's + charge pushes holes away from the surface and pulls electrons toward it.</li>
+    <li>Once the gate voltage passes the <b>threshold</b>, enough electrons gather at the surface to form a thin n-type sheet that joins source to drain. That sheet is the <b>channel</b>, and current can now flow along it.</li>
+  </ol>
+  <p>The channel has to be created before anything conducts, so this kind is called <b>enhancement mode</b>. Both of this week's parts are enhancement-mode MOSFETs.</p>
+  <div class="analogy"><span class="eyebrow">Analogy · a pontoon bridge</span><p>Two towns sit on opposite banks of a river with no road between them. Raising the gate voltage is like floating pontoons out onto the water. Below the threshold there aren't enough to reach across. Past it they join into a bridge, and traffic flows. More gate voltage packs in more pontoons and makes the bridge wider.</p></div>
+  <div class="panel"><div class="panel-head"><span class="t">Reading the symbols</span></div><div class="schbox" id="symFig" style="--ar:2.2"></div></div>
+  <ul>
+    <li>The <b>gap</b> between the gate line and the channel line is the oxide. No wire crosses it, which is why no DC current flows into the gate.</li>
+    <li>The channel line is <b>broken</b> into three pieces. That marks enhancement mode: no channel until the gate makes one.</li>
+    <li>The <b>arrow</b> sits on the body connection. It points in for n-channel and out for p-channel, the same way a diode's arrow points from p to n.</li>
+    <li>An n-channel part is drawn with its drain on top, toward the positive supply. A p-channel part is drawn with its <b>source</b> on top, because its source connects to the most positive voltage.</li>
+  </ul>
+  <p class="key">A positive gate pulls electrons into a sheet under the oxide, and that sheet is the channel the current flows through.</p>
+  <details class="deeper"><summary>Go deeper: the gate does take current, for an instant</summary><div><p>The gate is a capacitor, so changing its voltage moves charge: \(i = C\,dv/dt\). LTspice's 2N7002 model lists a total gate charge of 1.5 nC. Switch it in 10 ns and the gate takes a pulse of about 150 mA for those 10 ns, and then the current stops. Holding the gate at any steady voltage takes no current at all, and that's the difference from a BJT. Fast power circuits use a "gate driver" chip just to deliver those brief pulses quickly.</p></div></details>
+</section>
+
+<section class="part" id="part1" data-title="Problem 1 · 2N7002 threshold">
+  <div class="part-head">
+    <div class="part-letter">1</div>
+    <div class="eyebrow">Problem 1 · the 2N7002's transfer curve · 5 pts</div>
+    <h2>Where does it turn on?</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>The threshold voltage tells you what can switch a MOSFET on. Tie the 2N7002's drain to its gate, sweep the gate voltage, and put a cursor where the current reaches 250 µA. The gate voltage at that point is its threshold.</p></div>
+
+  <div class="topic" id="vt" data-title="Threshold voltage">
+    <span class="eyebrow">Topic 1a · from first principles</span>
+    <h3>The threshold voltage, V<sub>T</sub></h3>
+    <p><b>What it is.</b> The threshold voltage \(V_T\) is the gate-to-source voltage where the channel has formed and the MOSFET starts to conduct. Below it the part is off. Above it the current climbs fast.</p>
+    <p><b>Why we care.</b> It decides what can turn the part on. A microcontroller pin puts out 3.3 V, so a MOSFET with \(V_T\) near 1.6 V turns on hard from that pin. One with a \(V_T\) of 4 V would barely conduct, and the motor it was meant to drive wouldn't start. \(V_T\) also sets how much noise the gate can shrug off. A gate held at 0 V stays off even with a few hundred millivolts of noise on it, because the noise never reaches \(V_T\).</p>
+    <p>The turn-on isn't a sharp edge. Below the threshold a tiny current still leaks through. In LTspice's models it grows about 10 times for every 0.12 V, which makes it real but small enough to ignore in a switch. Since there's no single point where the part starts, manufacturers pick a current and call the gate voltage that produces it the threshold.</p>
+    <ul>
+      <li>The <b>2N7002</b> datasheet uses <b>250 µA</b>, and says \(V_T\) can land anywhere from 1 to 2.5 V.</li>
+      <li>The <b>BSS84</b>, like many discrete MOSFETs, uses <b>1 mA</b>.</li>
+    </ul>
+    <p>The range is wide because manufacturing varies. The oxide's thickness and the silicon's doping change a little from batch to batch, and \(V_T\) depends on both. That's why the homework has you measure it.</p>
+    <p>Above the threshold, with enough drain voltage (Topic 2a says how much), the current follows the <b>square law</b>. The amount \(V_{GS} - V_T\) is called the <b>overdrive</b>: how far past the threshold the gate is pushed.</p>
+    <div class="thm"><span class="eyebrow">The square law · saturation</span>\[I_D = \frac{K_p}{2}\,\left(V_{GS} - V_T\right)^2\]<p>\(K_p\), in A/V², measures how strong the part is. Double the overdrive and the current goes up four times.</p></div>
+    <div class="analogy"><span class="eyebrow">Analogy · a dam's spillway</span><p>Water behind a dam doesn't pour over until it rises to the spillway's lip. Below the lip only a little seeps through. Above it, the flow grows fast with every extra centimetre. The lip is \(V_T\), the seepage is the leakage below threshold, and the flow over the top is the square law.</p></div>
+    <div class="panel" id="thrPanel">
+      <div class="panel-head"><span class="t">Find a threshold with a cursor · BSS123</span>
+        <div class="seg" id="thrSeg" role="group" aria-label="Plot view"><button type="button" data-k="full" aria-pressed="true">Full scale</button><button type="button" data-k="zoom" aria-pressed="false">Zoom near 1 mA</button><button type="button" data-k="log" aria-pressed="false">Log</button></div></div>
+      <div class="setup mono">.dc Vgs 0.5 3.0 1m · drain tied to gate · demo part: BSS123</div>
+      <div class="plot" id="thrPlot"></div>
+      <div class="cursorbox" id="thrReads"></div>
+      <p class="note">This is Problem 1's test, run on the BSS123, a cousin of the 2N7002 from the same LTspice library. Drag on the plot, or click it and use <kbd>←</kbd> <kbd>→</kbd> (hold <kbd>Shift</kbd> for 10 mV jumps). At full scale, 250 µA is too small to see. Zoom in and the turn-on fills the plot. Then switch to Log: the current never truly reaches zero, which is why a threshold needs a current in its definition.</p>
+    </div>
+    <details class="deeper"><summary>Go deeper: the model's Vto isn't the datasheet's V<sub>T</sub></summary><div><p>LTspice's BSS123 model says <code>Vto=1.6</code>, yet the cursor finds 250 µA at about 1.46 V. The model's smooth turn-on (its <code>ksubthres</code> parameter) lets current start flowing before Vto, and Vto isn't tied to any particular current. So don't copy Vto out of a model file as your answer. Measure \(V_T\) the way the datasheet defines it.</p></div></details>
+    <p class="key">\(V_T\) is the gate voltage at a stated drain current, which is 250 µA for the 2N7002.</p>
+  </div>
+
+  <div class="topic" id="diode" data-title="Drain tied to gate">
+    <span class="eyebrow">Topic 1b · the test circuit</span>
+    <h3>Why the drain is tied to the gate</h3>
+    <p><b>What it is.</b> Problem 1's circuit has a wire from the drain to the gate, so \(V_{DS} = V_{GS}\) at every point of the sweep. A MOSFET wired this way is called <b>diode-connected</b>, because it acts like a two-terminal part that starts conducting past a threshold voltage.</p>
+    <p><b>Why we care.</b> It keeps the part in one region, saturation, where the square law holds. The datasheet measures \(V_T\) exactly this way, so your number means the same thing as theirs. And one source does the whole job.</p>
+    <p>Here's the reasoning. Topic 2a shows that a MOSFET is in saturation whenever \(V_{DS} \ge V_{GS} - V_T\). With the drain tied to the gate, \(V_{DS} = V_{GS}\), which is always bigger than \(V_{GS} - V_T\) by exactly \(V_T\). So whenever the part conducts, it's in saturation.</p>
+    <p><b>Quick check.</b> Once the diode-connected 2N7002 conducts, which region is it in?</p>
+    <div class="mcq" data-answer="b">
+      <button type="button" data-k="a" data-fb="Triode needs VDS below VGS − VT. Tying the drain to the gate keeps VDS a full VT above that."><b>a.</b><span>Triode, because the drain and gate are at the same voltage</span></button>
+      <button type="button" data-k="b" data-fb="Right. VDS = VGS is always at least VGS − VT, so the part can't leave saturation while it conducts."><b>b.</b><span>Saturation, because \(V_{DS}\) is always at least \(V_{GS} - V_T\)</span></button>
+      <button type="button" data-k="c" data-fb="It's off only while VGS is below the threshold. Past that, it conducts."><b>c.</b><span>Cutoff, because there's no voltage between the drain and the gate</span></button>
+      <p class="mcq-fb" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <div class="topic" id="sweep" data-title="Sweeps and cursors">
+    <span class="eyebrow">Topic 1c · LTspice</span>
+    <h3>Reading a DC sweep and placing a cursor</h3>
+    <p><b>What it is.</b> A <b>DC sweep</b> tells LTspice to solve the circuit over and over, stepping one source a little each time, and to join the answers into a graph. Think of a stack of snapshots. No time passes, so capacitors and gate charge play no part.</p>
+    <p><b>Why we care.</b> One run turns a transistor into a whole graph. On a lab bench you'd adjust a supply and write down a reading thousands of times to get the same curve. Click each piece of Problem 1's command:</p>
+    <div class="panel"><div class="panel-body"><div class="tokens" data-dec="A" role="group" aria-label="Parts of the .dc command"></div><div class="tokexp" id="decA-exp" aria-live="polite">Click a token above.</div></div></div>
+    <p>Three LTspice moves make Problem 1 work.</p>
+    <ul>
+      <li><b>Plot Id(M1).</b> It's the current flowing <b>into</b> M1's drain. Hover over the drain in the schematic until the pointer turns into a current clamp, then click.</li>
+      <li><b>Zoom the axis.</b> On a scale that reaches 150 mA, 250 µA is less than a pixel tall. Click the numbers on the vertical axis (the pointer turns into a ruler) and type a top near 1 mA, or drag a zoom box around the turn-on.</li>
+      <li><b>Attach a cursor.</b> Click the trace's name, Id(M1), at the top of the plot window. A crosshair appears, with a box showing <b>Horz</b> (the x value, here \(V_{GS}\)) and <b>Vert</b> (the y value, here \(I_D\)). Drag it along the trace.</li>
+    </ul>
+    <div class="warn"><b>Watch out.</b> The cursor only stops on the sweep's points, which are 1 mV apart. The current jumps a few µA from one point to the next, so it won't read exactly 250 µA. Pick the point whose Vert is closest, and report its Horz value.</div>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p1" data-title="Problem 1">
+      <div class="prob-head"><span class="pnum">Problem 1</span><span class="eyebrow">2N7002 · I<sub>D</sub> against V<sub>GS</sub></span><span class="pts">5 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(V_T\) for the 2N7002</b>, the \(V_{GS}\) that gives \(I_D\) = 250 µA. Use the circuit with its drain tied to its gate and <code>.dc Vgs 0.5 3.0 1m</code>. Show the cursor box on the plot, and put your name on the plot pane.</p>
+        <ol class="steps">
+          <li><h5>Place the part</h5><p>Press <kbd>F2</kbd>, pick <b>nmos</b>, and place it. Right-click it and change its value to <b>2N7002</b>. That links it to the Fairchild 2N7002 model in LTspice's library. You can also hover over it, click <b>Pick New MOSFET</b>, and find the Fairchild 2N7002 below the Renesas RJK0651DPB near the bottom of the list.</p></li>
+          <li><h5>Wire it</h5><p>Add a voltage source named <b>Vgs</b> with its + side on the gate. Run a wire from the drain up and over to the same node. The MOSFET's source and the − side of Vgs go to ground.</p></li>
+          <li><h5>Add the sweep</h5><p>Simulate → Edit Simulation Cmd → DC sweep. Source Vgs, start 0.5, stop 3.0, increment 1m. Place the text it makes, <code>.dc Vgs 0.5 3.0 1m</code>.</p></li>
+          <li><h5>Run it and plot Id(M1)</h5><p>Run, then hover over M1's drain and click when the current clamp appears. The trace stays near zero, then climbs steeply.</p></li>
+          <li><h5>Zoom the vertical axis</h5><p>Set the vertical axis to top out as close to 1 mA as you can, so the turn-on fills the plot. Narrow the horizontal axis around it too.</p></li>
+          <li><h5>Place the cursor at 250 µA</h5><p>Click the Id(M1) label to attach cursor 1, and drag until Vert is as close to 250 µA as it gets. Drag the cursor box onto the plot, and add your name with Plot Settings → Notes and Annotations → Place Text. Then read Horz.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">V<sub>T</sub> = 1.567 V<small>The closest sweep point reads Id(M1) = 248.70 µA. Its neighbours read 244.90 µA at 1.566 V and 252.56 µA at 1.568 V. 1.567 V sits inside the datasheet's 1 to 2.5 V, and a 3.3 V logic pin clears it with room to spare.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" id="part2" data-title="Problem 2 · 2N7002 curves">
+  <div class="part-head">
+    <div class="part-letter">2</div>
+    <div class="eyebrow">Problem 2 · the 2N7002's output curves · 4 pts</div>
+    <h2>A switch and a current source in one part</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Hold the gate at one voltage and sweep the drain, and a MOSFET shows two personalities. At small \(V_{DS}\) it acts like a resistor, which is how it works as a switch. Past a knee the current goes flat, which is how it works in an amplifier. Problem 2 draws five of these curves in one run.</p></div>
+
+  <div class="topic" id="regions" data-title="Three regions">
+    <span class="eyebrow">Topic 2a · from first principles</span>
+    <h3>Cutoff, triode and saturation</h3>
+    <p><b>What it is.</b> Depending on its two voltages, a MOSFET is in one of three regions.</p>
+    <ul>
+      <li><b>Cutoff</b>, when \(V_{GS} \lt V_T\). There's no channel, so there's essentially no current.</li>
+      <li><b>Triode</b>, when \(V_{GS} \gt V_T\) and \(V_{DS} \lt V_{GS} - V_T\). The channel runs from end to end, and the part acts like a resistor whose value the gate sets.</li>
+      <li><b>Saturation</b>, when \(V_{GS} \gt V_T\) and \(V_{DS} \ge V_{GS} - V_T\). The channel is pinched off at the drain end, and the current levels out at the square-law value however high \(V_{DS}\) goes.</li>
+    </ul>
+    <p><b>Why we care.</b> Each region is a job. A <b>switch</b> runs in triode. You want lots of current with very little voltage left across the part, so it wastes little power, and a good MOSFET switch is a fraction of an ohm. An <b>amplifier</b> runs in saturation. There the current depends on \(V_{GS}\) alone, so the gate sets the current directly, whatever the load does to \(V_{DS}\).</p>
+    <p>Why does the current level out? The channel's thickness at each point depends on the voltage between the gate and that point. At the source end it's \(V_{GS}\). At the drain end it's only \(V_{GS} - V_{DS}\), because the drain sits higher. Raise \(V_{DS}\) and the channel thins toward the drain. When \(V_{GS} - V_{DS}\) falls to \(V_T\), the channel vanishes at the drain end. This is called <b>pinch-off</b>. Electrons still cross the tiny gap, flung across by the field, but the channel's shape stops changing, so the current stops growing. Try it in the demo at the top of the page: set \(V_{GS}\) to 3 V and slide \(V_{DS}\) up.</p>
+    <div class="thm"><span class="eyebrow">The three equations</span>
+      <p>Triode, when \(V_{DS} \lt V_{GS} - V_T\):</p>\[I_D = K_p\left[(V_{GS} - V_T)\,V_{DS} - \tfrac{1}{2}V_{DS}^2\right]\]
+      <p>Saturation, when \(V_{DS} \ge V_{GS} - V_T\):</p>\[I_D = \frac{K_p}{2}\,(V_{GS} - V_T)^2\]
+      <p>The edge between them:</p>\[V_{DS,sat} = V_{GS} - V_T\]</div>
+    <p>The edge depends on \(V_{GS}\), so the knee moves right as the gate voltage rises. Mark the knee of every possible curve and the marks line up along a parabola, the dashed line in the plot below.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · a waterfall</span><p>A river runs downhill to a waterfall. Lower the pool at the foot of the falls and the river above doesn't run any faster, because once the water goes over the edge, the river can't feel what's below. The pool's level is \(V_{DS}\). Before the edge forms (triode), lowering the pool speeds the river up. After it forms (saturation), the flow is set upstream, by the gate.</p></div>
+    <div class="panel" id="famPanel">
+      <div class="panel-head"><span class="t">The family of curves · BSS123</span><button class="btn" id="famRun" type="button">▶ Run sweep</button></div>
+      <div class="heroseg"><div class="seg" id="famSeg" role="group" aria-label="Which curve the cursor follows">
+        <button type="button" data-k="0" aria-pressed="false">V<sub>GS</sub> = 1 V</button><button type="button" data-k="1" aria-pressed="false">2 V</button><button type="button" data-k="2" aria-pressed="false">3 V</button><button type="button" data-k="3" aria-pressed="true">4 V</button><button type="button" data-k="4" aria-pressed="false">5 V</button></div>
+        <label class="chk"><input type="checkbox" id="famRegions" checked> show the regions</label></div>
+      <div class="setup mono" id="famStatus"></div>
+      <div class="plot" id="famPlot"></div>
+      <div class="cursorbox" id="famReads"></div>
+      <p class="note">Pick a curve, then drag along it. In the blue triode region the "acts like" tile shows a resistor, whose value grows as you move right. In the green saturation region it shows a current source that barely changes. The 1 V curve sits in cutoff, flat at zero. The demo part is the BSS123 again, and its curves are taller than the 2N7002's because its \(K_p\) is about six times bigger.</p>
+    </div>
+    <div class="warn"><b>Watch out.</b> "Saturation" means opposite things for the two kinds of transistor. A MOSFET in saturation is on the flat part of its curve, acting as a current source, which matches a BJT's <b>active</b> region. A BJT in saturation is switched fully on with almost no voltage across it, which matches a MOSFET's <b>triode</b> region.</div>
+    <p class="key">Left of the knee a MOSFET is a resistor set by its gate. Right of the knee it's a current source set by its gate.</p>
+  </div>
+
+  <div class="topic" id="nested" data-title="Two-source sweeps">
+    <span class="eyebrow">Topic 2b · LTspice</span>
+    <h3>A sweep inside a sweep</h3>
+    <p><b>What it is.</b> A <code>.dc</code> command can name two sources. LTspice sweeps the first one all the way through, steps the second one, and sweeps the first again. Each step of the second source draws its own trace.</p>
+    <p><b>Why we care.</b> One run draws the whole family, five curves on one plot, ready to compare. Click each piece of Problem 2's command. The dashed tokens belong to the second source.</p>
+    <div class="panel"><div class="panel-body"><div class="tokens" data-dec="B" role="group" aria-label="Parts of the two-source .dc command"></div><div class="tokexp" id="decB-exp" aria-live="polite">Click a token above.</div></div></div>
+    <p>Order matters, because the <b>first</b> source becomes the x-axis. Swap them and you'd get 101 curves of current against \(V_{GS}\), each with only five points. In the Edit Simulation Cmd box, the first source goes on the 1st Source tab and the second on the 2nd Source tab.</p>
+    <details class="quick"><summary><span>Quick check: how many points does <code>.dc Vds 0 10 0.1 Vgs 1 5 1</code> solve?</span></summary><div><p>101 values of Vds for each of 5 values of Vgs, so 505 solves.</p></div></details>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p2" data-title="Problem 2">
+      <div class="prob-head"><span class="pnum">Problem 2</span><span class="eyebrow">2N7002 · I<sub>D</sub> against V<sub>DS</sub>, stepped V<sub>GS</sub></span><span class="pts">4 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Draw the family of \(I_D\) curves</b> for the 2N7002 with <code>.dc Vds 0 10 0.1 Vgs 1 5 1</code>, and put your name on the plot pane.</p>
+        <ol class="steps">
+          <li><h5>Build the circuit</h5><p>Place the 2N7002 as in Problem 1. Add a source <b>Vgs</b> with its + side on the gate, and a source <b>Vds</b> with its + side on the drain. The MOSFET's source and both − sides go to ground.</p></li>
+          <li><h5>Add the two-source sweep</h5><p>In Edit Simulation Cmd → DC sweep, the 1st Source tab gets Vds, 0 to 10, increment 0.1. The 2nd Source tab gets Vgs, 1 to 5, increment 1. Check that the text reads <code>.dc Vds 0 10 0.1 Vgs 1 5 1</code>.</p></li>
+          <li><h5>Run it and plot Id(M1)</h5><p>Click the drain. LTspice draws one trace per Vgs, starting with 1 V and 2 V.</p></li>
+          <li><h5>Read the curves</h5><p>Find the knee on each curve, and check that it moves right as Vgs grows. Note where each curve levels off.</p></li>
+          <li><h5>Sign it</h5><p>Plot Settings → Notes and Annotations → Place Text. Type your name, click to place it, and screenshot the plot pane.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal what your plot should show</summary><div class="ans">
+          <div class="final">Five curves<small>Vgs = 1 V lies flat at zero, below threshold. The others level off at 13.07 mA (Vgs = 2 V), 142.2 mA (3 V), 380.2 mA (4 V) and 701.9 mA (5 V), with knees near 0.3, 1.1, 2.0 and 2.8 V. Each 1 V step adds more current than the one before, which is the square law at work.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" id="part3" data-title="Problem 3 · BSS84 threshold">
+  <div class="part-head">
+    <div class="part-letter">3</div>
+    <div class="eyebrow">Problem 3 · the BSS84's transfer curve · 5 pts</div>
+    <h2>The mirror image</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>A p-channel MOSFET is the n-channel's mirror image. It turns on when its gate is pulled <i>below</i> its source, and its current flows the other way. Sweep \(V_{SG}\) in place of \(V_{GS}\) and Problem 1's method works unchanged, with the threshold coming out as a positive \(|V_T|\).</p></div>
+
+  <div class="topic" id="pmos" data-title="The p-channel mirror">
+    <span class="eyebrow">Topic 3a · from first principles</span>
+    <h3>The p-channel MOSFET</h3>
+    <p><b>What it is.</b> Swap every n for a p. The body is n-type silicon, and the source and drain are p-type wells full of holes. Pull the gate <b>below</b> the source by more than \(|V_T|\), and the gate's negative charge draws holes up into a p-type channel. Current then flows in at the source, along the channel, and out of the drain.</p>
+    <p><b>Why we care.</b> An n-channel switch has to sit between its load and ground, because its gate must rise above its source. Many loads need their connection to the <b>positive</b> supply switched instead, like a phone cutting power to a whole section of its circuitry. A p-channel part does that job. Its source sits on the supply, and you turn it on by pulling its gate low. Pairing one of each also makes CMOS logic, the subject of Problem 4's topic.</p>
+    <p>Every sign flips, which is why the homework renames the voltages.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>When it's on</th><th>n-channel 2N7002</th><th>p-channel BSS84</th></tr></thead>
+      <tbody>
+        <tr><td>gate compared with source</td><td>above, \(V_{GS} \gt 0\)</td><td>below, \(V_{GS} \lt 0\), so \(V_{SG} \gt 0\)</td></tr>
+        <tr><td>drain compared with source</td><td>above, \(V_{DS} \gt 0\)</td><td>below, \(V_{DS} \lt 0\), so \(V_{SD} \gt 0\)</td></tr>
+        <tr><td>threshold</td><td>\(V_T \gt 0\)</td><td>\(V_T \lt 0\), and the sweep reads \(|V_T|\)</td></tr>
+        <tr><td>LTspice's Id(M1)</td><td>positive</td><td>negative, because current leaves the drain</td></tr>
+        <tr><td>current that defines \(V_T\)</td><td>250 µA</td><td>1 mA</td></tr>
+      </tbody></table></div>
+    <p>Writing \(V_{SG}\) and \(V_{SD}\) keeps the voltages positive, so the p-channel curves look like the n-channel ones. Only LTspice's current stays negative, because Id(M1) always means current <b>into</b> the drain.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · left-handed scissors</span><p>Left-handed scissors do exactly what right-handed ones do, with every part mirrored, and they work the same as long as you hold them the mirrored way. A p-channel MOSFET is the left-handed version: the same behaviour, with every voltage and current reversed.</p></div>
+    <div class="panel" id="mirPanel">
+      <div class="panel-head"><span class="t">The same test, built both ways</span><span class="status" id="mirStatus"></span></div>
+      <div class="heroseg"><div class="seg" id="mirSeg" role="group" aria-label="Which kind of MOSFET"><button type="button" data-k="n" aria-pressed="true">n-channel</button><button type="button" data-k="p" aria-pressed="false">p-channel</button></div></div>
+      <div class="schbox" id="mirSch" style="--ar:1.56"></div>
+      <div class="ctlgrid"><div class="sl"><label for="mirV"><span>How far the gate is driven past the source</span> <b id="mirVOut"></b></label><input type="range" id="mirV" min="0" max="3" step="0.01" value="2.2"></div></div>
+      <div class="cursorbox" id="mirReads"></div>
+      <p class="note">Flip between the two. The n-channel circuit lifts the tied gate and drain above a grounded source. The p-channel one, drawn the way Problem 3 has it, puts the source on top at ground and pulls the gate and drain below it. Every reading keeps its size and flips its sign. The p-channel part here is a made-up mirror image of the BSS123, so the two compare like for like. A real p-channel part of the same size is weaker, because holes move two to three times slower than electrons.</p>
+    </div>
+    <p><b>Quick check.</b> A p-channel sweep's cursor reads Horz = 2.30 V where Vert = −1.00 mA. What is that part's \(V_T\)?</p>
+    <div class="mcq" data-answer="b">
+      <button type="button" data-k="a" data-fb="That's |VT|, the size. A p-channel threshold is negative: the gate has to go below the source."><b>a.</b><span>+2.30 V</span></button>
+      <button type="button" data-k="b" data-fb="Right. The sweep reads VSG = 2.30 V, so VGS = −2.30 V at the threshold current."><b>b.</b><span>−2.30 V</span></button>
+      <button type="button" data-k="c" data-fb="That's the current that defines the threshold. The threshold itself is a voltage."><b>c.</b><span>−1.00 mA</span></button>
+      <p class="mcq-fb" aria-live="polite"></p>
+    </div>
+    <p class="key">For a p-channel part, read \(V_{SG}\) where \(|I_D|\) = 1 mA. That's \(|V_T|\), and \(V_T\) itself is negative.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p3" data-title="Problem 3">
+      <div class="prob-head"><span class="pnum">Problem 3</span><span class="eyebrow">BSS84 · I<sub>D</sub> against V<sub>SG</sub></span><span class="pts">5 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find the \(V_{SG}\) where Id(M1) = −1.0 mA</b> for the BSS84. Use the circuit with its source at ground and its gate tied to its drain, and <code>.dc Vsg 0.5 3.0 1m</code>. That value is \(|V_T|\). Show the cursor box and your name on the plot pane.</p>
+        <ol class="steps">
+          <li><h5>Place the part</h5><p>Press <kbd>F2</kbd> and pick <b>pmos</b>. Press <kbd>Ctrl</kbd>+<kbd>R</kbd> twice before you click, so its source ends up on top. Change its value to <b>BSS84</b>, or use Pick New MOSFET and choose the NXP BSS84 near the top of the list.</p></li>
+          <li><h5>Wire it</h5><p>The source (top) goes to ground and to the + side of a source named <b>Vsg</b>. Vsg's − side goes to the gate, and the drain is wired to the gate too. Now the gate and drain sit \(V_{SG}\) below the source.</p></li>
+          <li><h5>Add the sweep</h5><p>The same sweep as Problem 1, with Vsg: <code>.dc Vsg 0.5 3.0 1m</code>.</p></li>
+          <li><h5>Run it and plot Id(M1)</h5><p>Click the drain. The trace heads <b>down</b> from zero. That's correct, because current flows out of a p-channel part's drain and LTspice counts into the drain as positive.</p></li>
+          <li><h5>Zoom the vertical axis</h5><p>Set the vertical axis to reach as close to −1 mA as you can, and narrow the horizontal axis around the turn-on.</p></li>
+          <li><h5>Place the cursor at −1 mA</h5><p>Attach cursor 1 to Id(M1) and drag until Vert is as close to −1.0 mA as it gets. Drag the cursor box onto the plot, place your name, and read Horz. Expect a positive number.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">V<sub>SG</sub> = 2.156 V = |V<sub>T</sub>|<small>The cursor reads Id(M1) = −1.0008 mA at that point, and the threshold itself is V<sub>T</sub> = −2.156 V. That's further from zero than the 2N7002's, so a 3.3 V logic signal turns the BSS84 on less firmly.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" id="part4" data-title="Problem 4 · BSS84 curves">
+  <div class="part-head">
+    <div class="part-letter">4</div>
+    <div class="eyebrow">Problem 4 · the BSS84's output curves · 4 pts</div>
+    <h2>The family, upside down</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>The BSS84's family has the same three regions as the 2N7002's. With \(V_{SG}\) and \(V_{SD}\) in place of \(V_{GS}\) and \(V_{DS}\) everything reads the same, except that LTspice draws the currents negative. Pair the two kinds and you get CMOS, the circuit inside nearly every digital chip.</p></div>
+
+  <div class="topic" id="cmos" data-title="Why both kinds: CMOS">
+    <span class="eyebrow">Topic 4a · why we care</span>
+    <h3>Why we need both kinds: CMOS</h3>
+    <p><b>What it is.</b> CMOS, short for complementary MOS, stacks a p-channel and an n-channel transistor between the supply and ground, with their gates tied together. The simplest CMOS circuit is the <b>inverter</b>. The p-channel part runs from the supply down to the output, and the n-channel part runs from the output down to ground.</p>
+    <ul>
+      <li>With the input high, the n-channel part turns on and the p-channel part turns off. The output is pulled down to ground.</li>
+      <li>With the input low, the p-channel part turns on and the n-channel part turns off. The output is pulled up to the supply.</li>
+    </ul>
+    <p><b>Why we care.</b> In either settled state, one of the two is off, so there's no path from the supply to ground. A CMOS gate that isn't switching draws almost no current. It spends power only in the brief moment of switching, when both transistors are partly on. That's how a phone's processor holds billions of transistors and still runs all day on a battery.</p>
+    <div class="panel" id="cmosPanel">
+      <div class="panel-head"><span class="t">A CMOS inverter · live</span></div>
+      <div class="duo"><div class="schbox" id="cmosSch" style="--ar:1.22"></div><div class="side"><canvas id="cmosCv" class="p2" aria-label="Output voltage against input voltage for the inverter. It stays at 5 V for low inputs and drops to 0 V for high inputs, with a sharp step in the middle. A shaded hump shows the supply current, which is only large near the middle."></canvas></div></div>
+      <div class="ctlgrid"><div class="sl"><label for="cmosV"><span>Vin</span> <b id="cmosVOut"></b></label><input type="range" id="cmosV" min="0" max="5" step="0.01" value="0.4"></div></div>
+      <div class="cursorbox" id="cmosReads"></div>
+      <p class="note">Slide Vin from 0 to 5 V. Near either end the output sits at a clean 5 V or 0 V, and the supply current is practically nothing. Only near the middle, where both transistors are partly on, does current flow straight through from top to bottom. The demo uses a BSS123 and its mirror image, so it switches exactly halfway.</p>
+    </div>
+    <p>Problem 4 doesn't build an inverter. It characterizes the BSS84 the same way Problem 2 did the 2N7002, which is the first step toward designing one.</p>
+    <p class="key">An n-channel and a p-channel MOSFET in series make CMOS logic, which draws current only while it switches.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p4" data-title="Problem 4">
+      <div class="prob-head"><span class="pnum">Problem 4</span><span class="eyebrow">BSS84 · I<sub>D</sub> against V<sub>SD</sub>, stepped V<sub>SG</sub></span><span class="pts">4 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Draw the family of \(I_D\) curves</b> for the BSS84 with <code>.dc Vsd 0 10 0.1 Vsg 2 6 1</code>, and put your name on the plot pane.</p>
+        <ol class="steps">
+          <li><h5>Build the circuit</h5><p>Place the BSS84 with its source on top. A source <b>Vsd</b> has its + side on the MOSFET's source and its − side on ground. A source <b>Vsg</b> has its + side on the MOSFET's source too, and its − side on the gate. The drain goes to ground.</p></li>
+          <li><h5>Add the two-source sweep</h5><p>1st Source: Vsd, 0 to 10, increment 0.1. 2nd Source: Vsg, 2 to 6, increment 1. Check that the text reads <code>.dc Vsd 0 10 0.1 Vsg 2 6 1</code>.</p></li>
+          <li><h5>Run it and plot Id(M1)</h5><p>Click the drain. The traces head down from zero, one per Vsg, starting with 2 V and 3 V.</p></li>
+          <li><h5>Read the curves</h5><p>Compare them with Problem 2's. They're the same shapes, upside down. Check where the knees sit this time.</p></li>
+          <li><h5>Sign it</h5><p>Place Text with your name on the plot pane, and screenshot it.</p></li>
+        </ol>
+        <details class="reveal"><summary>Reveal what your plot should show</summary><div class="ans">
+          <div class="final">Five curves, all negative<small>Vsg = 2 V sits at about −98 µA, below threshold, so it looks flat at zero. The others level off at −62.13 mA (Vsg = 3 V), −224.0 mA (4 V), −442.5 mA (5 V) and −698.4 mA (6 V), with knees near 1.1, 2.4, 4.0 and 5.6 V. The knees sit further right than the 2N7002's because the BSS84 model has 4.2 Ω of resistance in series with its channel. At 698 mA that resistance alone takes about 2.9 V before the channel gets any.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">Threshold</span><p>2N7002: \(V_{GS}\) where \(I_D\) = 250 µA.</p><p>BSS84: \(V_{SG}\) where \(I_D\) = −1 mA. That's \(|V_T|\).</p></div>
+    <div class="card"><span class="eyebrow">Regions</span><div class="eqs">cutoff: \(V_{GS} \lt V_T\)</div><div class="eqs">triode: \(V_{DS} \lt V_{GS} - V_T\)</div><div class="eqs">saturation: \(V_{DS} \ge V_{GS} - V_T\)</div></div>
+    <div class="card"><span class="eyebrow">Square law</span><div class="eqs">\(I_D = \tfrac{K_p}{2}(V_{GS} - V_T)^2\)</div><p>In saturation. Double the overdrive and the current quadruples.</p></div>
+    <div class="card"><span class="eyebrow">Triode</span><div class="eqs">\(I_D = K_p\left[(V_{GS} - V_T)V_{DS} - \tfrac{1}{2}V_{DS}^2\right]\)</div><p>A resistor whose value the gate sets.</p></div>
+    <div class="card"><span class="eyebrow">Drain tied to gate</span><p>\(V_{DS} = V_{GS}\), so the part is in saturation whenever it conducts.</p></div>
+    <div class="card"><span class="eyebrow">p-channel signs</span><p>Use \(V_{SG}\) and \(V_{SD}\), both positive when it's on. \(V_T\) is negative, and LTspice's Id(M1) is negative.</p></div>
+    <div class="card"><span class="eyebrow">Two-source .dc</span><div class="eqs">.dc V1 a b step V2 c d step</div><p>V1 is the x-axis. Each V2 value draws one curve.</p></div>
+    <div class="card"><span class="eyebrow">LTspice moves</span><p>Click the drain for Id(M1). Click the trace's name for a cursor. Click the axis numbers to set the range.</p></div>
+    <div class="card"><span class="eyebrow">Gate current</span><p>Zero at any steady gate voltage. A brief pulse only while the gate voltage changes.</p></div>
+  </div>
+  <div class="topic" id="mistakes" data-title="Common mistakes" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Copying Vto (1.6 V, or −2.1 V for the BSS84) out of the model as the answer. Measure \(V_T\) at the datasheet's current.</li>
+      <li>Reporting the cursor's Vert value. The answer is Horz, the voltage where the current reaches its target.</li>
+      <li>Hunting for exactly 250 µA. The sweep's points are 1 mV apart, so take the closest one.</li>
+      <li>Leaving the axis at full scale, where 250 µA is too small to see.</li>
+      <li>Reading a MOSFET's "saturation" as fully on, the way it is for a BJT. A fully-on MOSFET is in triode.</li>
+      <li>Putting the sources in the wrong order in a two-source sweep. The first one is the x-axis.</li>
+      <li>Expecting a positive Id(M1) from the BSS84. LTspice counts current into the drain, and here it flows out.</li>
+      <li>Dropping the sign. The BSS84's sweep reads \(|V_T|\) = \(V_{SG}\), and \(V_T\) itself is negative.</li>
+    </ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal every answer on this page</summary>
+      <div class="ans"><div class="tbl"><table>
+        <thead><tr><th>Problem</th><th>Answer</th></tr></thead>
+        <tbody>
+          <tr><td>1 · 2N7002 \(V_T\)</td><td>1.567 V, where Id(M1) = 248.70 µA</td></tr>
+          <tr><td>2 · 2N7002 family</td><td>flat at 0 for Vgs = 1 V; levels off at 13.07, 142.2, 380.2 and 701.9 mA for Vgs = 2, 3, 4 and 5 V</td></tr>
+          <tr><td>3 · BSS84 \(|V_T|\)</td><td>\(V_{SG}\) = 2.156 V, where Id(M1) = −1.0008 mA, so \(V_T\) = −2.156 V</td></tr>
+          <tr><td>4 · BSS84 family</td><td>about −98 µA for Vsg = 2 V; levels off at −62.13, −224.0, −442.5 and −698.4 mA for Vsg = 3, 4, 5 and 6 V</td></tr>
+        </tbody>
+      </table></div></div></details>
+  </div>
+  <footer><p>Problems and circuits come from <i>MOSFET HW 1</i>. The answers come from the 2N7002 and BSS84 model lines in LTspice's own library file, standard.mos, solved with LTspice's VDMOS equations in a script. That script reproduces the instructor's cursor readings in the homework's example plots (248.70405 µA and −1.0008349 mA) to seven digits, and every level and knee in their curve families, so your LTspice run should match the digits shown here. If your thresholds read about 1.654 V and 2.202 V instead, your LTspice has an older library whose models lack the <code>ksubthres</code> turn-on parameter. The demos run LTspice's BSS123 model, plus a made-up mirror image of it for the p-channel and CMOS demos.</p></footer>
+</section>
+
+</main>
