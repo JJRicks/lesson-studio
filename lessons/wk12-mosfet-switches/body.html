@@ -1,0 +1,350 @@
+<nav class="toc" id="toc" aria-label="Lesson contents">
+  <ol>
+    <li><a class="grp" href="#bigpic">Start here</a>
+      <ol>
+        <li><a href="#bigpic">The big picture</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part1">Problem 1 · n-channel switch</a>
+      <ol>
+        <li><a href="#sah">Sah's equations</a></li>
+        <li><a href="#datasheet">β from a datasheet</a></li>
+        <li class="prob"><a href="#p1a">1a · β<sub>n</sub></a></li>
+        <li><a href="#lowside">The low-side switch</a></li>
+        <li class="prob"><a href="#p1b">1b · I<sub>D</sub></a></li>
+        <li><a href="#rdson">On-resistance</a></li>
+        <li class="prob"><a href="#p1c">1c · R<sub>DS(on)</sub></a></li>
+      </ol></li>
+    <li><a class="grp" href="#part2">Problem 2 · p-channel switch</a>
+      <ol>
+        <li><a href="#psah">Flipping the signs</a></li>
+        <li class="prob"><a href="#p2a">2a · β<sub>p</sub></a></li>
+        <li><a href="#highside">The high-side switch</a></li>
+        <li class="prob"><a href="#p2b">2b · I<sub>D</sub></a></li>
+        <li><a href="#compare">Why p-channel loses</a></li>
+        <li class="prob"><a href="#p2c">2c · R<sub>DS(on)</sub></a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#mistakes">Common mistakes</a></li>
+        <li><a href="#key">Answer key</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Week 12 · MOSFET HW 2 · 16 pts</div>
+  <h1>MOSFETs as <span>Switches</span></h1>
+  <p class="lede">Last week you measured two MOSFETs in LTspice. This week you put them to work as switches, the job most MOSFETs in the world are doing right now. A switch that's on should pass current while keeping almost no voltage for itself, and a MOSFET comes close but not all the way. You'll take a datasheet's numbers, turn them into a model with Sah's equations, predict the current through an n-channel and a p-channel switch, and find how much resistance each one keeps when it's on.</p>
+  <div class="chips"><span class="chip">1a · β<sub>n</sub> from a datasheet</span><span class="chip">1b · current in an n-channel switch</span><span class="chip">1c · its R<sub>DS(on)</sub></span><span class="chip">2a · β<sub>p</sub></span><span class="chip">2b · current in a p-channel switch</span><span class="chip">2c · its R<sub>DS(on)</sub></span></div>
+  <div class="panel" id="hero">
+    <div class="panel-head"><span class="t">A MOSFET switch and its load · live</span><span class="status" id="heroStatus"></span></div>
+    <div class="heroseg"><div class="seg" id="heroSeg" role="group" aria-label="Which switch">
+      <button type="button" data-k="n" aria-pressed="true">n-channel, low side</button>
+      <button type="button" data-k="p" aria-pressed="false">p-channel, high side</button>
+    </div></div>
+    <div class="duo">
+      <div class="schbox" id="heroSch" style="--ar:1.27"></div>
+      <div class="side"><canvas id="heroCv" class="p2" aria-label="The switch's operating point: a straight load line for the 47 ohm resistor, and the MOSFET's curve for the present gate voltage. A dot marks where they cross."></canvas></div>
+    </div>
+    <div class="ctlgrid"><div class="sl"><label for="heroV"><span>Vin, the gate signal</span> <b id="heroVOut"></b></label><input type="range" id="heroV" min="0" max="5" step="0.01" value="5"></div></div>
+    <div class="cursorbox" id="heroReads"></div>
+    <p class="note">The n-channel switch starts fully on, with Vin at 5 V. Its curve shoots up so steeply that it meets the load line at only a few hundred millivolts, so nearly all of the 5 V reaches the load. Slide Vin down and the curve sags. The crossing slides right along the load line, M1 keeps more of the voltage and heats up, and below the threshold the current stops. The p-channel switch turns on the other way: Vin at 0 V. These demos use a practice part (V<sub>T</sub> = 1.5 V) and a 47 Ω load, so they don't show any answers.</p>
+  </div>
+</section>
+
+<section class="topic" id="bigpic" data-title="The big picture">
+  <span class="eyebrow">Start here · no prior knowledge needed</span>
+  <h3>The big picture: how good is the switch?</h3>
+  <p>Most MOSFETs in the world are switches. A microcontroller pin turns an LED strip, a motor or a heater on and off by driving a MOSFET's gate, and the MOSFET carries the load's current straight from the power supply. The pin supplies no steady current, which is the gift of the insulated gate from last week.</p>
+  <p>A perfect switch would pass any current with zero volts across it. A real MOSFET keeps a small resistance when it's fully on, called its <b>on-resistance</b>, \(R_{DS(on)}\). That resistance costs twice. Some of the supply's voltage stays across the switch instead of reaching the load, and the switch turns that power into heat, \(P = I^2 R_{DS(on)}\). Push 1 A through a 3 Ω switch and it gives off 3 W, enough to cook a small part. That's why the MOSFETs in a laptop charger are built for a few thousandths of an ohm.</p>
+  <p>This homework finds \(R_{DS(on)}\) the way a designer would, before buying anything, from the datasheet:</p>
+  <ul>
+    <li><b>Problem 1a</b> uses the datasheet's single test point and <b>Sah's equations</b> to find \(\beta_n\), the number that says how strong the n-channel part is.</li>
+    <li><b>Problem 1b</b> uses \(\beta_n\) to predict the current when the part works as a <b>low-side switch</b>, between its load and ground.</li>
+    <li><b>Problem 1c</b> turns that current into the switch's \(R_{DS(on)}\).</li>
+    <li><b>Problem 2</b> repeats all three for a p-channel part working as a <b>high-side switch</b>, between the supply and its load. It comes out with about twice the resistance, and you'll see why.</li>
+  </ul>
+  <div class="analogy"><span class="eyebrow">Analogy · a tollbooth with the barrier up</span><p>On a toll road, even with the barrier raised, every car slows a little as it squeezes through the booth. A fully-on MOSFET is the booth with its barrier up. \(R_{DS(on)}\) measures how much it slows things down, and the more traffic you send through, the more total delay it adds. In a circuit, the traffic is current and the delay is voltage lost.</p></div>
+  <p class="key">\(R_{DS(on)}\) is the price of a MOSFET switch: the voltage it keeps and the heat it makes.</p>
+</section>
+
+<section class="part" id="part1" data-title="Problem 1 · n-channel switch">
+  <div class="part-head">
+    <div class="part-letter">1</div>
+    <div class="eyebrow">Problem 1 · an n-channel low-side switch · 8 pts</div>
+    <h2>From a datasheet to an on-resistance</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Sah's equations turn a datasheet's threshold and one test point into a model that predicts the current anywhere. Use the test point to find \(\beta_n\), predict the current in the switch, and divide to get its on-resistance.</p></div>
+
+  <div class="topic" id="sah" data-title="Sah's equations">
+    <span class="eyebrow">Topic 1a · from first principles</span>
+    <h3>Sah's equations</h3>
+    <p><b>What it is.</b> Sah's equations are two formulas for a MOSFET's drain current, one for each region where it conducts. Chih-Tang Sah published them in 1964, and they're still the first model every engineer learns. They're also the model behind LTspice's simple MOSFETs: last week's <code>Kp</code> is this week's \(\beta\).</p>
+    <p><b>Why we care.</b> With just two numbers, \(V_T\) and \(\beta\), they predict the current at any gate and drain voltages. That's what lets you check, on paper, whether a part will switch your load before you build anything.</p>
+    <div class="thm"><span class="eyebrow">Sah's equations · n-channel</span>
+      <p>Cutoff, \(V_{GS} \le V_T\): \(\;I_D = 0\)</p>
+      <p>Triode, \(V_{DS} \lt V_{GS} - V_T\):</p>\[I_D = \beta_n\left[(V_{GS} - V_T)\,V_{DS} - \tfrac{1}{2}V_{DS}^2\right]\]
+      <p>Saturation, \(V_{DS} \ge V_{GS} - V_T\):</p>\[I_D = \frac{\beta_n}{2}\,(V_{GS} - V_T)^2\]</div>
+    <p>\(\beta_n\) has units of A/V², and it packs the part's construction into one number: \(\beta_n = \mu_n C_{ox} (W/L)\). Here \(\mu_n\) is how easily electrons move through silicon, \(C_{ox}\) is how much charge the gate pulls in per volt (a thinner oxide gives more), and \(W/L\) is the channel's width over its length. A wide, short channel under a thin oxide makes a big \(\beta_n\) and a strong part.</p>
+    <p>The two formulas meet exactly at the edge, \(V_{DS} = V_{GS} - V_T\). Each one is only true on its own side of it. Past the edge, the triode formula curves back down, which would mean more drain voltage pushing less current. That doesn't happen: the channel pinches off and the current levels out at the saturation value. Before the edge, the saturation formula would overstate the current. So the first step of every problem is the same. Compare \(V_{DS}\) with \(V_{GS} - V_T\), and only then pick the formula.</p>
+    <div class="analogy"><span class="eyebrow">Analogy · maps of two countries</span><p>A road map of France is no use once you cross into Spain. Each of Sah's equations is a map of one region, and \(V_{GS} - V_T\) is the border. Check which side you're on before you read the map.</p></div>
+    <div class="panel" id="sahPanel">
+      <div class="panel-head"><span class="t">Two formulas, one curve · practice part</span></div>
+      <canvas id="sahCv" class="p2" style="height:290px" aria-label="Drain current against drain voltage for one gate voltage. The real curve rises along the triode formula, then goes flat at the edge. A dashed red continuation shows the triode formula falling if it were used past the edge."></canvas>
+      <div class="ctlgrid">
+        <div class="sl"><label for="sahG"><span>V<sub>GS</sub></span> <b id="sahGOut"></b></label><input type="range" id="sahG" min="1" max="5" step="0.01" value="4"></div>
+        <div class="sl"><label for="sahD"><span>V<sub>DS</sub>, the dot</span> <b id="sahDOut"></b></label><input type="range" id="sahD" min="0" max="6" step="0.01" value="1"></div>
+      </div>
+      <div class="cursorbox" id="sahReads"></div>
+      <p class="note">The blue zone is triode and the green zone is saturation. Slide the dot across the edge and watch the two formulas trade places. Inside triode the saturation formula is too big. Past the edge the triode formula (dashed red) falls away while the real current stays flat. The practice part has V<sub>T</sub> = 1.5 V and β = 0.18 A/V².</p>
+    </div>
+    <div class="warn"><b>Watch out.</b> Using the wrong formula is the most common mistake on this homework. Find the region first, every time.</div>
+    <p class="key">Compare \(V_{DS}\) with \(V_{GS} - V_T\) first. Below it, use the triode formula. At or above it, use the square law.</p>
+  </div>
+
+  <div class="topic" id="datasheet" data-title="β from a datasheet">
+    <span class="eyebrow">Topic 1b · reading a datasheet</span>
+    <h3>One test point pins β</h3>
+    <p><b>What it is.</b> Datasheets rarely print \(\beta\). They print \(V_T\) and one measured point: the drain current at a stated \(V_{GS}\) and \(V_{DS}\). The test usually uses a large \(V_{DS}\) so the part sits in saturation.</p>
+    <p><b>Why we care.</b> Once you know \(V_T\), the square law has only one unknown, \(\beta\). One point is enough to find it, and with \(\beta\) in hand, Sah's equations can predict every other point, including the switch circuits in parts b and c.</p>
+    <p>The method has two steps. Confirm the point is in saturation, because the test's \(V_{DS}\) should be at least \(V_{GS} - V_T\). Then solve the square law for \(\beta\):</p>
+    <div class="mbox">\[\beta_n = \frac{2\,I_D}{(V_{GS} - V_T)^2}\]</div>
+    <div class="panel" id="fitPanel">
+      <div class="panel-head"><span class="t">Fit β to a datasheet point · practice part</span></div>
+      <canvas id="fitCv" class="p2" style="height:270px" aria-label="The saturation current against gate voltage for the chosen beta, with a ring marking a datasheet point of 0.81 amps at 4.5 volts."></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="fitB"><span>β, your guess</span> <b id="fitBOut"></b></label><input type="range" id="fitB" min="0.04" max="0.4" step="0.002" value="0.1"></div></div>
+      <div class="cursorbox" id="fitReads"></div>
+      <p class="note">This practice datasheet says V<sub>T</sub> = 1.5 V and I<sub>D</sub> = 0.81 A at V<sub>GS</sub> = 4.5 V. Slide β until the curve passes through the ring. Only one value works, and the formula above lands on it directly.</p>
+    </div>
+    <details class="quick"><summary><span>Quick check: a datasheet's test uses \(V_{GS}\) = 4 V and \(V_{DS}\) = 0.5 V on a part with \(V_T\) = 2 V. Can you use the square law?</span></summary><div><p>No. The edge is at 2 V and 0.5 V is below it, so that point is in triode. You'd solve the triode formula for β instead.</p></div></details>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p1a" data-title="Problem 1a">
+      <div class="prob-head"><span class="pnum">Problem 1a</span><span class="eyebrow">β<sub>n</sub> from the datasheet</span><span class="pts">3 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(\beta_n\)</b> using Sah's equations. The datasheet gives \(V_T\) = 2.0 V, with \(I_D\) = 0.5 A at \(V_{GS}\) = 5.0 V and \(V_{DS}\) = 10 V.</p>
+        <ol class="steps">
+          <li><h5>Read the test point</h5><p>\(V_{GS}\) = 5.0 V, \(V_{DS}\) = 10 V and \(I_D\) = 0.5 A, with \(V_T\) = 2.0 V.</p></li>
+          <li><h5>Find the region</h5><p>The edge is \(V_{GS} - V_T\) = 3 V. \(V_{DS}\) = 10 V is at least that, so the part is in saturation.</p></li>
+          <li><h5>Solve the square law for β<sub>n</sub></h5><p>Compute it.</p><div class="mbox">\[\beta_n = \frac{2\,I_D}{(V_{GS} - V_T)^2} = \frac{2(0.5\text{ A})}{(3\text{ V})^2}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">β<sub>n</sub> = 0.1111 A/V²<small>Exactly 1/9 A/V², or 111.1 mA/V². Keep the fraction for parts b and c, so rounding doesn't creep in.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="lowside" data-title="The low-side switch">
+    <span class="eyebrow">Topic 1c · the circuit</span>
+    <h3>The low-side switch</h3>
+    <p><b>What it is.</b> Problem 1's circuit is a <b>low-side switch</b>. The load, R1, hangs from the 5 V supply down to the drain. The MOSFET's source goes to ground, and Vin drives the gate. The MOSFET sits on the low side of the load, between it and ground. Vin at 5 V turns it on and pulls Vout down near 0 V. Vin at 0 V turns it off, no current flows, and Vout rises to 5 V.</p>
+    <p><b>Why we care.</b> This is the standard way a microcontroller drives anything bigger than an LED. The pin only has to set the gate voltage, and the load's current comes from the supply, through the load and the MOSFET, to ground.</p>
+    <p>The MOSFET and R1 carry the same current, so the circuit has to satisfy both of them at once. R1 allows \(I_D = (5\text{ V} - V_{DS})/R_1\), a straight line called the <b>load line</b>. The MOSFET allows its Sah curve. The circuit settles where the two cross, which is the dot in the demo at the top of the page. When the gate is driven hard, the MOSFET's curve is so steep that the crossing lands at a small \(V_{DS}\), deep in triode.</p>
+    <p>The homework gives you Vout = 0.2 V, so you don't need R1 at all. With the source grounded, \(V_{GS}\) is Vin and \(V_{DS}\) is Vout.</p>
+    <details class="deeper"><summary>Go deeper: what R1 must be</summary><div><p>R1 carries the same current with 5 V − 0.2 V = 4.8 V across it, so once you've found \(I_D\) in part b, R1 = 4.8 V / \(I_D\). Try it after you've revealed part b's answer. It's not asked, but it shows the load gets 96% of the supply.</p></div></details>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p1b" data-title="Problem 1b">
+      <div class="prob-head"><span class="pnum">Problem 1b</span><span class="eyebrow">the switch's drain current</span><span class="pts">3 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(I_D\)</b> in the low-side switch with Vin = 5.0 V, given that Vout = 0.2 V. Use Sah's equations and your \(\beta_n\).</p>
+        <ol class="steps">
+          <li><h5>Read the voltages</h5><p>The source is grounded, so \(V_{GS}\) = Vin = 5.0 V and \(V_{DS}\) = Vout = 0.2 V.</p></li>
+          <li><h5>Find the region</h5><p>The edge is still \(V_{GS} - V_T\) = 3 V. \(V_{DS}\) = 0.2 V is below it, so the part is in triode.</p></li>
+          <li><h5>Use the triode formula</h5><p>Put in \(\beta_n\) from part a. Compute it.</p><div class="mbox">\[I_D = \beta_n\left[(3\text{ V})(0.2\text{ V}) - \tfrac{1}{2}(0.2\text{ V})^2\right]\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">I<sub>D</sub> = 64.44 mA<small>(1/9)(0.6 − 0.02) = 0.06444 A. The square law would have said 0.5 A, almost eight times too much, which is why the region check matters.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="rdson" data-title="On-resistance">
+    <span class="eyebrow">Topic 1d · from first principles</span>
+    <h3>On-resistance, R<sub>DS(on)</sub></h3>
+    <p><b>What it is.</b> \(R_{DS(on)}\) is the resistance of a fully-on MOSFET: the voltage across it divided by the current through it, \(R_{DS(on)} = V_{DS}/I_D\).</p>
+    <p><b>Why we care.</b> It sets the switch's losses. At current \(I\), the switch keeps \(I\,R_{DS(on)}\) of the supply's voltage and turns \(I^2 R_{DS(on)}\) into heat. Datasheets list it near the top of page one, and choosing a MOSFET for a power circuit often comes down to this one number.</p>
+    <p>Why does a MOSFET act like a resistor at all? When \(V_{DS}\) is small, the \(\tfrac12 V_{DS}^2\) term in the triode formula is tiny, so</p>
+    <div class="mbox">\[I_D \approx \beta_n (V_{GS} - V_T)\,V_{DS} \quad\Longrightarrow\quad R_{DS(on)} \approx \frac{1}{\beta_n (V_{GS} - V_T)}\]</div>
+    <p>Current proportional to voltage is Ohm's law. The channel is a strip of conducting silicon, and the gate sets how thick it is. Drive the gate harder and the channel gets thicker, so the resistance drops. That's why datasheets list \(R_{DS(on)}\) at a stated \(V_{GS}\), often 10 V and 4.5 V. A <b>logic-level</b> MOSFET is one that's guaranteed to be fully on at 4.5 V or less, so a microcontroller pin can drive it.</p>
+    <div class="panel" id="rdsPanel">
+      <div class="panel-head"><span class="t">Gate drive against on-resistance · practice part</span></div>
+      <canvas id="rdsCv" class="p2" style="height:270px" aria-label="On-resistance against gate voltage. It is high just above the threshold and falls steeply as the gate voltage rises."></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="rdsG"><span>V<sub>GS</sub></span> <b id="rdsGOut"></b></label><input type="range" id="rdsG" min="2.5" max="10" step="0.01" value="5"></div></div>
+      <div class="cursorbox" id="rdsReads"></div>
+      <p class="note">Measured the way datasheets do it, at a small V<sub>DS</sub> of 0.1 V. Compare 3.3 V logic with 5 V logic and with a 10 V gate driver. Near the threshold the resistance shoots up, so a gate signal that barely clears V<sub>T</sub> makes a poor switch. The dashed estimate sits a little below the real curve, because it drops the ½V<sub>DS</sub>² term.</p>
+    </div>
+    <p class="key">More gate drive means a thicker channel and a lower \(R_{DS(on)}\).</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p1c" data-title="Problem 1c">
+      <div class="prob-head"><span class="pnum">Problem 1c</span><span class="eyebrow">the switch's on-resistance</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(R_{DS(on)} = V_{DS}/I_D\)</b> for the switch with Vout = 0.2 V, using your \(I_D\) from part b. (Hint: between 2.5 and 3.5 Ω.)</p>
+        <ol class="steps">
+          <li><h5>Name the two quantities</h5><p>\(V_{DS}\) = Vout = 0.2 V, and \(I_D\) is part b's current.</p></li>
+          <li><h5>Divide</h5><p>Keep part b's unrounded current. Compute it.</p><div class="mbox">\[R_{DS(on)} = \frac{0.2\text{ V}}{I_D}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">R<sub>DS(on)</sub> = 3.103 Ω<small>Exactly 90/29 Ω, inside the hint. The quick estimate 1/(β<sub>n</sub>(V<sub>GS</sub> − V<sub>T</sub>)) gives 3.000 Ω, close because 0.2 V is small. R1 must be 4.8 V/64.44 mA = 74.48 Ω, and M1 heats up by about 13 mW.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" id="part2" data-title="Problem 2 · p-channel switch">
+  <div class="part-head">
+    <div class="part-letter">2</div>
+    <div class="eyebrow">Problem 2 · a p-channel high-side switch · 8 pts</div>
+    <h2>The same steps, mirrored</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>A p-channel MOSFET follows the same equations once you measure from the source: \(V_{SG}\), \(V_{SD}\) and \(|V_T|\). As a high-side switch it connects a load to the supply. With the same size and the same 5 V of drive, it keeps about twice the resistance, because holes move more slowly than electrons.</p></div>
+
+  <div class="topic" id="psah" data-title="Flipping the signs">
+    <span class="eyebrow">Topic 2a · from first principles</span>
+    <h3>Sah's equations for a p-channel part</h3>
+    <p><b>What it is.</b> A p-channel part's voltages and current are all negative when it's on: \(V_{GS}\), \(V_{DS}\), \(V_T\) and \(I_D\). Measure the voltages from the source the other way round, as \(V_{SG}\) and \(V_{SD}\), use \(|V_T|\) and \(|I_D|\), and every number is positive again. Then Sah's equations read exactly as they did for n-channel.</p>
+    <p><b>Why we care.</b> You don't need a second set of formulas, only a habit of flipping signs at the start. The datasheet here writes its test point in negative numbers, which is the same test as \(V_{SG}\) = 5 V and \(V_{SD}\) = 10 V.</p>
+    <div class="thm"><span class="eyebrow">Sah's equations · p-channel</span>
+      <p>Triode, \(V_{SD} \lt V_{SG} - |V_T|\):</p>\[|I_D| = \beta_p\left[(V_{SG} - |V_T|)\,V_{SD} - \tfrac{1}{2}V_{SD}^2\right]\]
+      <p>Saturation, \(V_{SD} \ge V_{SG} - |V_T|\):</p>\[|I_D| = \frac{\beta_p}{2}\,(V_{SG} - |V_T|)^2\]</div>
+    <p>\(\beta_p = \mu_p C_{ox}(W/L)\), with the mobility of holes in place of electrons. Holes move two to three times more slowly than electrons in silicon. So for the same size and oxide, \(\beta_p\) comes out two to three times smaller, and you'll see that in part a.</p>
+    <p class="key">For p-channel, measure from the source: \(V_{SG}\), \(V_{SD}\), \(|V_T|\), \(|I_D|\). Then use the same equations.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p2a" data-title="Problem 2a">
+      <div class="prob-head"><span class="pnum">Problem 2a</span><span class="eyebrow">β<sub>p</sub> from the datasheet</span><span class="pts">3 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(\beta_p\)</b> using Sah's equations. The datasheet gives \(V_T\) = −2.0 V, with \(I_D\) = −0.24 A at \(V_{GS}\) = −5.0 V and \(V_{DS}\) = −10 V, which is the same as \(V_{SG}\) = 5.0 V and \(V_{SD}\) = 10 V.</p>
+        <ol class="steps">
+          <li><h5>Flip the signs</h5><p>\(V_{SG}\) = 5.0 V, \(V_{SD}\) = 10 V, \(|V_T|\) = 2.0 V and \(|I_D|\) = 0.24 A.</p></li>
+          <li><h5>Find the region</h5><p>The edge is \(V_{SG} - |V_T|\) = 3 V, and \(V_{SD}\) = 10 V is past it: saturation.</p></li>
+          <li><h5>Solve the square law for β<sub>p</sub></h5><p>Compute it.</p><div class="mbox">\[\beta_p = \frac{2\,|I_D|}{(V_{SG} - |V_T|)^2} = \frac{2(0.24\text{ A})}{(3\text{ V})^2}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">β<sub>p</sub> = 0.05333 A/V²<small>Exactly 4/75 A/V², or 53.33 mA/V². That's 48% of β<sub>n</sub>, the hole-mobility penalty in one number.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="highside" data-title="The high-side switch">
+    <span class="eyebrow">Topic 2b · the circuit</span>
+    <h3>The high-side switch</h3>
+    <p><b>What it is.</b> Problem 2's circuit is a <b>high-side switch</b>. The p-channel MOSFET's source sits on the 5 V supply, its drain feeds the load R1, and R1 goes to ground. Vin at 0 V pulls the gate 5 V below the source, so \(V_{SG}\) = 5 V and the switch is on, pulling Vout up near 5 V. Vin at 5 V makes \(V_{SG}\) = 0 and turns it off.</p>
+    <p><b>Why we care.</b> Some loads must stay connected to ground, like a sensor that shares its ground wire with the circuit reading it. To turn those off you have to cut their supply instead. A phone uses switches like this to power whole sections of its circuitry up and down. Notice the logic is upside down from Problem 1: a low gate signal turns this switch on. Flip the demo at the top of the page to p-channel to see it.</p>
+    <p>Measure everything from the source, which sits at 5 V:</p>
+    <ul>
+      <li>\(V_{SG}\) = 5 V − Vin</li>
+      <li>\(V_{SD}\) = 5 V − Vout</li>
+    </ul>
+    <p>With Vout = 4.8 V, the switch keeps \(V_{SD}\) = 0.2 V, the same small voltage as Problem 1. That makes a fair comparison between the two switches.</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p2b" data-title="Problem 2b">
+      <div class="prob-head"><span class="pnum">Problem 2b</span><span class="eyebrow">the switch's drain current</span><span class="pts">3 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(I_D\)</b> in the high-side switch with Vin = 0.0 V, given that Vout = 4.8 V. Use Sah's equations and your \(\beta_p\).</p>
+        <ol class="steps">
+          <li><h5>Read the voltages from the source</h5><p>The source is at 5 V. \(V_{SG}\) = 5 V − 0 V = 5 V, and \(V_{SD}\) = 5 V − 4.8 V = 0.2 V.</p></li>
+          <li><h5>Find the region</h5><p>The edge is \(V_{SG} - |V_T|\) = 3 V, and 0.2 V is below it: triode.</p></li>
+          <li><h5>Use the triode formula, then add the sign</h5><p>Put in \(\beta_p\) from part a to get \(|I_D|\). The current flows out of a p-channel part's drain, so \(I_D\) is negative. Compute it.</p><div class="mbox">\[|I_D| = \beta_p\left[(3\text{ V})(0.2\text{ V}) - \tfrac{1}{2}(0.2\text{ V})^2\right]\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">I<sub>D</sub> = −30.93 mA<small>|I<sub>D</sub>| = (4/75)(0.58) = 30.93 mA, flowing out of the drain and down through R1. That's under half of Problem 1's current at the same 0.2 V, because β<sub>p</sub> is under half of β<sub>n</sub>.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+
+  <div class="topic" id="compare" data-title="Why p-channel loses">
+    <span class="eyebrow">Topic 2c · why we care</span>
+    <h3>Why the p-channel switch keeps more resistance</h3>
+    <p><b>What it is.</b> \(R_{DS(on)}\) for a p-channel part is \(V_{SD}/|I_D|\), and in triode it's close to \(1/(\beta_p(V_{SG} - |V_T|))\). With the same drive and the same \(V_T\), a smaller \(\beta\) means a bigger resistance, in exact proportion.</p>
+    <p><b>Why we care.</b> To match an n-channel switch's resistance, a p-channel part has to be two to three times wider, which makes it bigger and more expensive. That's why designers use n-channel switches wherever the circuit allows, and why a CMOS chip's p-channel transistors are drawn wider than its n-channel ones. In fact, Problems 1 and 2 are the two halves of last week's CMOS inverter, each with a resistor standing in for the other transistor.</p>
+    <div class="panel" id="cmpPanel">
+      <div class="panel-head"><span class="t">n-channel against p-channel · practice parts</span></div>
+      <canvas id="cmpCv" class="p2" style="height:270px" aria-label="On-resistance against gate drive for an n-channel and a p-channel part of the same size. The p-channel curve sits about twice as high."></canvas>
+      <div class="ctlgrid"><div class="sl"><label for="cmpG"><span>gate drive, V<sub>GS</sub> or V<sub>SG</sub></span> <b id="cmpGOut"></b></label><input type="range" id="cmpG" min="2.5" max="10" step="0.01" value="5"></div></div>
+      <div class="cursorbox" id="cmpReads"></div>
+      <p class="note">The practice parts share V<sub>T</sub> = 1.5 V, with β<sub>n</sub> = 0.18 A/V² and β<sub>p</sub> = 0.08 A/V². At every gate drive, the p-channel resistance stays 2.25 times the n-channel's, which is the ratio of the two β values.</p>
+    </div>
+    <p class="key">Same size and same drive: \(R_{DS(on),p} / R_{DS(on),n} = \beta_n/\beta_p\).</p>
+  </div>
+
+  <div class="problems">
+    <article class="prob" id="p2c" data-title="Problem 2c">
+      <div class="prob-head"><span class="pnum">Problem 2c</span><span class="eyebrow">the switch's on-resistance</span><span class="pts">2 pts</span></div>
+      <div class="prob-body">
+        <p class="ask"><b>Find \(R_{DS(on)} = V_{SD}/|I_D|\)</b> for the switch with Vout = 4.8 V, using your \(I_D\) from part b. (Hint: between 6.3 and 6.6 Ω.)</p>
+        <ol class="steps">
+          <li><h5>Name the two quantities</h5><p>\(V_{SD}\) = 5 V − 4.8 V = 0.2 V, and \(|I_D|\) is the size of part b's current.</p></li>
+          <li><h5>Divide</h5><p>Use the magnitude, so the resistance comes out positive. Compute it.</p><div class="mbox">\[R_{DS(on)} = \frac{0.2\text{ V}}{|I_D|}\]</div></li>
+        </ol>
+        <details class="reveal"><summary>Reveal the answer</summary><div class="ans">
+          <div class="final">R<sub>DS(on)</sub> = 6.466 Ω<small>Exactly 375/58 Ω, inside the hint, and 2.083 times the n-channel switch's 3.103 Ω. That ratio is β<sub>n</sub>/β<sub>p</sub> exactly. R1 must be 4.8 V/30.93 mA = 155.2 Ω.</small></div>
+        </div></details>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">Region first</span><div class="eqs">triode: \(V_{DS} \lt V_{GS} - V_T\)</div><div class="eqs">saturation: \(V_{DS} \ge V_{GS} - V_T\)</div></div>
+    <div class="card"><span class="eyebrow">Triode</span><div class="eqs">\(I_D = \beta\left[(V_{GS} - V_T)V_{DS} - \tfrac{1}{2}V_{DS}^2\right]\)</div></div>
+    <div class="card"><span class="eyebrow">Saturation</span><div class="eqs">\(I_D = \tfrac{\beta}{2}(V_{GS} - V_T)^2\)</div></div>
+    <div class="card"><span class="eyebrow">β from a datasheet</span><div class="eqs">\(\beta = 2 I_D/(V_{GS} - V_T)^2\)</div><p>Only if the test point is in saturation.</p></div>
+    <div class="card"><span class="eyebrow">On-resistance</span><div class="eqs">\(R_{DS(on)} = V_{DS}/I_D\)</div><div class="eqs">\(\approx 1/\left(\beta(V_{GS} - V_T)\right)\)</div></div>
+    <div class="card"><span class="eyebrow">p-channel</span><p>Use \(V_{SG}\), \(V_{SD}\), \(|V_T|\) and \(|I_D|\) in the same equations. \(I_D\) itself is negative.</p></div>
+    <div class="card"><span class="eyebrow">Low-side switch</span><p>Source grounded: \(V_{GS}\) = Vin, \(V_{DS}\) = Vout. On when Vin is high.</p></div>
+    <div class="card"><span class="eyebrow">High-side switch</span><p>Source on the supply: \(V_{SG}\) = Vdd − Vin, \(V_{SD}\) = Vdd − Vout. On when Vin is low.</p></div>
+    <div class="card"><span class="eyebrow">Losses</span><div class="eqs">\(V_{lost} = I R_{DS(on)}\)</div><div class="eqs">\(P = I^2 R_{DS(on)}\)</div></div>
+  </div>
+  <div class="topic" id="mistakes" data-title="Common mistakes" style="padding-top:8px">
+    <h3>Common mistakes</h3>
+    <ul>
+      <li>Using the square law in part b. The switch is in triode, and the square law overstates its current almost eight times.</li>
+      <li>Dropping the ½ in the square law, which halves \(\beta\).</li>
+      <li>Leaving out the \(-\tfrac12 V_{DS}^2\) term in the triode formula. It's small at 0.2 V, but it moves the third significant figure.</li>
+      <li>Forgetting \(V_T\) and using \(V_{GS}\) alone as the overdrive.</li>
+      <li>Reading the p-channel switch's voltages from ground. \(V_{SG}\) and \(V_{SD}\) are measured from the source, which sits at 5 V.</li>
+      <li>Giving the p-channel drain current as positive. It flows out of the drain, so \(I_D\) is negative, and \(R_{DS(on)}\) uses \(|I_D|\).</li>
+      <li>Rounding \(\beta\) before using it again. Keep every digit, or keep it as a fraction.</li>
+    </ul>
+  </div>
+  <div class="topic" id="key" data-title="Answer key">
+    <h3>Answer key</h3>
+    <details class="reveal"><summary>Reveal every answer on this page</summary>
+      <div class="ans"><div class="tbl"><table>
+        <thead><tr><th>Problem</th><th>Answer</th><th>Exact</th></tr></thead>
+        <tbody>
+          <tr><td>1a · \(\beta_n\)</td><td>0.1111 A/V²</td><td>1/9 A/V²</td></tr>
+          <tr><td>1b · \(I_D\)</td><td>64.44 mA</td><td>29/450 A</td></tr>
+          <tr><td>1c · \(R_{DS(on)}\)</td><td>3.103 Ω</td><td>90/29 Ω</td></tr>
+          <tr><td>2a · \(\beta_p\)</td><td>0.05333 A/V²</td><td>4/75 A/V²</td></tr>
+          <tr><td>2b · \(I_D\)</td><td>−30.93 mA</td><td>−58/1875 A</td></tr>
+          <tr><td>2c · \(R_{DS(on)}\)</td><td>6.466 Ω</td><td>375/58 Ω</td></tr>
+        </tbody>
+      </table></div></div></details>
+  </div>
+  <footer><p>Problems, circuits and datasheet values come from <i>MOSFET HW 2</i>. A script worked every answer as an exact fraction with SymPy, confirmed the region before each formula, and checked both on-resistances against the homework's hint ranges. Every check passes. The demos use a practice part (V<sub>T</sub> = 1.5 V, β<sub>n</sub> = 0.18 A/V², β<sub>p</sub> = 0.08 A/V²) and a 47 Ω load.</p></footer>
+</section>
+
+</main>

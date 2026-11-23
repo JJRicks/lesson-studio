@@ -1,0 +1,10 @@
+{
+  "title": "MOSFETs as Switches",
+  "brand": "MOSFET Switches",
+  "libs": [
+    "katex",
+    "schematic",
+    "stepper2d"
+  ],
+  "output": "/Users/joelr/Documents/BYUI Assignments/Semester 7/mosfet-switches-lesson.html"
+}
