@@ -1,0 +1,373 @@
+<nav class="toc" id="toc" aria-label="Page contents">
+  <ol>
+    <li><a class="grp" href="#top">Start here</a>
+      <ol>
+        <li><a href="#top">Overview</a></li>
+        <li><a href="#bigpic">The mental model</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part1">Part 1 · The workbench</a>
+      <ol>
+        <li><a href="#bench">One transistor, every knob</a></li>
+        <li><a href="#reading">Reading the workbench</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part2">Part 2 · Experiments</a>
+      <ol>
+        <li><a href="#exps">Twelve things to try</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part3">Part 3 · Circuit lab</a>
+      <ol>
+        <li><a href="#lab">Seven circuits</a></li>
+      </ol></li>
+    <li><a class="grp" href="#part4">Part 4 · Concepts</a>
+      <ol>
+        <li><a href="#concepts">One idea per card</a></li>
+      </ol></li>
+    <li><a class="grp" href="#cheat">Cheat sheet</a>
+      <ol>
+        <li><a href="#cheat">Formulas</a></li>
+        <li><a href="#model">What the model leaves out</a></li>
+      </ol></li>
+  </ol>
+</nav>
+
+<main id="main">
+
+<section class="hero load" id="top" data-title="Overview">
+  <div class="eyebrow">Weeks 11 and 12 · companion to MOSFETs as Switches</div>
+  <h1>MOSFET <span>Playground</span></h1>
+  <p class="lede">One transistor with every knob exposed. Build a MOSFET from its materials, set its terminal voltages, and watch the channel, the curves, the numbers and the limits answer live. Then drop the same device into seven common circuits and see why each one works.</p>
+  <div class="chips"><span class="chip">a live cross-section</span><span class="chip">4 linked plots</span><span class="chip">28 readouts, each explained</span><span class="chip">limits and ratings</span><span class="chip">12 guided experiments</span><span class="chip">7 circuits</span></div>
+  <div class="howto">
+    <div><b>1</b><p><b>Start with the workbench.</b> Drag V<sub>GS</sub> and V<sub>DS</sub>, or drag the dot on any plot. Everything else follows.</p></div>
+    <div><b>2</b><p><b>Click a readout</b> to see what it means, why it matters, and its formula with the current numbers in it.</p></div>
+    <div><b>3</b><p><b>Run an experiment</b> when you want a guided "change one thing and watch" moment.</p></div>
+    <div><b>4</b><p><b>Open the circuit lab</b> to see the same device switch, amplify, invert and mirror.</p></div>
+  </div>
+</section>
+
+<section class="topic" id="bigpic" data-title="The mental model">
+  <span class="eyebrow">Start here · the whole MOSFET in three layers</span>
+  <h3>The mental model</h3>
+  <p><b>What a MOSFET is.</b> A strip of silicon (the channel) between two terminals, the source and the drain, with a third terminal, the gate, sitting on top of it behind a thin insulating oxide. The gate never touches the channel. It works by its electric field alone.</p>
+  <p><b>Why we care.</b> Because the gate draws no steady current, a tiny signal can control a big current. That one property makes MOSFETs the switches in every power supply and motor driver, and the logic in every chip: a laptop processor holds billions of them.</p>
+  <p>The whole device fits in one sentence, and every number on this page comes from it:</p>
+  <p class="key">The gate is one plate of a capacitor and the channel is the other. The gate's voltage decides how much charge sits in the channel, and the drain's voltage pushes that charge across. Current is charge times speed.</p>
+  <div class="layers">
+    <div class="card"><span class="eyebrow">Layer 1 · what it's made of</span><h4>Construction sets β and V<sub>T</sub></h4><p>The oxide's thickness sets the capacitance per area, C<sub>ox</sub>. The carriers' mobility μ sets how fast that charge moves. The shape W/L says how much channel there is. Together they make one number, the device strength β = μC<sub>ox</sub>W/L. Doping and the gate material set the threshold V<sub>T</sub>.</p></div>
+    <div class="card"><span class="eyebrow">Layer 2 · its two voltages</span><h4>V<sub>GS</sub> fills it, V<sub>DS</sub> drains it</h4><p>Past threshold, every volt of V<sub>GS</sub> adds C<sub>ox</sub> × 1 V of mobile charge per area. V<sub>DS</sub> drags it to the drain. While the channel reaches the drain the device acts like a resistor (triode). Once V<sub>DS</sub> passes V<sub>GS</sub> − V<sub>T</sub>, the channel pinches off and the current levels out (saturation).</p></div>
+    <div class="card"><span class="eyebrow">Layer 3 · the circuit around it</span><h4>The circuit decides where you sit</h4><p>A MOSFET alone is a family of curves. The resistor or load around it adds one more line, and the circuit settles where the two cross. A switch sits at the bottom left, an amplifier in the middle of saturation, a current mirror out on the flat part.</p></div>
+  </div>
+  <details class="deeper"><summary>Go deeper: Sah's equations from "charge times speed"</summary><div>
+    <p>Take a slice of channel at position x, where the channel sits at voltage V(x) above the source. The gate's grip there is V<sub>GS</sub> − V(x), and only the part past threshold makes mobile charge:</p>
+    <div class="mbox">\[Q_n(x) = C_{ox}\,\big(V_{GS} - V_T - V(x)\big)\quad\text{coulombs per m}^2\]</div>
+    <p>Carriers drift at v = μE = μ dV/dx. The current is the charge per length (W Q<sub>n</sub>) times that speed, and it's the same at every x:</p>
+    <div class="mbox">\[I_D = W\,Q_n(x)\,\mu\frac{dV}{dx} = \mu C_{ox} W\,\big(V_{GS} - V_T - V\big)\frac{dV}{dx}\]</div>
+    <p>Multiply by dx and add up the slices from the source (V = 0) to the drain (V = V<sub>DS</sub>):</p>
+    <div class="mbox">\[I_D\,L = \mu C_{ox}W\left[(V_{GS} - V_T)V_{DS} - \tfrac{V_{DS}^2}{2}\right]\ \Rightarrow\ I_D = \beta\left[(V_{GS} - V_T)V_{DS} - \tfrac{V_{DS}^2}{2}\right]\]</div>
+    <p>That's Sah's triode equation, with β = μC<sub>ox</sub>W/L. At V<sub>DS</sub> = V<sub>GS</sub> − V<sub>T</sub> the charge at the drain end reaches zero. Past that point the channel can't pass any more, so the current stays at its peak, (β/2)(V<sub>GS</sub> − V<sub>T</sub>)²: the square law. The workbench's "inside the channel" plot draws V(x) and Q<sub>n</sub>(x) live.</p>
+  </div></details>
+</section>
+
+<section class="part wide" id="part1" data-title="The workbench">
+  <div class="part-head">
+    <div class="part-letter">1</div>
+    <div class="eyebrow">Part 1 · one transistor, every knob</div>
+    <h2>The workbench</h2>
+  </div>
+  <div class="intro">
+    <p>The controls on the left set everything about one MOSFET. The pictures on the right all show that device at the same moment, so a change in one place shows up everywhere at once. Drag the orange dot on the output, transfer or region plot to move the operating point. There's no Run button: everything is live.</p>
+  </div>
+
+  <div class="panel bench" id="bench" data-title="Workbench">
+    <div class="panel-head"><span class="t">MOSFET workbench</span><span class="status" id="bStatus" aria-live="polite"></span></div>
+    <div class="bgrid">
+      <aside class="bside" aria-label="Workbench controls">
+        <div class="grp"><h5>Device</h5>
+          <div class="seg" id="bType" role="group" aria-label="Channel type"><button type="button" data-k="n" aria-pressed="true">n-channel</button><button type="button" data-k="p" aria-pressed="false">p-channel</button></div>
+          <label class="sel" for="bPre"><span>Start from</span><select id="bPre"></select></label>
+          <small class="hint" id="bPreNote"></small>
+        </div>
+        <div class="grp"><h5>Terminal voltages</h5>
+          <div id="bOp" class="sls"></div>
+          <div class="row"><button type="button" class="btn ghost sm" id="bSwG" aria-pressed="false">Sweep VGS</button><button type="button" class="btn ghost sm" id="bSwD" aria-pressed="false">Sweep VDS</button></div>
+          <label class="chk"><input type="checkbox" id="bPast"> Let the sliders go past the ratings</label>
+        </div>
+        <div class="grp"><h5>Simulation</h5>
+          <div class="sl"><label for="simSpd"><span>Speed</span> <b class="spdOut"></b></label><input type="range" id="simSpd"></div>
+          <div class="row"><button type="button" class="btn ghost sm" id="simPause" aria-pressed="false">Pause</button></div>
+          <small class="hint">Scales every animation on the page: the carriers, the sweeps, and the circuit lab.</small>
+        </div>
+        <div class="grp"><h5>Construction</h5><div id="bBuild" class="sls"></div></div>
+        <div class="grp"><h5>Temperature and leakage</h5><div id="bEnv" class="sls"></div>
+          <label class="chk"><input type="checkbox" id="bSub"> Subthreshold conduction</label>
+          <small class="hint">Off: Sah's equations exactly, with zero current below V<sub>T</sub>. On: the exponential leakage real parts have, in LTspice's form.</small>
+        </div>
+        <details class="grp"><summary>Ratings: the absolute maximums</summary><div id="bRate" class="sls"></div></details>
+        <div class="grp"><h5>Compare</h5>
+          <div class="row"><button type="button" class="btn sm" id="bPin">Pin this device</button><button type="button" class="btn ghost sm" id="bUnpin">Clear pins</button></div>
+          <small class="hint">Freezes a copy, drawn dashed at the same voltages. Then change one thing and compare.</small>
+          <ul class="pins" id="pinList"></ul>
+        </div>
+      </aside>
+
+      <div class="bmain">
+        <div class="xsrow">
+          <figure class="fig xs">
+            <div class="fig-head"><span class="t">Cross-section · live</span><span class="fh-note">sheet thickness = channel charge</span></div>
+            <canvas id="xsCv" class="p2" aria-label="A cross-section of the MOSFET: source and drain wells, the gate on its oxide, the depleted silicon, and the channel's carriers flowing from source to drain. It follows the sliders."></canvas>
+          </figure>
+          <div class="story"><h5>What's happening</h5><div id="story" aria-live="polite"></div></div>
+        </div>
+        <div class="plots">
+          <figure class="fig">
+            <div class="fig-head"><span class="t" id="famT">Output curves · I<sub>D</sub> against V<sub>DS</sub></span><div class="seg" id="famSeg" role="group" aria-label="Vertical scale"><button type="button" data-k="fit" aria-pressed="true">fit</button><button type="button" data-k="all" aria-pressed="false">all</button></div></div>
+            <canvas id="famCv" class="p2 drag" aria-label="Output characteristic: drain current against drain voltage, one curve per gate voltage, with the triode and saturation zones shaded and the operating point marked. Drag to set the drain voltage."></canvas>
+            <figcaption class="cap">The blue curve is this gate voltage; grey ones are others. The dashed parabola is the pinch-off edge, with triode above it and saturation below. Red dots are the power and current ratings. Drag sideways to set V<sub>DS</sub>.</figcaption>
+          </figure>
+          <figure class="fig">
+            <div class="fig-head"><span class="t" id="trT">Transfer curve · I<sub>D</sub> against V<sub>GS</sub></span><div class="seg" id="trSeg" role="group" aria-label="Vertical scale"><button type="button" data-k="lin" aria-pressed="true">linear</button><button type="button" data-k="log" aria-pressed="false">log</button><button type="button" data-k="sqrt" aria-pressed="false">√</button></div></div>
+            <canvas id="trCv" class="p2 drag" aria-label="Transfer characteristic: drain current against gate voltage at the present drain voltage, with the threshold marked. Drag to set the gate voltage."></canvas>
+            <figcaption class="cap">How the gate controls the current. Linear shows the parabola and its slope g<sub>m</sub>. Log shows the leakage below V<sub>T</sub>. √ turns saturation into a straight line that crosses zero at V<sub>T</sub>, which is how V<sub>T</sub> is measured. Drag sideways to set V<sub>GS</sub>.</figcaption>
+          </figure>
+          <figure class="fig">
+            <div class="fig-head"><span class="t" id="mapT">Region map · V<sub>DS</sub> against V<sub>GS</sub></span></div>
+            <canvas id="mapCv" class="p2 drag" aria-label="Region map: every gate and drain voltage pair, coloured by region, with lines of equal current and a hatch where a rating is exceeded. Drag to set both voltages."></canvas>
+            <figcaption class="cap">Every possible pair of voltages at once. Grey is cutoff, blue is triode, green is saturation, and red hatching is past a rating. Thin lines join points of equal current, and the orange dash is this current. Drag anywhere.</figcaption>
+          </figure>
+          <figure class="fig">
+            <div class="fig-head"><span class="t">Inside the channel · source to drain</span></div>
+            <canvas id="prCv" class="p2" aria-label="The channel's voltage, charge and electric field along its length, from source to drain."></canvas>
+            <figcaption class="cap">The channel's voltage climbs from 0 at the source to V<sub>DS</sub> at the drain. Its charge (shaded) is what's left of the overdrive at each point, so it thins toward the drain. Where it reaches zero, that's pinch-off.</figcaption>
+          </figure>
+        </div>
+        <div class="readsec">
+          <div id="bReads" class="rgroups"></div>
+          <div class="explain" aria-live="polite">
+            <h5>Explained: <span id="bExK"></span></h5>
+            <div class="exl"><p><b>What it is.</b> <span id="bExW"></span></p><p><b>Why we care.</b> <span id="bExY"></span></p></div>
+            <div class="exr"><div class="exeq" id="bExE"></div><small class="hint">Click any readout above to explain it here. The formula updates as you drag.</small></div>
+          </div>
+        </div>
+        <div class="consec">
+          <div class="cons-head"><h5>Constraints and limits</h5><span id="bConsSum"></span></div>
+          <div class="cons" id="bCons"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="topic" id="reading" data-title="Reading the workbench">
+    <span class="eyebrow">How the pieces connect</span>
+    <h3>Reading the workbench</h3>
+    <p>Every picture shows the same operating point from a different side. Learning to jump between them is most of what "understanding a MOSFET" means.</p>
+    <div class="layers">
+      <div class="card"><h4>Cross-section ↔ profile</h4><p>The shaded sheet in the cross-section and the shaded area in "inside the channel" are the same thing: the channel's charge, point by point. When one pinches off, so does the other.</p></div>
+      <div class="card"><h4>Output curves ↔ region map</h4><p>A vertical line on the region map, at one V<sub>GS</sub>, is one curve on the output plot. The map's boundary line is the output plot's dashed parabola.</p></div>
+      <div class="card"><h4>Transfer ↔ output</h4><p>A vertical line on the output plot, at one V<sub>DS</sub>, gives the whole transfer curve. Their slopes at the dot are g<sub>m</sub> and 1/r<sub>o</sub>.</p></div>
+      <div class="card"><h4>Numbers ↔ pictures</h4><p>Each readout measures a picture: I<sub>D</sub> is the dot's height, g<sub>m</sub> the transfer slope, τ the carriers' trip time, N the shaded area. Click one to see which.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="part" id="part2" data-title="Experiments">
+  <div class="part-head">
+    <div class="part-letter">2</div>
+    <div class="eyebrow">Part 2 · change one thing, watch everything</div>
+    <h2>Experiments</h2>
+  </div>
+  <div class="big"><span class="eyebrow">The big idea</span><p>Each card sets the workbench up, often pinning a copy for comparison, then changes one thing. Predict what will happen before you look, then check.</p></div>
+  <div class="exps" id="exps" data-title="Twelve things to try">
+    <div class="card exp"><span class="eyebrow">1 · threshold</span><h4>Grow a channel</h4>
+      <p><b>Setup.</b> V<sub>DS</sub> is held at 0.3 V while V<sub>GS</sub> sweeps up from 0.</p>
+      <p><b>Watch.</b> Below V<sub>T</sub> the gate only pushes holes away, so the depleted layer under the oxide deepens. At V<sub>T</sub> electrons gather against the oxide and the transfer curve leaves zero.</p>
+      <p><b>Why.</b> Below threshold, the gate's charge is matched by fixed ions, which can't move. Above it, each extra volt adds C<sub>ox</sub> × 1 V of mobile electrons, and only those carry current.</p>
+      <button type="button" class="btn sm" data-exp="grow">Set it up</button></div>
+    <div class="card exp"><span class="eyebrow">2 · saturation</span><h4>Pinch it off</h4>
+      <p><b>Setup.</b> V<sub>GS</sub> = 4 V, and V<sub>DS</sub> sweeps up from 0.</p>
+      <p><b>Watch.</b> The channel's charge thins at the drain end until, at V<sub>DS</sub> = V<sub>GS</sub> − V<sub>T</sub>, it touches zero. From then on the output curve is flat.</p>
+      <p><b>Why.</b> Once the drain end is pinched, more V<sub>DS</sub> only widens the depleted gap. The channel itself still drops exactly V<sub>ov</sub>, so it carries the same current.</p>
+      <button type="button" class="btn sm" data-exp="pinch">Set it up</button></div>
+    <div class="card exp"><span class="eyebrow">3 · two personalities</span><h4>Resistor or current source?</h4>
+      <p><b>Setup.</b> V<sub>GS</sub> = 4 V, V<sub>DS</sub> = 0.25 V: deep triode.</p>
+      <p><b>Watch.</b> "Resistance V/I" and r<sub>o</sub> are close, as they would be for a resistor. Now drag V<sub>DS</sub> past 2.5 V: r<sub>o</sub> jumps to infinity (this part has λ = 0).</p>
+      <p><b>Why.</b> In triode the curve is a sloped line through the origin. In saturation it's flat. One device, two jobs, picked by V<sub>DS</sub> alone.</p>
+      <button type="button" class="btn sm" data-exp="rvsi">Set it up</button></div>
+    <div class="card exp"><span class="eyebrow">4 · shape</span><h4>Double the width</h4>
+      <p><b>Setup.</b> Pins the device, then doubles W.</p>
+      <p><b>Watch.</b> Every current doubles at the same voltages; the dashed pinned curve sits at half. β doubles and the resistance halves.</p>
+      <p><b>Why.</b> Twice the width is two channels side by side. That's why a power MOSFET is about a metre wide: try the power preset and read W.</p>
+      <button type="button" class="btn sm" data-exp="width">Set it up</button></div>
+    <div class="card exp"><span class="eyebrow">5 · shape</span><h4>Halve the length</h4>
+      <p><b>Setup.</b> The textbook device, pinned, then L is halved.</p>
+      <p><b>Watch.</b> β doubles again, but f<sub>T</sub> goes up four times, and the "square law still accurate?" check starts to climb.</p>
+      <p><b>Why.</b> It's a shorter trip at a steeper field: the transit time goes as L², so speed goes as 1/L². The steeper field also pushes carriers toward their speed limit.</p>
+      <button type="button" class="btn sm" data-exp="length">Set it up</button></div>
+    <div class="card exp"><span class="eyebrow">6 · materials</span><h4>Thin the oxide</h4>
+      <p><b>Setup.</b> The textbook device, pinned, then t<sub>ox</sub> is halved.</p>
+      <p><b>Watch.</b> C<sub>ox</sub> and β double. So does the oxide field: watch its row in the constraints.</p>
+      <p><b>Why.</b> A thinner insulator is a bigger capacitor, so more charge per volt. The same voltage across half the thickness is twice the field, which is why thinner oxides forced lower supply voltages.</p>
+      <button type="button" class="btn sm" data-exp="oxide">Set it up</button></div>
+    <div class="card exp"><span class="eyebrow">7 · temperature</span><h4>Heat it up</h4>
+      <p><b>Setup.</b> The practice part at 400 K (127 °C). The transfer plot also shows it at 300 K, dashed.</p>
+      <p><b>Watch.</b> At low V<sub>GS</sub> the hot part conducts more; at high V<sub>GS</sub>, less. The curves cross at one gate voltage.</p>
+      <p><b>Why.</b> V<sub>T</sub> falls with heat (more current) while mobility falls (less current). Above the crossing a hot MOSFET carries less, so paralleled MOSFETs share current instead of one hogging it.</p>
+      <button type="button" class="btn sm" data-exp="heat">Set it up</button></div>
+    <div class="card exp"><span class="eyebrow">8 · leakage</span><h4>The leakage floor</h4>
+      <p><b>Setup.</b> The 180 nm chip transistor, below threshold, on a log plot.</p>
+      <p><b>Watch.</b> Below V<sub>T</sub> the curve is a straight line on the log scale: a fixed number of millivolts per tenfold change. Raise n toward 2 and the off-current at V<sub>GS</sub> = 0 climbs.</p>
+      <p><b>Why.</b> Carriers hop the barrier thermally, so the current is exponential in V<sub>GS</sub>, like a diode's. With V<sub>T</sub> only 0.45 V, "off" sits just a few decades below "on".</p>
+      <button type="button" class="btn sm" data-exp="leak">Set it up</button></div>
+    <div class="card exp"><span class="eyebrow">9 · polarity</span><h4>n versus p</h4>
+      <p><b>Setup.</b> Pins the n-channel part, then switches to its p-channel partner of the same size.</p>
+      <p><b>Watch.</b> At the same voltages the p part carries well under half the current. Holes flow (open circles) instead of electrons, and every voltage is measured from the source.</p>
+      <p><b>Why.</b> Holes are less mobile than electrons: 200 against 500 cm²/V·s here. CMOS chips make their p transistors 2 to 3 times wider to make up for it.</p>
+      <button type="button" class="btn sm" data-exp="np">Set it up</button></div>
+    <div class="card exp"><span class="eyebrow">10 · small signal</span><h4>Cheap gain</h4>
+      <p><b>Setup.</b> The textbook device at a small overdrive, 0.15 V.</p>
+      <p><b>Watch.</b> g<sub>m</sub>/I<sub>D</sub> is about 13 per volt. Drag V<sub>GS</sub> up to 1.7 V and it falls to about 2 per volt.</p>
+      <p><b>Why.</b> g<sub>m</sub> = 2I<sub>D</sub>/V<sub>ov</sub>, so a small overdrive buys a lot of gain for little current. Analog designers choose a bias point by its g<sub>m</sub>/I<sub>D</sub>.</p>
+      <button type="button" class="btn sm" data-exp="gmid">Set it up</button></div>
+    <div class="card exp"><span class="eyebrow">11 · limits</span><h4>Break it</h4>
+      <p><b>Setup.</b> The small SOT-23 part at V<sub>GS</sub> = 4 V, V<sub>DS</sub> = 12 V.</p>
+      <p><b>Watch.</b> The constraints light up red: the current and the heat are both far past the ratings, and the region map is hatched where you're sitting.</p>
+      <p><b>Why.</b> The square law will happily promise an amp. The part melts at 350 mW. Ratings are physics the equations leave out.</p>
+      <button type="button" class="btn sm" data-exp="brk">Set it up</button></div>
+    <div class="card exp"><span class="eyebrow">12 · analog design</span><h4>Long channels for gain</h4>
+      <p><b>Setup.</b> Pins the 180 nm transistor, then makes it 4 times longer and 4 times wider (the same β), with λ 4 times smaller.</p>
+      <p><b>Watch.</b> The currents barely change, but r<sub>o</sub> and the intrinsic gain g<sub>m</sub>r<sub>o</sub> rise about fourfold.</p>
+      <p><b>Why.</b> λ goes roughly as 1/L, because the pinched-off gap is a smaller share of a long channel. So analog circuits use long transistors even in a fast process.</p>
+      <button type="button" class="btn sm" data-exp="clm">Set it up</button></div>
+  </div>
+</section>
+
+<section class="part wide" id="part3" data-title="Circuit lab">
+  <div class="part-head">
+    <div class="part-letter">3</div>
+    <div class="eyebrow">Part 3 · the same device in context</div>
+    <h2>Circuit lab</h2>
+  </div>
+  <div class="intro">
+    <p>A MOSFET's curves only turn into a circuit's behaviour once something is connected to it. Each circuit below uses the workbench's n-channel and p-channel devices, so edit them up there (or pick another preset) and the circuit changes with them. The schematic shows live voltages, and its dots flow faster for bigger currents.</p>
+  </div>
+  <div class="panel lab" id="lab" data-title="Seven circuits">
+    <div class="panel-head"><span class="t">Circuit lab</span><span class="status" id="labStatus" aria-live="polite"></span></div>
+    <div class="bgrid">
+      <aside class="bside" aria-label="Circuit lab controls">
+        <div class="grp"><h5>Circuit</h5><div class="tpls" id="labTpls" role="group" aria-label="Which circuit"></div></div>
+        <div class="grp"><h5>This circuit's knobs</h5><div id="labCtl" class="sls"></div>
+          <div class="row"><button type="button" class="btn sm" id="labAnim" aria-pressed="false">Animate</button><button type="button" class="btn ghost sm" id="labSuggest">Reset to suggested values</button></div>
+        </div>
+        <div class="grp"><h5>Simulation</h5>
+          <div class="sl"><label for="labSpd"><span>Speed</span> <b class="spdOut"></b></label><input type="range" id="labSpd"></div>
+          <div class="row"><button type="button" class="btn ghost sm" id="labPause" aria-pressed="false">Pause</button></div>
+        </div>
+        <div class="grp"><small class="hint" id="labDev"></small></div>
+      </aside>
+      <div class="bmain">
+        <div class="labhead"><h4 id="labName"></h4><p id="labWhy"></p></div>
+        <div class="labrow">
+          <div class="schbox" id="labSch"></div>
+          <figure class="fig"><canvas id="labCvA" class="p2" aria-label="The circuit's main plot, live."></canvas><figcaption class="cap" id="labCapA"></figcaption></figure>
+        </div>
+        <div class="labrow r2">
+          <figure class="fig"><canvas id="labCvB" class="p2" aria-label="The circuit's second plot, live."></canvas><figcaption class="cap" id="labCapB"></figcaption></figure>
+          <div class="labnotes"><h5>What's going on</h5><div id="labNotes" aria-live="polite"></div></div>
+        </div>
+        <div class="reads labreads" id="labReads"></div>
+        <div class="consec">
+          <div class="cons-head"><h5>Limits</h5><span id="labConsSum"></span></div>
+          <div class="cons" id="labCons"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="part" id="part4" data-title="Concepts">
+  <div class="part-head">
+    <div class="part-letter">4</div>
+    <div class="eyebrow">Part 4 · one idea per card</div>
+    <h2>Concepts</h2>
+  </div>
+  <div class="cards" id="concepts" data-title="One idea per card">
+    <div class="card"><span class="eyebrow">The gate</span><h4>A capacitor that makes charge</h4>
+      <p><b>What.</b> The gate, the oxide and the channel form a capacitor with C<sub>ox</sub> = ε<sub>ox</sub>/t<sub>ox</sub> per area. Past threshold, the channel side fills with mobile carriers.</p>
+      <p><b>Why.</b> It's the whole trick: the gate controls charge without any current flowing into it. Once it's charged, a MOSFET's gate draws nothing.</p>
+      <div class="eqs">\(Q_n = C_{ox}(V_{GS} - V_T)\)</div></div>
+    <div class="card"><span class="eyebrow">Threshold</span><h4>Where the channel starts</h4>
+      <p><b>What.</b> V<sub>T</sub> is the gate voltage needed to first pull a layer of carriers against the oxide. Below it the gate only empties the silicon of its own carriers.</p>
+      <p><b>Why.</b> It's the switch's 'on' line. Logic-level parts have a V<sub>T</sub> near 1 to 2 V so a 3.3 V or 5 V signal can drive them hard.</p>
+      <div class="eqs">\(V_{GS} > V_T\ \Rightarrow\ \text{a channel}\)</div></div>
+    <div class="card"><span class="eyebrow">Current</span><h4>Charge times speed</h4>
+      <p><b>What.</b> Current is the charge per length times how fast it moves. Carriers drift at v = μE, so the current depends on both how much charge the gate holds and how hard the drain pulls.</p>
+      <p><b>Why.</b> Every formula on this page is this one, added up along the channel. Remember it and you can rebuild the rest.</p>
+      <div class="eqs">\(I_D = W\,Q_n\,\mu\,\dfrac{dV}{dx}\)</div></div>
+    <div class="card"><span class="eyebrow">Triode</span><h4>A voltage-controlled resistor</h4>
+      <p><b>What.</b> While V<sub>DS</sub> &lt; V<sub>GS</sub> − V<sub>T</sub>, the channel reaches the drain, and near V<sub>DS</sub> = 0 it's simply a resistor of 1/(βV<sub>ov</sub>).</p>
+      <p><b>Why.</b> Every MOSFET switch lives here when it's on. More gate drive means lower resistance and less heat.</p>
+      <div class="eqs">\(I_D = \beta\big[V_{ov}V_{DS} - \tfrac{V_{DS}^2}{2}\big]\)</div></div>
+    <div class="card"><span class="eyebrow">Saturation</span><h4>A gate-controlled current source</h4>
+      <p><b>What.</b> Once V<sub>DS</sub> passes V<sub>ov</sub> the channel pinches off at the drain end, and the current stops depending on V<sub>DS</sub>.</p>
+      <p><b>Why.</b> A current set by the gate alone is what an amplifier needs: change V<sub>GS</sub> a little and the current follows, whatever the drain is doing.</p>
+      <div class="eqs">\(I_D = \tfrac{\beta}{2}V_{ov}^2\)</div></div>
+    <div class="card"><span class="eyebrow">λ</span><h4>Channel-length modulation</h4>
+      <p><b>What.</b> In saturation, more V<sub>DS</sub> moves the pinch-off point toward the source a little. The channel gets shorter, so the current creeps up.</p>
+      <p><b>Why.</b> It gives r<sub>o</sub> a finite value, which caps an amplifier's gain and makes current mirrors imperfect. Short channels suffer most.</p>
+      <div class="eqs">\(I_D = \tfrac{\beta}{2}V_{ov}^2(1 + \lambda V_{DS})\)</div></div>
+    <div class="card"><span class="eyebrow">Below threshold</span><h4>Subthreshold conduction</h4>
+      <p><b>What.</b> Below V<sub>T</sub> the current doesn't stop. It falls exponentially, tenfold for every S = n(kT/q)ln 10, which is at least 60 mV at room temperature.</p>
+      <p><b>Why.</b> It's the leakage that drains a phone's battery while it sleeps, and it's why supply voltages stopped shrinking near 1 V.</p>
+      <div class="eqs">\(I_D \propto e^{(V_{GS} - V_T)/(n kT/q)}\)</div></div>
+    <div class="card"><span class="eyebrow">Heat</span><h4>Temperature</h4>
+      <p><b>What.</b> Heating lowers V<sub>T</sub> by about 2 mV/K and lowers mobility as T<sup>−1.5</sup>. At high gate drive the mobility effect wins and the current falls.</p>
+      <p><b>Why.</b> Because a hot power MOSFET carries less current, parallel parts balance themselves instead of running away. A bipolar transistor does the opposite.</p>
+      <div class="eqs">\(\mu \propto T^{-1.5},\ \ dV_T/dT \approx -2\,\text{mV/K}\)</div></div>
+    <div class="card"><span class="eyebrow">Small signal</span><h4>g<sub>m</sub> and r<sub>o</sub></h4>
+      <p><b>What.</b> g<sub>m</sub> is how much current a small gate wiggle makes; r<sub>o</sub> is how little a drain wiggle matters. They're the two slopes at the operating point.</p>
+      <p><b>Why.</b> An amplifier's gain is g<sub>m</sub> times whatever resistance the drain sees, and g<sub>m</sub>r<sub>o</sub> is the most one transistor can give.</p>
+      <div class="eqs">\(g_m = \tfrac{2I_D}{V_{ov}},\ \ r_o \approx \tfrac{1}{\lambda I_D}\)</div></div>
+    <div class="card"><span class="eyebrow">Speed</span><h4>Capacitance and f<sub>T</sub></h4>
+      <p><b>What.</b> The gate is a capacitor of about WLC<sub>ox</sub> that has to be charged to switch. f<sub>T</sub> = g<sub>m</sub>/(2πC<sub>gs</sub>) measures how fast the device can respond.</p>
+      <p><b>Why.</b> It's why gate drivers exist and why switching wastes energy at every edge. Shrinking L raises f<sub>T</sub> as 1/L².</p>
+      <div class="eqs">\(f_T \approx \tfrac{3\mu V_{ov}}{4\pi L^2}\)</div></div>
+    <div class="card"><span class="eyebrow">Limits</span><h4>Ratings and the safe operating area</h4>
+      <p><b>What.</b> V<sub>DS(max)</sub>, V<sub>GS(max)</sub>, I<sub>D(max)</sub> and P<sub>max</sub> fence off the voltages and currents a part survives. Together they draw its safe operating area.</p>
+      <p><b>Why.</b> Sah's equations know nothing about breakdown or heat. Every real design checks the operating point against these four.</p>
+      <div class="eqs">\(V_{DS}\,I_D \le P_{max}\)</div></div>
+    <div class="card"><span class="eyebrow">Polarity</span><h4>The p-channel mirror</h4>
+      <p><b>What.</b> A p-channel part is the same device with every sign flipped. Measured from the source, V<sub>SG</sub>, V<sub>SD</sub>, |V<sub>T</sub>| and |I<sub>D</sub>| obey the same equations.</p>
+      <p><b>Why.</b> It turns on when its gate goes low, which makes high-side switches and CMOS logic possible. It's weaker, because holes are slower.</p>
+      <div class="eqs">\(|I_D| = \tfrac{\beta_p}{2}(V_{SG} - |V_T|)^2\)</div></div>
+  </div>
+</section>
+
+<section class="part" id="cheat" data-title="Cheat sheet">
+  <div class="part-head">
+    <div class="part-letter">Σ</div>
+    <div class="eyebrow">Everything on one screen</div>
+    <h2>Cheat sheet</h2>
+  </div>
+  <div class="cheat">
+    <div class="card"><span class="eyebrow">Which region?</span><div class="eqs">\(V_{GS} \le V_T\): cutoff<br>\(V_{DS} < V_{GS} - V_T\): triode<br>\(V_{DS} \ge V_{GS} - V_T\): saturation</div><p>Always check this first.</p></div>
+    <div class="card"><span class="eyebrow">Triode</span><div class="eqs">\(I_D = \beta\big[(V_{GS} - V_T)V_{DS} - \tfrac{V_{DS}^2}{2}\big]\)</div><p>A resistor of about \(1/(\beta V_{ov})\) near \(V_{DS} = 0\).</p></div>
+    <div class="card"><span class="eyebrow">Saturation</span><div class="eqs">\(I_D = \tfrac{\beta}{2}(V_{GS} - V_T)^2(1 + \lambda V_{DS})\)</div><p>A current source set by the gate.</p></div>
+    <div class="card"><span class="eyebrow">Strength</span><div class="eqs">\(\beta = \mu C_{ox}\tfrac{W}{L},\ \ C_{ox} = \tfrac{3.9\,\varepsilon_0}{t_{ox}}\)</div><p>One datasheet point in saturation gives \(\beta = 2I_D/V_{ov}^2\).</p></div>
+    <div class="card"><span class="eyebrow">Slopes</span><div class="eqs">\(g_m = \beta V_{ov} = \tfrac{2I_D}{V_{ov}}\)<br>\(r_o = \tfrac{1/\lambda + V_{DS}}{I_D}\)</div><p>A common-source stage's gain is \(-g_m(R_D \parallel r_o)\).</p></div>
+    <div class="card"><span class="eyebrow">p-channel</span><div class="eqs">\(V_{GS} \to V_{SG},\ V_{DS} \to V_{SD}\)<br>\(V_T \to |V_T|,\ I_D \to |I_D|\)</div><p>Then the same formulas. \(I_D\) itself is negative.</p></div>
+    <div class="card"><span class="eyebrow">Below threshold</span><div class="eqs">\(S = n\tfrac{kT}{q}\ln 10 \ge 60\ \text{mV/dec}\)</div><p>At 300 K, \(kT/q = 25.9\) mV.</p></div>
+    <div class="card"><span class="eyebrow">Speed</span><div class="eqs">\(\tau = \tfrac{4L^2}{3\mu V_{ov}},\ \ f_T = \tfrac{g_m}{2\pi C_{gs}}\)</div><p>\(C_{gs} \approx \tfrac23 WLC_{ox}\) in saturation.</p></div>
+  </div>
+  <div class="topic" id="model" data-title="What the model leaves out">
+    <h3>What the model leaves out</h3>
+    <p>The workbench runs SPICE's level-1 model: Sah's equations with λ, the same equations as the homework. On top of that it can add LTspice's subthreshold smoothing and simple temperature rules. That's enough to build intuition, but real parts do more:</p>
+    <ul>
+      <li><b>Velocity saturation and mobility degradation.</b> Short channels and strong fields make real currents smaller than the square law says. The workbench flags when this matters but doesn't apply it.</li>
+      <li><b>The body effect.</b> Here the body is always tied to the source. When it isn't, V<sub>T</sub> rises with the source-to-body voltage.</li>
+      <li><b>Capacitances.</b> They appear only in the switching-transient circuit, as fixed fractions of WLC<sub>ox</sub>. Real ones change with voltage.</li>
+      <li><b>Breakdown and heating.</b> The ratings are drawn and checked, but nothing actually breaks, and the die's temperature doesn't feed back into the current.</li>
+    </ul>
+  </div>
+  <footer><p>A companion to <i>MOSFETs as Switches</i>. The presets are classes of real part, never a homework's values; the practice part matches that page's demo part (V<sub>T</sub> = 1.5 V, β<sub>n</sub> = 0.18 A/V², β<sub>p</sub> = 0.08 A/V²). verify.py checks the presets, Sah's equations, the subthreshold slope against n(kT/q)ln 10, and the g<sub>m</sub>, r<sub>o</sub> and f<sub>T</sub> formulas.</p></footer>
+</section>
+
+</main>

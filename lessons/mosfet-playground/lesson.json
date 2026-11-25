@@ -1,0 +1,9 @@
+{
+  "title": "MOSFET Playground",
+  "brand": "MOSFET Playground",
+  "libs": [
+    "katex",
+    "schematic"
+  ],
+  "output": "/Users/joelr/Documents/BYUI Assignments/Semester 7/mosfet-playground.html"
+}
